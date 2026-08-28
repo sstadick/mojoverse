@@ -1,6 +1,7 @@
 # pixi environments
 .pixi/*
 !.pixi/config.toml
+examples/*/.pixi/
 
 # build outputs
 build/

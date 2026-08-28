@@ -5,18 +5,25 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
-mkdir -p "$TMP_DIR/mojo_raylib/raw" "$TMP_DIR/native"
-cp "$ROOT_DIR"/mojo_raylib/__init__.mojo "$TMP_DIR/mojo_raylib/__init__.mojo"
-cp "$ROOT_DIR"/mojo_raylib/types.mojo "$TMP_DIR/mojo_raylib/types.mojo"
-cp "$ROOT_DIR"/mojo_raylib/safe.mojo "$TMP_DIR/mojo_raylib/safe.mojo"
-cp "$ROOT_DIR"/mojo_raylib/raymath_safe.mojo "$TMP_DIR/mojo_raylib/raymath_safe.mojo"
-cp "$ROOT_DIR"/mojo_raylib/raw/"__init__.mojo" "$TMP_DIR/mojo_raylib/raw/__init__.mojo"
-cp "$ROOT_DIR"/mojo_raylib/raw/types.mojo "$TMP_DIR/mojo_raylib/raw/types.mojo"
-cp "$ROOT_DIR"/mojo_raylib/raw/raylib.mojo "$TMP_DIR/mojo_raylib/raw/raylib.mojo"
-cp "$ROOT_DIR"/mojo_raylib/raw/raymath.mojo "$TMP_DIR/mojo_raylib/raw/raymath.mojo"
-cp "$ROOT_DIR"/native/mojo_raylib_shim.c "$TMP_DIR/native/mojo_raylib_shim.c"
+GENERATED_FILES=(
+  mojo_raylib/__init__.mojo
+  mojo_raylib/types.mojo
+  mojo_raylib/safe.mojo
+  mojo_raylib/raymath_safe.mojo
+  mojo_raylib/raw/__init__.mojo
+  mojo_raylib/raw/types.mojo
+  mojo_raylib/raw/raylib.mojo
+  mojo_raylib/raw/raymath.mojo
+  native/mojo_raylib_shim.c
+)
+
+for file in "${GENERATED_FILES[@]}"; do
+  mkdir -p "$TMP_DIR/$(dirname "$file")"
+  cp "$ROOT_DIR/$file" "$TMP_DIR/$file"
+done
 
 bash "$ROOT_DIR/scripts/generate-bindings.sh"
 
-diff -ru "$TMP_DIR/mojo_raylib" "$ROOT_DIR/mojo_raylib"
-diff -ru "$TMP_DIR/native" "$ROOT_DIR/native"
+for file in "${GENERATED_FILES[@]}"; do
+  diff -u "$TMP_DIR/$file" "$ROOT_DIR/$file"
+done

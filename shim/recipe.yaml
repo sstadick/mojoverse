@@ -23,6 +23,9 @@ requirements:
     - ${{ compiler('c') }}
     - cmake
     - ninja
+    - if: linux
+      then:
+        - patchelf
   host:
     - if: linux
       then:

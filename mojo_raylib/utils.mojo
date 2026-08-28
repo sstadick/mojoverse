@@ -8,22 +8,22 @@ codegen:
 * `void_ref_array(ptr)` — same, but for an existing typed pointer (e.g. a
   heap-allocated buffer).
 
-Both produce `UnsafePointer[NoneType, MutAnyOrigin]` — the type the
-generated raw bindings expect for `void *` parameters.
+Both preserve the concrete origin of the input while reinterpreting its pointee
+as `NoneType`, which is the representation the generated bindings use for
+`void *` parameters.
 """
 
-from std.memory.unsafe_pointer import UnsafePointer
-
-
 @always_inline
-def void_ref[T: AnyType](mut value: T) -> UnsafePointer[NoneType, MutAnyOrigin]:
+def void_ref[T: AnyType, origin: MutOrigin, //](
+    ref[origin] value: T,
+) -> Pointer[NoneType, origin]:
     """Take an opaque mutable byte pointer to `value`."""
-    return UnsafePointer(to=value).bitcast[NoneType]().unsafe_mut_cast[True]().as_any_origin()
+    return Pointer(to=value).unsafe_bitcast[NoneType]()
 
 
 @always_inline
 def void_ref_array[T: AnyType, //, origin: Origin[mut=True]](
-    ptr: UnsafePointer[T, origin],
-) -> UnsafePointer[NoneType, MutAnyOrigin]:
+    ptr: Pointer[T, origin],
+) -> Pointer[NoneType, origin]:
     """Reinterpret a typed buffer pointer as `void *` for a raylib FFI call."""
-    return ptr.bitcast[NoneType]().unsafe_mut_cast[True]().as_any_origin()
+    return ptr.unsafe_bitcast[NoneType]()

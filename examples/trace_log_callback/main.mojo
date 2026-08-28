@@ -5,7 +5,7 @@
 # callback relies on Mojo's `abi("C")` effect (it gives the function the C
 # calling convention so C can call back into it), and the callback is supplied
 # as a compile-time parameter — `set_trace_log_callback[on_trace_log]()` — which
-# is the form that lowers to a real C function pointer in Mojo 1.0.0b1.
+# is the form that lowers to a real C function pointer in Mojo 1.0.
 #
 # raylib's real `SetTraceLogCallback` expects a `va_list`-based variadic
 # callback; the native shim bridges that to the simple `(level, text)` form
@@ -13,7 +13,6 @@
 
 from mojo_raylib import set_trace_log_callback, init_audio_device, close_audio_device
 from std.ffi import c_int, c_char, CStringSlice
-from std.memory.unsafe_pointer import UnsafePointer
 
 # raylib TraceLogLevel values.
 comptime LOG_WARNING = 4
@@ -21,7 +20,7 @@ comptime LOG_ERROR = 5
 
 
 # raylib (via the shim) calls this for every log message. Must be `abi("C")`.
-def on_trace_log(level: c_int, text: UnsafePointer[c_char, MutAnyOrigin]) abi("C"):
+def on_trace_log(level: c_int, text: Pointer[c_char, ImmUntrackedOrigin]) abi("C"):
     var message = String(CStringSlice(unsafe_from_ptr=text))
     var label: String
     if level == LOG_WARNING:

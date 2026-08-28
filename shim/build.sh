@@ -56,7 +56,7 @@ cp -a "$RAYLIB_INSTALL/." "$PREFIX/"
 
 case "$(uname -s)" in
   Darwin)
-    clang -dynamiclib -fPIC \
+    "${CC:-cc}" -dynamiclib -fPIC \
       -I vendor/raylib/src \
       native/mojo_raylib_shim.c \
       -L"$PREFIX/lib" -lraylib \
@@ -64,7 +64,7 @@ case "$(uname -s)" in
       -o "$PREFIX/lib/libmojo_raylib_shim.dylib"
     ;;
   Linux)
-    clang -shared -fPIC \
+    "${CC:-cc}" -shared -fPIC \
       -I vendor/raylib/src \
       native/mojo_raylib_shim.c \
       -L"$PREFIX/lib" -lraylib \

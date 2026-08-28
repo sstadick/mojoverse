@@ -12,18 +12,21 @@ version = "0.1.0"
 
 [package.build.backend]
 name = "pixi-build-mojo"
-version = ">=0.1.13,<0.1.14.20260610"
+version = "0.*"
 channels = [
     "https://prefix.dev/pixi-build-backends",
     "https://prefix.dev/conda-forge",
 ]
 
 [package.host-dependencies]
-mojo = ">=1.0.0b1"
+mojo-compiler = "=1.0.0"
 mojo-raylib-shim = { path = "./shim" }
 
+[package.build-dependencies]
+mojo-compiler = "=1.0.0"
+
 [package.run-dependencies]
-mojo = ">=1.0.0b1"
+mojo-compiler = "=1.0.0"
 mojo-raylib-shim = { path = "./shim" }
 
 # Codegen / dev workflow tasks live in a separate `codegen` feature so they
@@ -60,4 +63,5 @@ codegen = { features = ["codegen"], no-default-feature = true }
 [dependencies]
 # Default env consumes the package itself, so `pixi run mojo ...` from the root
 # sees mojo_raylib (and transitively the shim).
+mojo = "=1.0.0"
 mojo_raylib = { path = "." }

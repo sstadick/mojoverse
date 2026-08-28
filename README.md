@@ -27,7 +27,7 @@ Code generation is fully automated and provides 100% coverage, although not ever
 
 ## Requirements
 
-- [Pixi](https://prefix.dev/) — installs everything else.
+- [Pixi](https://prefix.dev/) — installs Mojo 1.0.0, raylib, and the build toolchain.
 
 ## Run an example
 
@@ -36,7 +36,9 @@ cd examples/basic_window
 pixi run run
 ```
 
-The first run builds raylib + the C shim (`mojo-raylib-shim`) and the Mojo package (`mojo_raylib`) via [`pixi-build`](https://pixi.sh/dev/build/). Subsequent runs hit the build cache.
+The first run builds raylib + the C shim (`mojo-raylib-shim`) and precompiles the Mojo package (`mojo_raylib`). Subsequent runs hit the build cache.
+
+`mojo_raylib` uses Pixi's [`pixi-build-mojo`](https://pixi.prefix.dev/latest/build/backends/pixi-build-mojo/) backend, while the native shim uses `pixi-build-rattler-build`. The package pins the final Mojo 1.0.0 compiler in its build, host, and run requirements, so consumers get the same compiler used to create the package.
 
 ## Use it in your own project
 
@@ -54,6 +56,8 @@ mojo_raylib = { path = "/path/to/mojo-raylib" }
 [tasks.run]
 cmd = "mojo build main.mojo -Xlinker -L$CONDA_PREFIX/lib -Xlinker -lmojo_raylib_shim -Xlinker -lraylib -o .pixi/main && .pixi/main"
 ```
+
+The source dependency reads this repository's package metadata, invokes `pixi-build-mojo`, and installs the compiled `mojo_raylib.mojoc` package plus its native runtime dependencies into the consuming environment. Keep `preview = ["pixi-build"]` enabled in the consuming workspace; no copied build scripts or manual `MODULAR_HOME` setup are needed.
 
 ```mojo
 from mojo_raylib import Color, init_window, close_window, window_should_close
