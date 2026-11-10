@@ -1,0 +1,136 @@
+"""Build and test Modo documentation with the package's own locked compiler."""
+
+import argparse
+import json
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import textwrap
+import tomllib
+
+import yaml
+from pymodo.modo import get_executable_path
+
+
+def run(command, cwd):
+    subprocess.run(command, cwd=cwd, check=True)
+
+
+def check_init_declarations(decl):
+    # Modo 0.11.13 ignores declarations in __init__, even in strict mode.
+    for module in decl.get("modules", []):
+        if module["name"] == "__init__" and any(
+            module.get(key) for key in ("functions", "structs", "traits", "aliases")
+        ):
+            raise ValueError(
+                "Modo omits declarations defined in __init__.mojo. "
+                "Define APIs in modules and re-export them from __init__.mojo."
+            )
+    for package in decl.get("packages", []):
+        check_init_declarations(package)
+
+
+def build(project, package, output, site, readme, includes):
+    project = project.resolve()
+    output = output.resolve()
+    if output.exists() and not (output / ".mojoverse-generated").is_file():
+        raise ValueError(f"Refusing to replace non-generated directory: {output}")
+    manifest = tomllib.loads((project / "pixi.toml").read_text())
+    pkg = manifest.get("package", {}).get("build", {}).get("config", {}).get("pkg", {})
+    package_path = project / (pkg.get("path", package) if pkg.get("name", package) == package else package)
+    mojo = ["pixi", "run", "--locked", "--manifest-path", str(project / "pixi.toml"), "mojo"]
+    with tempfile.TemporaryDirectory(prefix="mojoverse-docs-") as directory:
+        work = Path(directory)
+        source = work / "source"
+        source.mkdir()
+        json_path = source / f"{package}.json"
+        run([*mojo, "doc", str(package_path), "-o", str(json_path)], project)
+        data = json.loads(json_path.read_text())
+        check_init_declarations(data["decl"])
+        if readme:
+            shutil.copyfile(project / readme, source / "index.md")
+        for include in includes:
+            relative = Path(include)
+            if relative.is_absolute() or ".." in relative.parts:
+                raise ValueError("Included documentation must be relative to the project")
+            destination = source / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(project / relative, destination)
+        templates = Path(__file__).with_name("templates")
+        config = {
+            "input": [str(source)],
+            "output": str(work / "markdown"),
+            "tests": str(work / "doctests"),
+            "format": "plain",
+            "exports": False,
+            "strict": True,
+            "templates": [str(templates)],
+        }
+        (work / "modo.yaml").write_text(yaml.safe_dump(config))
+        # pymodo's CLI launcher discards the native program's exit status.
+        run([get_executable_path(), "build"], work)
+        tests = sorted((work / "doctests").rglob("*.mojo"))
+        if not tests:
+            raise ValueError("No doctests found. Mark executable examples with {doctest=\"name\"}.")
+        for test in tests:
+            run([*mojo, "run", "-I", str(package_path.parent), "-D", "ASSERT=all", str(test)], work)
+        markdown = work / "markdown"
+        # Modo's plain output retains Hugo-style fence attributes, which
+        # CommonMark/MkDocs otherwise display as literal backticks.
+        for page in markdown.rglob("*.md"):
+            # Module docstrings also preserve indented fenced examples. Stock
+            # MkDocs treats their brackets as links unless the fences start at
+            # column zero; preserve indentation within the example itself.
+            text = re.sub(
+                r"(?m)^([ \t]+)```[^\n]*\n[\s\S]*?^\1```[ \t]*$",
+                lambda match: "\n" + textwrap.dedent(match[0]) + "\n",
+                page.read_text(),
+            )
+            page.write_text(re.sub(
+                r"^```mojo\s+\{[^}\n]*\}\s*$", "```mojo", text, flags=re.MULTILINE
+            ))
+        if not (markdown / "index.md").exists():
+            (markdown / "index.md").write_text(
+                f"# {package}\n\n[API reference]({package}/_index.md)\n"
+            )
+        result = markdown
+        if site:
+            # Stock MkDocs: no custom Hugo fork or hand-built site generator.
+            config = {
+                "site_name": package,
+                "docs_dir": str(markdown),
+                "site_dir": str(work / "site"),
+                "use_directory_urls": False,
+                "theme": {"name": "mkdocs"},
+            }
+            (work / "mkdocs.yml").write_text(yaml.safe_dump(config))
+            run([sys.executable, "-m", "mkdocs", "build", "--strict"], work)
+            result = work / "site"
+        (result / ".mojoverse-generated").write_text("Generated by mojoverse-docs.\n")
+        output.parent.mkdir(parents=True, exist_ok=True)
+        if output.exists():
+            shutil.rmtree(output)
+        shutil.copytree(result, output)
+        print(f"Built {package} docs; {len(tests)} executable examples passed; output: {output}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("project", type=Path, help="Package checkout containing pixi.toml")
+    parser.add_argument("package", help="Importable Mojo package directory")
+    parser.add_argument("--output", type=Path, help="Generated output (default: PROJECT/target/docs)")
+    parser.add_argument("--site", action="store_true", help="Render a GitHub Pages-ready HTML site")
+    parser.add_argument("--readme", help="Also render a Markdown file relative to the package checkout")
+    parser.add_argument("--include", action="append", default=[], help="Include a linked file relative to the checkout (repeatable)")
+    args = parser.parse_args()
+    try:
+        build(args.project, args.package, args.output or args.project / "target/docs", args.site, args.readme, args.include)
+    except (ValueError, subprocess.CalledProcessError) as error:
+        parser.exit(1, f"Documentation build failed: {error}\n")
+
+
+if __name__ == "__main__":
+    main()
