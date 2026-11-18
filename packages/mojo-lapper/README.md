@@ -66,9 +66,12 @@ first candidate, and a max tree to skip runs of blocks ending before the query.
 Dense blocks emit a prefix of intervals; mixed blocks use native-width SIMD overlap masks, with a
 bounded scalar tail. Results remain ordered by start, then stop.
 
-`count` uses binary interval search (BITS); construction uses comparison
-sorting. The six-argument pointer constructor borrows prebuilt index arrays.
-Do not mutate indexed arrays after construction.
+`count` uses binary interval search (BITS). Construction uses `mojo-bio`'s
+integer radix sort, preserving start/stop ordering and payload associations;
+already-ordered intervals and ends skip sorting. Ordering among intervals
+with identical start and stop coordinates is unspecified. The six-argument
+pointer constructor borrows prebuilt index arrays. Do not mutate indexed
+arrays after construction.
 
 ## Install
 
@@ -118,7 +121,7 @@ pixi run t                 # CPU tests
 pixi run test-consumer     # Build and test an isolated installed package
 pixi run format
 pixi run docs              # This monorepo's root documentation tools
-pixi publish --path . --target-dir dist --force --clean  # Local archive only
+pixi build --path . --output-dir dist  # Local archive only
 ```
 
 `main` targets stable Mojo; `nightly` tracks nightly compiler compatibility.

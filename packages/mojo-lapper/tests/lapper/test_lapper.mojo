@@ -298,6 +298,34 @@ def test_lapper_starts_order() raises:
     assert_equal(lapper.vals[unsafe_offset=1], 3)
     assert_equal(lapper.vals[unsafe_offset=2], 1)
 
+    # Exercise both sides of the radix cutoff, equal starts with different
+    # stops, and unsigned coordinates above Int32.MAX. Payloads must travel
+    # with the complete start/stop key, not be used as a sort key themselves.
+    for n in [63, 64, 65, 257]:
+        var shuffled = List[Interval]()
+        for i in range(n):
+            var id = (i * 73) % n
+            var start = UInt32(id // 7) * 0x06000000
+            shuffled.append(Interval(start, start + UInt32(id % 7 + 1), Int32(id * 13 - 900)))
+        var index = Lapper(shuffled^)
+        var results = List[Interval]()
+        index.find(0, UInt32.MAX, results)
+        var visitor = RecordingVisitor(List[Interval]())
+        index.visit(0, UInt32.MAX, visitor)
+        assert_equal(len(results), n)
+        assert_equal(len(visitor.intervals), n)
+        assert_equal(index.count(0, UInt32.MAX), UInt(n))
+        for i in range(n):
+            var start = UInt32(i // 7) * 0x06000000
+            for iv in [results[i], visitor.intervals[i]]:
+                assert_equal(iv.start, start)
+                assert_equal(iv.stop, start + UInt32(i % 7 + 1))
+                assert_equal(iv.val, Int32(i * 13 - 900))
+        for group in range((n + 6) // 7):
+            var start = UInt32(group) * 0x06000000
+            var expected = max(0, min(7, n - group * 7) - 2)
+            assert_equal(index.count(start + 2, start + 4), UInt(expected))
+
 
 def test_lapper_stops_sorted() raises:
     """Verify stops_sorted array is sorted."""

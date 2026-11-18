@@ -10,12 +10,6 @@ comptime _RADIX_BITS = 8
 comptime _BUCKET_COUNT = 1 << _RADIX_BITS
 
 
-@fieldwise_init
-struct _Bucket(ImplicitlyCopyable):
-    var begin: Int
-    var end: Int
-
-
 @always_inline
 def _identity[T: ImplicitlyCopyable](value: T) -> T:
     return value
@@ -56,74 +50,54 @@ def _radix_sort_inner[
     dtype: DType,
     key: def(T) thin -> SIMD[dtype, 1],
 ](begin: Pointer[mut=True, T, _], length: Int, shift: Int):
-    var buckets = Array[_Bucket, _BUCKET_COUNT](uninitialized=True)
-    var bucket_ptr = buckets.unsafe_ptr()
-    var bucket_end = bucket_ptr.unsafe_offset(_BUCKET_COUNT)
-
-    var bucket = bucket_ptr
-    while bucket != bucket_end:
-        bucket.unsafe_write(_Bucket(0, 0))
-        bucket = bucket.unsafe_offset(1)
-
-    var item = begin
-    var end = begin.unsafe_offset(length)
-    while item != end:
-        var digit_bucket = bucket_ptr.unsafe_offset(_digit(key(item[]), shift))
-        digit_bucket[].end += 1
-        item = item.unsafe_offset(1)
-
-    bucket = bucket_ptr.unsafe_offset(1)
-    while bucket != bucket_end:
-        var previous_end = bucket.unsafe_offset(-1)[].end
-        bucket[].end += previous_end
-        bucket[].begin = previous_end
-        bucket = bucket.unsafe_offset(1)
+    # Separate index tables keep bucket lookups one machine word wide. The
+    # zero-filled counts become immutable end offsets after the prefix sum.
+    var begins = Array[Int, _BUCKET_COUNT](uninitialized=True)
+    var ends = Array[Int, _BUCKET_COUNT](fill=0)
+    for i in range(length):
+        ends.unsafe_get(_digit(key(begin[unsafe_offset=i]), shift)) += 1
+    var previous_end = 0
+    for bucket in range(_BUCKET_COUNT):
+        begins.unsafe_get(bucket) = previous_end
+        previous_end += ends.unsafe_get(bucket)
+        ends.unsafe_get(bucket) = previous_end
 
     # Cycle whole records into buckets, retaining payload/key associations.
-    bucket = bucket_ptr
-    while bucket != bucket_end:
-        if bucket[].begin != bucket[].end:
-            var target = bucket_ptr.unsafe_offset(
-                _digit(key(begin[unsafe_offset=bucket[].begin]), shift)
-            )
+    # Keep the bucket scan separate from its record loop: bucket advancement
+    # must not depend on a table load for every already-finished bucket.
+    for bucket in range(_BUCKET_COUNT):
+        while begins.unsafe_get(bucket) != ends.unsafe_get(bucket):
+            var cursor = begins.unsafe_get(bucket)
+            var target = _digit(key(begin[unsafe_offset=cursor]), shift)
             if target != bucket:
-                var temporary = begin[unsafe_offset=bucket[].begin].copy()
-                while True:
-                    var displaced = begin[unsafe_offset=target[].begin].copy()
-                    begin[unsafe_offset=target[].begin] = temporary^
-                    target[].begin += 1
+                var temporary = begin[unsafe_offset=cursor].copy()
+                while target != bucket:
+                    var destination = begins.unsafe_get(target)
+                    var displaced = begin[unsafe_offset=destination].copy()
+                    begin[unsafe_offset=destination] = temporary^
+                    begins.unsafe_get(target) = destination + 1
                     temporary = displaced^
-                    target = bucket_ptr.unsafe_offset(
-                        _digit(key(temporary), shift)
-                    )
-                    if target == bucket:
-                        break
-                begin[unsafe_offset=bucket[].begin] = temporary^
-            bucket[].begin += 1
-        else:
-            bucket = bucket.unsafe_offset(1)
-
-    bucket_ptr[].begin = 0
-    bucket = bucket_ptr.unsafe_offset(1)
-    while bucket != bucket_end:
-        bucket[].begin = bucket.unsafe_offset(-1)[].end
-        bucket = bucket.unsafe_offset(1)
+                    target = _digit(key(temporary), shift)
+                begin[unsafe_offset=cursor] = temporary^
+            begins.unsafe_get(bucket) = cursor + 1
 
     if shift != 0:
-        bucket = bucket_ptr
-        while bucket != bucket_end:
-            var count = bucket[].end - bucket[].begin
+        # A bucket begins at its predecessor's end; no restore pass is needed.
+        var bucket_begin = 0
+        for bucket in range(_BUCKET_COUNT):
+            var bucket_end = ends.unsafe_get(bucket)
+            var count = bucket_end - bucket_begin
             if count > _MIN_SIZE:
                 _radix_sort_inner[T, dtype, key](
-                    begin.unsafe_offset(bucket[].begin),
+                    begin.unsafe_offset(bucket_begin),
                     count,
                     shift - _RADIX_BITS,
                 )
             elif count > 1:
                 _insert_sort[T, dtype, key](
-                    begin.unsafe_offset(bucket[].begin), count
+                    begin.unsafe_offset(bucket_begin), count
                 )
-            bucket = bucket.unsafe_offset(1)
+            bucket_begin = bucket_end
 
 
 @always_inline

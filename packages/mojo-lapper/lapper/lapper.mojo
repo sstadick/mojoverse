@@ -1,5 +1,6 @@
 from lapper.cpu.bsearch import lower_bound, upper_bound
 from lapper.cpu.block_index import BlockIndex, BLOCK_SIZE, overlap_mask
+from mojo_bio import radix_sort
 
 from max.gpu.host import DeviceContext, HostBuffer, DeviceBuffer
 from max.gpu import thread_idx, block_idx, block_dim, barrier
@@ -212,6 +213,11 @@ struct Interval(
         writer.write("Interval {start: ", self.start, ", stop: ", self.stop, "}")
 
 
+@always_inline
+def _interval_key(interval: Interval) -> UInt64:
+    return (UInt64(interval.start) << 32) | UInt64(interval.stop)
+
+
 trait IntervalVisitor:
     """Consume matching intervals synchronously without an intermediate list."""
 
@@ -323,7 +329,16 @@ struct Lapper[*, owns_data: Bool = True](Sized):
         self._fill(intervals^)
 
     def _fill(mut self, var intervals: List[Self.I]):
-        sort(intervals)
+        var disorder = 0
+        var previous = UInt64(0)
+        for iv in intervals:
+            var key = _interval_key(iv)
+            disorder += Int(key < previous)
+            previous = key
+        if disorder:
+            radix_sort[key=_interval_key](Span(intervals))
+        var stops_disorder = 0
+        var previous_stop = UInt32(0)
         for i in range(0, len(intervals)):
             ref iv = intervals[i]
             self.starts[unsafe_offset=i] = iv.start
@@ -331,11 +346,14 @@ struct Lapper[*, owns_data: Bool = True](Sized):
             self.vals[unsafe_offset=i] = iv.val
             var length = iv.stop - iv.start
             self.max_len = length if length > self.max_len else self.max_len
+            stops_disorder += Int(iv.stop < previous_stop)
+            previous_stop = iv.stop
 
         # N.B. Don't sort starts, we need them to be in the exact same order as intervals,
         # which are sorted by starts first, then by stops.
         unsafe_memcpy(dest=self.stops_sorted, src=self.stops, count=len(intervals))
-        sort(Span(unsafe_ptr=self.stops_sorted, length=len(intervals)))
+        if stops_disorder:
+            radix_sort(Span(unsafe_ptr=self.stops_sorted, length=len(intervals)))
         comptime if Self.owns_data:
             self._blocks.build(Span(unsafe_ptr=self.stops, length=len(intervals)))
 
