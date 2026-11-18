@@ -10,7 +10,7 @@ Mojo `1.3.0.dev2026111705` with MAX `26.8.0.dev2026111705` compiles the workspac
 pixi run --locked -e source test-packages extramojo
 ```
 
-On Linux x86-64, the same test passes with full debug information or AddressSanitizer. Those builds do not establish that the normal optimized build is correct. GDB locates the failure in destruction of the optional stack trace inside `Error`, with an invalid pointer. No optimization flag or assertion has been disabled to hide it.
+On Linux x86-64, full-debug probes and some AddressSanitizer configurations pass. However, the package's `t-asan` task reports a heap-buffer-overflow in this same iterator: an atomic reference-count decrement writes before the line buffer's allocation. GDB locates the normal optimized crash in destruction of the optional stack trace inside `Error`, with an invalid pointer. The passing probes do not establish correctness; no optimization flag or assertion has been disabled to hide the failing configurations.
 
 The following stdlib-only reduction also crashes at `-O3` with this nightly, with or without `-D ASSERT=all`. It passes with Mojo 1.2.0 at `-O3`, and with the nightly at `-O0` or `-O3 --debug-level=full`. This points to a nightly compiler/API compatibility problem in legacy `Error`-raising iterators, not the BAM reader, native bindings, or monorepo dependency paths. The precise compiler defect is not established. A migration to the current `StopIteration` protocol also needs an explicit design for propagating parsing and I/O errors.
 
