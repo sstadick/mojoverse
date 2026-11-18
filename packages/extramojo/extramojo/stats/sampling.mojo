@@ -1,0 +1,98 @@
+"""
+Reservoir sampling on a stream.
+
+# References
+- Algorithm R: https://en.wikipedia.org/wiki/Reservoir_sampling
+"""
+
+from std.random import random_si64
+
+
+struct ReservoirSampler[T: Copyable & Deinitable](Copyable, Deinitable):
+    """Sample N items from a stream of unknown length.
+
+    Sample all the elements, this should retain the order since we always automatically take the first N elements.
+
+    ```mojo
+    from std.random import seed
+    from std.testing import assert_equal
+
+    from extramojo.stats.sampling import ReservoirSampler
+
+    # Set the global random seed
+    seed(42)
+
+    var sampler = ReservoirSampler[Int](10)
+
+    var items = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    for item in items:
+        sampler.insert(item)
+    assert_equal(sampler.reservoir, items)
+    ```
+
+    Sample only a subset of the input list.
+
+    ```mojo
+    var sampler = ReservoirSampler[Int](5)
+
+    for item in items:
+        sampler.insert(item)
+    assert_equal(len(sampler.reservoir), 5)
+    assert_equal(sampler.reservoir, [0, 9, 2, 3, 7])
+    ```
+
+    Sample only a single element.
+
+    ```mojo
+    var sampler = ReservoirSampler[Int](1)
+
+    for item in items:
+        sampler.insert(item)
+    assert_equal(len(sampler.reservoir), 1)
+    assert_equal(sampler.reservoir, [6])
+    ```
+
+    Sample more elements than are in the input stream.
+    ```mojo
+    var sampler = ReservoirSampler[Int](11)
+
+    for item in items:
+        sampler.insert(item)
+    assert_equal(len(sampler.reservoir), 10)
+    assert_equal(sampler.reservoir, items)
+    ```
+
+    Sample zero elements
+    ```mojo
+    var sampler = ReservoirSampler[Int](0)
+
+    for item in items:
+        sampler.insert(item)
+    assert_equal(len(sampler.reservoir), 0)
+    assert_equal(sampler.reservoir, List[Int]())
+    ```
+    """
+
+    var reservoir: List[Self.T]
+    var values_to_collect: Int
+    var seen_values: Int
+
+    def __init__(out self, values_to_collect: Int):
+        self.seen_values = 0
+        self.reservoir = List[Self.T](capacity=values_to_collect)
+        self.values_to_collect = values_to_collect
+
+    def insert(mut self, imm item: Self.T):
+        """Add an element.
+
+        The element will be tested for addition to the reservoir.
+        """
+        if len(self.reservoir) < self.values_to_collect:
+            self.reservoir.append(item.copy())
+            self.seen_values += 1
+            return
+
+        var index = Int(random_si64(0, Int64(self.seen_values)))
+        if index < self.values_to_collect:
+            self.reservoir[Int(index)] = item.copy()
+        self.seen_values += 1

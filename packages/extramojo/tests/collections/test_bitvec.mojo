@@ -1,0 +1,876 @@
+from std.sys import bit_width_of
+from std.testing import assert_equal, assert_true, assert_false, TestSuite
+
+from extramojo.collections.bitvec import BitVec
+
+
+def test_bitvec_from_list_literal() raises:
+    var bv: BitVec = [True, True, False, False, False, True]
+    assert_equal(len(bv), 6)
+    assert_equal(bv.count_set_bits(), 3)
+
+
+@fieldwise_init
+struct RankTestCase(Copyable, Movable):
+    var pos: UInt
+    var expected: UInt
+
+
+def test_bitvec_count_set_bits() raises:
+    var bv = BitVec(length=1500, fill=False)
+    bv.set(1000)
+    bv.set(1025)
+    assert_equal(bv.count_set_bits(), 2)
+    assert_equal(bv.rank(1024), 1)
+    assert_equal(bv.rank(1025), 1)
+    assert_equal(bv.rank(1026), 2)  # fails here <-
+
+    var bv1 = BitVec(length=65, fill=True)
+    assert_equal(bv1._capacity, 2)
+    var bit_offset = bv1._len % UInt(bit_width_of[bv.WORD.dtype]())
+    assert_equal(bit_offset, 1)
+    var mask = Scalar[BitVec.WORD.dtype]((UInt(1) << bit_offset) - UInt(1))
+    assert_equal(mask, Scalar[BitVec.WORD.dtype](1))
+    assert_equal(
+        mask & Scalar[BitVec.WORD.dtype].MAX, Scalar[BitVec.WORD.dtype](1)
+    )
+    assert_equal(
+        bv1.data[unsafe_offset=1],
+        1,
+        String("data: {}, mask {}").format(
+            bin(bv1.data[unsafe_offset=1]), bin(mask)
+        ),
+    )
+    assert_equal(bv1.count_set_bits(), 65)
+
+    var bv3 = BitVec(length=128, fill=False)
+    bv3.set(0)
+    bv3.set(1)
+    bv3.set(2)
+    bv3.set(64)
+    bv3.set(65)
+    bv3.set(127)
+    var cases: List[RankTestCase] = [
+        {0, 0},
+        {1, 1},
+        {2, 2},
+        {3, 3},
+        {63, 3},
+        {64, 3},
+        {65, 4},
+        {66, 5},
+        {127, 5},
+    ]
+    for kase in cases:
+        var got = bv3.rank(kase.pos)
+        assert_equal(
+            got,
+            kase.expected,
+            String("for {}, got {}, expected {}").format(
+                kase.pos, got, kase.expected
+            ),
+        )
+
+
+def test_bitvec_init_with_capacity() raises:
+    var bv = BitVec(capacity=1024)
+    assert_equal(bv.capacity(), 1024)
+
+
+def test_bitvec_capacity_alignment() raises:
+    var bv = BitVec(capacity=130)  # Should allocate ceil(130 / word_size)
+    assert_true(bv.capacity() >= 130)
+    assert_equal(len(bv), 0)
+
+
+def test_bitvec_init_length_fill_false() raises:
+    var bv = BitVec(length=65, fill=False)
+    assert_equal(len(bv), 65)
+
+    # Ensure bits are cleared
+    for i in range(UInt(0), bv.word_len()):
+        assert_equal(bv.data[unsafe_offset=i], 0)
+    _ = bv
+
+
+def test_bitvec_init_length_fill_true() raises:
+    var bv = BitVec(length=65, fill=True)
+    assert_equal(len(bv), 65)
+
+    for i in range(UInt(0), bv.word_len() - 1):
+        assert_equal(bv.data[unsafe_offset=i], ~0)
+    assert_equal(bv.data[unsafe_offset=bv.word_len() - 1], 1)
+
+    var last_bits = 65 % bit_width_of[bv.WORD.dtype]()
+    var mask = Scalar[BitVec.WORD_DTYPE]((1 << last_bits) - 1)
+    assert_equal(bv.data[unsafe_offset=bv._capacity - 1] & mask, mask)
+    _ = bv
+
+
+def test_bitvec_resize_grow_fill_false() raises:
+    var bv = BitVec(length=10, fill=True)
+    bv.resize(130, fill=False)
+    assert_equal(len(bv), 130)
+
+    # Check bits from original words
+    var first_word = bv.data[unsafe_offset=0]
+    var first_word_mask = Scalar[BitVec.WORD_DTYPE]((1 << 10) - 1)
+    assert_equal(first_word & first_word_mask, first_word_mask)
+
+    # Check new words are cleared
+    for i in range(UInt(1), bv.word_len()):
+        assert_equal(bv.data[unsafe_offset=i], 0)
+    _ = bv
+
+
+def test_bitvec_resize_grow_fill_true() raises:
+    var bv = BitVec(length=10, fill=False)
+    bv.resize(130, fill=True)
+    assert_equal(len(bv), 130)
+
+    # Check original bits are zero
+    assert_equal(bv.data[unsafe_offset=0] & ((1 << 10) - 1), 0)
+
+    # Check that upper bits of first word are set
+    var upper_mask = Scalar[BitVec.WORD_DTYPE](~((1 << 10) - 1))
+    assert_true((bv.data[unsafe_offset=0] & upper_mask) == upper_mask)
+
+    # Check new words are set to 0xFFFFFFFF
+    for i in range(UInt(1), bv.word_len() - 1):
+        assert_equal(bv.data[unsafe_offset=i], ~0)
+    assert_true(bv.data[unsafe_offset=bv.word_len() - 1] != ~0)
+    _ = bv
+
+
+def test_bitvec_resize_shrink() raises:
+    var bv = BitVec(length=130, fill=True)
+    bv.resize(64, fill=False)  # should shrink and mask the last word
+    assert_equal(len(bv), 64)
+
+    var mask = Scalar[bv.WORD_DTYPE].MAX
+    assert_equal(bv.data[unsafe_offset=0], mask)
+    _ = bv
+
+
+def test_bitvec_shrink_to_same_size() raises:
+    var bv = BitVec(length=64, fill=True)
+    bv.shrink(64)  # no-op
+    assert_equal(len(bv), 64)
+    assert_equal(bv.data[unsafe_offset=0], ~0)
+    _ = bv
+
+
+def test_bitvec_clear() raises:
+    var bv = BitVec(length=514, fill=True)
+    assert_true(bv.data[unsafe_offset=1] != 0)
+    assert_true(len(bv) == 514)
+    bv.clear()
+    assert_true(len(bv) == 0)
+
+
+def test_bitvec_empty() raises:
+    var bv = BitVec(length=1, fill=False)
+    assert_true(Bool(bv))
+    assert_false(bv.is_empty())
+
+
+def test_bitvec_getitem() raises:
+    var bv = BitVec(length=600, fill=True)
+    for i in range(UInt(0), UInt(600)):
+        assert_true(bv[UInt(i)])
+
+
+def test_bitvec_setitem() raises:
+    var bv = BitVec(length=1200, fill=False)
+    bv[600] = True
+    assert_true(bv[600])
+    bv[0] = True
+    assert_true(bv[0])
+    bv[1199] = True
+    assert_true(bv[1199])
+
+
+def test_bitvec_set() raises:
+    var bv = BitVec(length=1200, fill=False)
+    bv.set(600)
+    assert_true(bv[600])
+    bv.set(0)
+    assert_true(bv[0])
+    bv.set(1199)
+    assert_true(bv[1199])
+
+
+def test_bitvec_clear_one() raises:
+    var bv = BitVec(length=1200, fill=True)
+    bv.clear(600)
+    assert_false(bv[600])
+    bv.clear(0)
+    assert_false(bv[0])
+    bv.clear(1199)
+    assert_false(bv[1199])
+
+
+def test_bitvec_toggle() raises:
+    var bv = BitVec(length=1200, fill=True)
+    bv.toggle(600)
+    assert_false(bv[600])
+    bv.toggle(0)
+    assert_false(bv[0])
+    bv.toggle(1199)
+    assert_false(bv[1199])
+
+    bv.toggle(600)
+    assert_true(bv[600])
+    bv.toggle(0)
+    assert_true(bv[0])
+    bv.toggle(1199)
+    assert_true(bv[1199])
+
+
+def test_bitvec_append() raises:
+    var bv = BitVec()
+    for _i in range(0, 100):
+        bv.append(True)
+
+    assert_equal(len(bv), 100)
+    for i in range(0, 100):
+        assert_true(bv[UInt(i)])
+
+    bv.clear()
+    assert_true(bv.is_empty())
+    for _i in range(0, 1050):
+        bv.append_true()
+
+    assert_equal(len(bv), 1050)
+    for i in range(0, 1050):
+        assert_true(bv[UInt(i)])
+
+    bv = BitVec(length=800, fill=True)
+    for _i in range(0, 200):
+        bv.append_false()
+    assert_equal(len(bv), 1000)
+
+    for i in range(0, 800):
+        assert_true(bv[UInt(i)])
+    for i in range(800, 1000):
+        assert_false(bv[UInt(i)])
+
+
+def test_bitvec_pop_back() raises:
+    var bv = BitVec(length=1000, fill=True)
+    for _i in range(0, 1000):
+        assert_true(bv.pop_back())
+    assert_true(bv.is_empty())
+
+
+def test_bitvec_set_and_check() raises:
+    var bv = BitVec(length=1000, fill=True)
+    assert_false(bv.set_and_check(512))
+    bv.append(False)
+    assert_true(bv.set_and_check(1000))
+
+
+def test_bitvec_clear_and_check() raises:
+    var bv = BitVec(length=1000, fill=True)
+    assert_true(bv.clear_and_check(512))
+    bv.append(False)
+    assert_false(bv.clear_and_check(1000))
+
+
+def test_bitvec_union() raises:
+    # left size longer
+    var bvA = BitVec(length=600, fill=False)
+    for i in [UInt(0), 64, 550]:
+        bvA.set(i)
+    var bvB = BitVec(length=500, fill=False)
+    for i in [UInt(1), 25, 499]:
+        bvB.set(i)
+    var bvC = bvA | bvB
+    assert_equal(bvC[499], True)
+    assert_equal(len(bvC), 600)
+    assert_equal(bvC.count_set_bits(), 6)
+
+    # left size shorter
+    var bvD = BitVec(length=600, fill=False)
+    for i in [UInt(0), 64, 550]:
+        bvD.set(i)
+    var bvE = BitVec(length=500, fill=False)
+    for i in [UInt(1), 25, 499]:
+        bvE.set(i)
+    var bvF = bvE | bvD
+    assert_equal(len(bvF), 600)
+    assert_equal(bvF.count_set_bits(), 6)
+
+    # Basic case
+    var bv1 = BitVec(length=128, fill=False)
+    bv1.set(1)
+    bv1.set(2)
+    bv1.set(3)
+
+    var bv2 = BitVec(length=128, fill=False)
+    bv2.set(3)
+    bv2.set(4)
+    bv2.set(5)
+
+    var bv3 = bv1.union(bv2)
+
+    assert_equal(len(bv3), len(bv2), msg="Union: Length remains the same.")
+    assert_equal(bv3.count_set_bits(), 5, msg="Union: Basic case count")
+    assert_true(bv3.test(1), msg="Union: Basic case bit 1")
+    assert_true(bv3.test(2), msg="Union: Basic case bit 2")
+    assert_true(bv3.test(3), msg="Union: Basic case bit 3")
+    assert_true(bv3.test(4), msg="Union: Basic case bit 4")
+    assert_true(bv3.test(5), msg="Union: Basic case bit 5")
+
+    # Union with empty set
+    var bv_empty = BitVec(length=128, fill=False)
+    var bv4 = bv1.union(bv_empty)
+    assert_equal(bv4.count_set_bits(), 3, msg="Union: With empty set count")
+    assert_true(bv4.test(1), msg="Union: With empty set bit 1")
+    assert_true(bv4.test(2), msg="Union: With empty set bit 2")
+    assert_true(bv4.test(3), msg="Union: With empty set bit 3")
+    assert_false(bv4.test(4), msg="Union: With empty set bit 4")
+
+    var bv5 = bv_empty.union(bv1)
+    assert_equal(
+        bv5.count_set_bits(), 3, msg="Union: Empty with non-empty set count"
+    )
+    assert_true(bv5.test(1), msg="Union: Empty with non-empty set bit 1")
+    assert_true(bv5.test(2), msg="Union: Empty with non-empty set bit 2")
+    assert_true(bv5.test(3), msg="Union: Empty with non-empty set bit 3")
+
+    # Union of identical sets
+    var bv6 = bv1.union(bv1)
+    assert_equal(bv6.count_set_bits(), 3, msg="Union: Identical sets count")
+    assert_true(bv6.test(1), msg="Union: Identical sets bit 1")
+    assert_true(bv6.test(2), msg="Union: Identical sets bit 2")
+    assert_true(bv6.test(3), msg="Union: Identical sets bit 3")
+
+    # Union of disjoint sets
+    var bv7 = BitVec(length=128, fill=False)
+    bv7.set(10)
+    bv7.set(20)
+    var bv8 = bv1.union(bv7)
+    assert_equal(bv8.count_set_bits(), 5, msg="Union: Disjoint sets count")
+    assert_true(bv8.test(1), msg="Union: Disjoint sets bit 1")
+    assert_true(bv8.test(2), msg="Union: Disjoint sets bit 2")
+    assert_true(bv8.test(3), msg="Union: Disjoint sets bit 3")
+    assert_true(bv8.test(10), msg="Union: Disjoint sets bit 10")
+    assert_true(bv8.test(20), msg="Union: Disjoint sets bit 20")
+
+    # Union across word boundaries
+    var bv9 = BitVec(length=128, fill=False)
+    bv9.set(60)
+    bv9.set(65)
+    var bv10 = BitVec(length=128, fill=False)
+    bv10.set(63)
+    bv10.set(70)
+    var bv11 = bv9.union(bv10)
+    assert_equal(bv11.count_set_bits(), 4, msg="Union: Across words count")
+    assert_true(bv11.test(60), msg="Union: Across words bit 60")
+    assert_true(bv11.test(63), msg="Union: Across words bit 63")
+    assert_true(bv11.test(65), msg="Union: Across words bit 65")
+    assert_true(bv11.test(70), msg="Union: Across words bit 70")
+
+
+def test_bitvec_intersection() raises:
+    # left size longer
+    var bvA = BitVec(length=600, fill=False)
+    for i in [UInt(0), 25, 550]:
+        bvA.set(i)
+    var bvB = BitVec(length=500, fill=False)
+    for i in [UInt(1), 25, 499]:
+        bvB.set(i)
+    var bvC = bvA & bvB
+    assert_equal(len(bvC), 600)
+    assert_equal(bvC.count_set_bits(), 1)
+
+    # left size shorter
+    var bvD = BitVec(length=600, fill=False)
+    for i in [UInt(0), 25, 550]:
+        bvD.set(i)
+    var bvE = BitVec(length=500, fill=False)
+    for i in [UInt(1), 25, 499]:
+        bvE.set(i)
+    var bvF = bvE & bvD
+    assert_equal(len(bvF), 600)
+    assert_equal(bvF.count_set_bits(), 1)
+
+    # Basic case
+    var bv1 = BitVec(length=128, fill=False)
+    bv1.set(1)
+    bv1.set(2)
+    bv1.set(3)
+
+    var bv2 = BitVec(length=128, fill=False)
+    bv2.set(3)
+    bv2.set(4)
+    bv2.set(5)
+
+    var bv3 = bv1.intersection(bv2)
+    assert_equal(bv3.count_set_bits(), 1, msg="Intersection: Basic case count")
+    assert_true(bv3.test(3), msg="Intersection: Basic case bit 3")
+    assert_false(bv3.test(1), msg="Intersection: Basic case bit 1")
+    assert_false(bv3.test(2), msg="Intersection: Basic case bit 2")
+    assert_false(bv3.test(4), msg="Intersection: Basic case bit 4")
+    assert_false(bv3.test(5), msg="Intersection: Basic case bit 5")
+
+    # Intersection with empty set
+    var bv_empty = BitVec(length=128, fill=False)
+    var bv4 = bv1.intersection(bv_empty)
+    assert_equal(
+        bv4.count_set_bits(), 0, msg="Intersection: With empty set count"
+    )
+
+    var bv5 = bv_empty.intersection(bv1)
+    assert_equal(
+        bv5.count_set_bits(),
+        0,
+        msg="Intersection: Empty with non-empty set count",
+    )
+
+    # Intersection of identical sets
+    var bv6 = bv1.intersection(bv1)
+    assert_equal(
+        bv6.count_set_bits(), 3, msg="Intersection: Identical sets count"
+    )
+    assert_true(bv6.test(1), msg="Intersection: Identical sets bit 1")
+    assert_true(bv6.test(2), msg="Intersection: Identical sets bit 2")
+    assert_true(bv6.test(3), msg="Intersection: Identical sets bit 3")
+
+    # Intersection of disjoint sets
+    var bv7 = BitVec(length=128, fill=False)
+    bv7.set(10)
+    bv7.set(20)
+    var bv8 = bv1.intersection(bv7)
+    assert_equal(
+        bv8.count_set_bits(), 0, msg="Intersection: Disjoint sets count"
+    )
+
+    # Intersection across word boundaries
+    var bv9 = BitVec(length=128, fill=False)
+    bv9.set(60)
+    bv9.set(65)
+    bv9.set(70)
+    var bv10 = BitVec(length=128, fill=False)
+    bv10.set(63)
+    bv10.set(65)
+    bv10.set(75)
+    var bv11 = bv9.intersection(bv10)
+    assert_equal(
+        bv11.count_set_bits(), 1, msg="Intersection: Across words count"
+    )
+    assert_true(bv11.test(65), msg="Intersection: Across words bit 65")
+    assert_false(bv11.test(60), msg="Intersection: Across words bit 60")
+    assert_false(bv11.test(63), msg="Intersection: Across words bit 63")
+    assert_false(bv11.test(70), msg="Intersection: Across words bit 70")
+    assert_false(bv11.test(75), msg="Intersection: Across words bit 75")
+
+
+def test_bitvec_difference() raises:
+    # left size longer
+    var bvA = BitVec(length=600, fill=False)
+    for i in [UInt(0), 25, 550]:
+        bvA.set(i)
+    var bvB = BitVec(length=500, fill=False)
+    for i in [UInt(1), 25, 499]:
+        bvB.set(i)
+    var bvC = bvA - bvB
+    assert_equal(len(bvC), 600)
+    assert_equal(bvC.count_set_bits(), 2)
+
+    # left size shorter
+    var bvD = BitVec(length=600, fill=False)
+    for i in [UInt(0), 25, 550]:
+        bvD.set(i)
+    var bvE = BitVec(length=500, fill=False)
+    for i in [UInt(1), 25, 499]:
+        bvE.set(i)
+    var bvF = bvE - bvD
+    assert_equal(len(bvF), 600)
+    assert_equal(bvF.count_set_bits(), 2)
+
+    # Basic case (bv1 - bv2)
+    var bv1 = BitVec(length=128, fill=False)
+    bv1.set(1)
+    bv1.set(2)
+    bv1.set(3)
+
+    var bv2 = BitVec(length=128, fill=False)
+    bv2.set(3)
+    bv2.set(4)
+    bv2.set(5)
+
+    var bv3 = bv1.difference(bv2)
+    assert_equal(
+        bv3.count_set_bits(), 2, msg="Difference: Basic case (bv1-bv2) count"
+    )
+    assert_true(bv3.test(1), msg="Difference: Basic case (bv1-bv2) bit 1")
+    assert_true(bv3.test(2), msg="Difference: Basic case (bv1-bv2) bit 2")
+    assert_false(bv3.test(3), msg="Difference: Basic case (bv1-bv2) bit 3")
+    assert_false(bv3.test(4), msg="Difference: Basic case (bv1-bv2) bit 4")
+
+    # Basic case (bv2 - bv1)
+    var bv4 = bv2.difference(bv1)
+    assert_equal(
+        bv4.count_set_bits(), 2, msg="Difference: Basic case (bv2-bv1) count"
+    )
+    assert_true(bv4.test(4), msg="Difference: Basic case (bv2-bv1) bit 4")
+    assert_true(bv4.test(5), msg="Difference: Basic case (bv2-bv1) bit 5")
+    assert_false(bv4.test(1), msg="Difference: Basic case (bv2-bv1) bit 1")
+    assert_false(bv4.test(3), msg="Difference: Basic case (bv2-bv1) bit 3")
+
+    # Difference with empty set
+    var bv_empty = BitVec(length=128, fill=False)
+    var bv5 = bv1.difference(bv_empty)
+    assert_equal(
+        bv5.count_set_bits(), 3, msg="Difference: With empty set count"
+    )
+    assert_true(bv5.test(1), msg="Difference: With empty set bit 1")
+    assert_true(bv5.test(2), msg="Difference: With empty set bit 2")
+    assert_true(bv5.test(3), msg="Difference: With empty set bit 3")
+
+    var bv6 = bv_empty.difference(bv1)
+    assert_equal(
+        bv6.count_set_bits(),
+        0,
+        msg="Difference: Empty with non-empty set count",
+    )
+
+    # Difference of identical sets
+    var bv7 = bv1.difference(bv1)
+    assert_equal(
+        bv7.count_set_bits(), 0, msg="Difference: Identical sets count"
+    )
+
+    # Difference of disjoint sets
+    var bv8 = BitVec(length=128, fill=False)
+    bv8.set(10)
+    bv8.set(20)
+    var bv9 = bv1.difference(bv8)  # bv1 - bv8
+    assert_equal(
+        bv9.count_set_bits(), 3, msg="Difference: Disjoint sets (bv1-bv8) count"
+    )
+    assert_true(bv9.test(1), msg="Difference: Disjoint sets (bv1-bv8) bit 1")
+    assert_true(bv9.test(2), msg="Difference: Disjoint sets (bv1-bv8) bit 2")
+    assert_true(bv9.test(3), msg="Difference: Disjoint sets (bv1-bv8) bit 3")
+    assert_false(bv9.test(10), msg="Difference: Disjoint sets (bv1-bv8) bit 10")
+
+    var bv10 = bv8.difference(bv1)  # bv8 - bv1
+    assert_equal(
+        bv10.count_set_bits(),
+        2,
+        msg="Difference: Disjoint sets (bv8-bv1) count",
+    )
+    assert_true(bv10.test(10), msg="Difference: Disjoint sets (bv8-bv1) bit 10")
+    assert_true(bv10.test(20), msg="Difference: Disjoint sets (bv8-bv1) bit 20")
+    assert_false(bv10.test(1), msg="Difference: Disjoint sets (bv8-bv1) bit 1")
+
+    # Difference across word boundaries
+    var bv11 = BitVec(length=128, fill=False)
+    bv11.set(60)
+    bv11.set(65)
+    bv11.set(70)
+    var bv12 = BitVec(length=128, fill=False)
+    bv12.set(63)
+    bv12.set(65)
+    bv12.set(75)
+    var bv13 = bv11.difference(bv12)  # bv11 - bv12
+    assert_equal(
+        bv13.count_set_bits(),
+        2,
+        msg="Difference: Across words (bv11-bv12) count",
+    )
+    assert_true(
+        bv13.test(60), msg="Difference: Across words (bv11-bv12) bit 60"
+    )
+    assert_true(
+        bv13.test(70), msg="Difference: Across words (bv11-bv12) bit 70"
+    )
+    assert_false(
+        bv13.test(63), msg="Difference: Across words (bv11-bv12) bit 63"
+    )
+    assert_false(
+        bv13.test(65), msg="Difference: Across words (bv11-bv12) bit 65"
+    )
+    assert_false(
+        bv13.test(75), msg="Difference: Across words (bv11-bv12) bit 75"
+    )
+
+    var bv14 = bv12.difference(bv11)  # bv12 - bv11
+    assert_equal(
+        bv14.count_set_bits(),
+        2,
+        msg="Difference: Across words (bv12-bv11) count",
+    )
+    assert_true(
+        bv14.test(63), msg="Difference: Across words (bv12-bv11) bit 63"
+    )
+    assert_true(
+        bv14.test(75), msg="Difference: Across words (bv12-bv11) bit 75"
+    )
+    assert_false(
+        bv14.test(60), msg="Difference: Across words (bv12-bv11) bit 60"
+    )
+    assert_false(
+        bv14.test(65), msg="Difference: Across words (bv12-bv11) bit 65"
+    )
+    assert_false(
+        bv14.test(70), msg="Difference: Across words (bv12-bv11) bit 70"
+    )
+
+
+def test_bitvec_union_update() raises:
+    var bv1 = BitVec(length=12, fill=False)
+    for i in [UInt(2), 4, 6, 8, 10, 11]:
+        bv1.set(i)
+    var bv2 = BitVec(length=10, fill=False)
+    for i in [UInt(1), 3, 5, 7, 9]:
+        bv2.set(i)
+    bv1 |= bv2
+    assert_equal(len(bv1), 12)
+    assert_equal(bv1.count_set_bits(), 11)
+
+    # LHS Longer
+    var bv3 = BitVec(length=600, fill=False)
+    for i in [UInt(0), 64, 550]:
+        bv3.set(i)
+    var bv4 = BitVec(length=500, fill=False)
+    for i in [UInt(1), 25, 499]:
+        bv4.set(i)
+    bv3 |= bv4
+    assert_equal(len(bv3), 600)
+    assert_equal(bv3.count_set_bits(), 6)
+
+    # RHS Longer
+    var bv5 = BitVec(length=600, fill=False)
+    for i in [UInt(0), 64, 550]:
+        bv5.set(i)
+    var bv6 = BitVec(length=500, fill=False)
+    for i in [UInt(1), 25, 499]:
+        bv6.set(i)
+    bv6 |= bv5
+    assert_equal(len(bv6), 600)
+    assert_equal(bv6.count_set_bits(), 6)
+
+
+def test_bitvec_intersection_update() raises:
+    var bv1 = BitVec(length=12, fill=False)
+    for i in [UInt(2), 3, 6, 8, 10, 11]:
+        bv1.set(i)
+    var bv2 = BitVec(length=10, fill=False)
+    for i in [UInt(1), 3, 5, 7, 9]:
+        bv2.set(i)
+    bv1 &= bv2
+    assert_equal(len(bv1), 12)
+    assert_equal(bv1.count_set_bits(), 1)
+
+    # LHS Longer
+    var bv3 = BitVec(length=600, fill=False)
+    for i in [UInt(0), 64, 550]:
+        bv3.set(i)
+    var bv4 = BitVec(length=500, fill=False)
+    for i in [UInt(1), 64, 499]:
+        bv4.set(i)
+    bv3 &= bv4
+    assert_equal(len(bv3), 600)
+    assert_equal(bv3.count_set_bits(), 1)
+
+    # RHS Longer
+    var bv5 = BitVec(length=600, fill=False)
+    for i in [UInt(0), 64, 550]:
+        bv5.set(i)
+    var bv6 = BitVec(length=500, fill=False)
+    for i in [UInt(1), 64, 499]:
+        bv6.set(i)
+    bv6 &= bv5
+    assert_equal(len(bv6), 600)
+    assert_equal(bv6.count_set_bits(), 1)
+
+
+def test_bitvec_difference_update() raises:
+    var bv1 = BitVec(length=12, fill=False)
+    for i in [UInt(2), 3, 6, 8, 10, 11]:
+        bv1.set(i)
+    var bv2 = BitVec(length=10, fill=False)
+    for i in [UInt(1), 3, 5, 7, 9]:
+        bv2.set(i)
+    bv1 -= bv2
+    assert_equal(len(bv1), 12)
+    assert_equal(bv1.count_set_bits(), 5)
+
+    # LHS Longer
+    var bv3 = BitVec(length=600, fill=False)
+    for i in [UInt(0), 64, 550]:
+        bv3.set(i)
+    var bv4 = BitVec(length=500, fill=False)
+    for i in [UInt(1), 64, 499]:
+        bv4.set(i)
+    bv3 -= bv4
+    assert_equal(len(bv3), 600)
+    assert_equal(bv3.count_set_bits(), 2)
+
+    # RHS Longer
+    var bv5 = BitVec(length=600, fill=False)
+    for i in [UInt(0), 64, 550]:
+        bv5.set(i)
+    var bv6 = BitVec(length=500, fill=False)
+    for i in [UInt(1), 64, 499]:
+        bv6.set(i)
+    bv6 -= bv5
+    assert_equal(len(bv6), 600)
+    assert_equal(bv6.count_set_bits(), 2)
+
+
+def test_bitvec_partial_union_preserves_tail() raises:
+    var a = BitVec(length=130, fill=False)
+    a.set(0)
+    a.set(129)  # tail bit
+
+    var b = BitVec(length=125, fill=False)
+    b.set(63)
+    b.set(124)
+
+    var c = a | b  # uses __or__, lhs_zero_out = False
+    assert_equal(len(c), 130)
+    assert_equal(c[0], True)
+    assert_equal(c[63], True)
+    assert_equal(c[124], True)
+    assert_equal(c[129], True)  # tail preserved
+
+
+def test_bitvec_union_update_preserves_tail() raises:
+    var a = BitVec(length=130, fill=False)
+    a.set(5)
+    a.set(129)
+
+    var b = BitVec(length=64, fill=False)
+    b.set(0)
+    b.set(5)
+
+    a.union_update(b)
+    assert_equal(len(a), 130)
+    assert_equal(a[0], True)
+    assert_equal(a[5], True)
+    assert_equal(a[129], True)  # tail preserved
+
+
+def test_bitvec_full_overlap_union() raises:
+    var a = BitVec(length=64, fill=False)
+    var b = BitVec(length=64, fill=False)
+    b.set(7)
+
+    var c = a | b
+    assert_equal(len(c), 64)
+    assert_equal(c[7], True)
+
+
+def test_bitvec_adhoc() raises:
+    comptime example = (
+        "As the quick brown fox jumped over the fence a moon was rising in the"
+        " distance. Then the moon exploded. The End.".as_bytes()
+    )
+    var periods = BitVec(length=UInt(len(example)), fill=False)
+    var spaces = BitVec(length=UInt(len(example)), fill=False)
+    var ts = BitVec(length=UInt(len(example)), fill=False)
+    var none = BitVec(length=UInt(len(example)), fill=False)
+
+    for i in range(UInt(0), UInt(len(example))):
+        if example[i] == UInt8(ord(".")):
+            periods.set(i)
+        elif example[i] == UInt8(ord(" ")):
+            spaces.set(i)
+        elif example[i] == UInt8(ord("T")):
+            ts.set(i)
+        else:
+            none.set(i)
+
+    var either = periods | spaces
+    assert_equal(either.count_set_bits(), 24)
+    either |= ts
+    assert_equal(either.count_set_bits(), 26)
+    assert_equal(
+        none.count_set_bits() + either.count_set_bits(), UInt(len(example))
+    )
+    assert_true(periods != spaces)
+
+    var test = either & none
+    assert_equal(test.count_set_bits(), 0)
+    assert_equal(test.count_clear_bits(), UInt(len(example)))
+
+    test &= either
+    assert_equal(test.count_set_bits(), 0)
+    assert_equal(test.count_clear_bits(), UInt(len(example)))
+
+    either -= test
+    assert_equal(either.count_set_bits(), 26)
+    test = either - ts
+    assert_equal(test.count_set_bits(), 24)
+
+
+def test_bitvec_equal() raises:
+    var bv1 = BitVec(length=65, fill=False)
+    var bv2 = BitVec(length=65, fill=False)
+    bv1.set(64)
+    bv2.set(64)
+
+    assert_true(bv1 == bv2)
+
+    var bv3 = BitVec(length=65, fill=False)
+    var bv4 = BitVec(length=65, fill=False)
+    bv3.set(64)
+
+    assert_true(bv3 != bv4)
+
+
+def test_bitvec_equal_more() raises:
+    # Word-aligned length (len % 64 == 0) - last word must be compared
+    var bv5 = BitVec(length=128, fill=False)
+    var bv6 = BitVec(length=128, fill=False)
+    assert_true(bv5 == bv6)
+    bv5.set(127)
+    assert_true(bv5 != bv6)
+    bv6.set(127)
+    assert_true(bv5 == bv6)
+
+    # Empty bitvecs
+    var bv7 = BitVec()
+    var bv8 = BitVec()
+    assert_true(bv7 == bv8)
+
+
+def test_set_operations_vector_and_scalar_tails() raises:
+    # Exercise all six migrated callbacks across SIMD and word boundaries.
+    for length in [0, 1, 63, 64, 65, 255, 256, 257, 600, 1025, 4097]:
+        var left = BitVec(length=UInt(length), fill=False)
+        var right = BitVec(length=UInt(length), fill=False)
+        for i in range(length):
+            left[UInt(i)] = i % 3 == 0
+            right[UInt(i)] = i % 5 == 0
+
+        var union = left.union(right)
+        var intersection = left.intersection(right)
+        var difference = left.difference(right)
+        var union_update = left.copy()
+        var intersection_update = left.copy()
+        var difference_update = left.copy()
+        union_update.union_update(right)
+        intersection_update.intersection_update(right)
+        difference_update.difference_update(right)
+
+        assert_equal(len(union), length)
+        assert_equal(len(intersection), length)
+        assert_equal(len(difference), length)
+        assert_true(union == union_update)
+        assert_true(intersection == intersection_update)
+        assert_true(difference == difference_update)
+        for i in range(length):
+            var a = i % 3 == 0
+            var b = i % 5 == 0
+            assert_equal(union[UInt(i)], a or b)
+            assert_equal(intersection[UInt(i)], a and b)
+            assert_equal(difference[UInt(i)], a and not b)
+
+
+def main() raises:
+    TestSuite.discover_tests[__functions_in_module()]().run()

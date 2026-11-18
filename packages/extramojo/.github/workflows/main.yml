@@ -1,0 +1,47 @@
+name: Build and test
+on: [push, pull_request]
+jobs:
+    build_and_test:
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, ubuntu-24.04-arm, macos-15]
+        runs-on: ${{ matrix.os }}
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Install Mojo and dependencies
+              uses: prefix-dev/setup-pixi@v0.10.1
+              with:
+                  pixi-version: v0.80.0
+                  cache: true
+                  locked: true
+
+            - name: Run build
+              run: pixi run build
+
+            - name: Run tests
+              run: pixi run t
+
+            - name: Install llvm-symbolizer
+              if: matrix.os == 'ubuntu-latest'
+              run: sudo apt-get install -y llvm
+
+            - name: Run AddressSanitizer tests
+              if: matrix.os == 'ubuntu-latest'
+              env:
+                  LLVM_SYMBOLIZER_PATH: /usr/bin/llvm-symbolizer
+              run: pixi run t-asan
+
+            - name: Check formatting
+              run: |
+                  pixi run mojo format extramojo tests
+                  git diff --exit-code
+
+            - name: Build Conda package
+              run: pixi run rbuild
+
+            - name: Test installed Conda package
+              run: bash scripts/test-package.sh dist/extramojo-*.conda

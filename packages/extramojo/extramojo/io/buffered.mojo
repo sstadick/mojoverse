@@ -1,0 +1,453 @@
+"""
+Buffered reading and writing.
+
+## Examples
+
+BufferedReader:
+
+```mojo
+from std.testing import assert_equal
+from extramojo.io.buffered import BufferedReader
+
+def test_read_until(file: String, expected_lines: List[String]) raises:
+    var buffer_capacities = List(10, 100, 200, 500)
+    for cap in buffer_capacities:
+        var fh = open(file, "r")
+        var reader = BufferedReader(fh^, buffer_capacity=cap)
+        var buffer = List[UInt8]()
+        var counter = 0
+        while reader.read_until(buffer) != 0:
+            assert_equal(List(expected_lines[counter].as_bytes()), buffer)
+            counter += 1
+            buffer.clear()
+        assert_equal(counter, len(expected_lines))
+        print(String("Successful read_until with buffer capacity of {}").format(cap))
+
+```
+
+BufferedWriter:
+
+```mojo
+from extramojo.io.buffered import BufferedWriter
+
+def test_buffered_writer(file: String, expected_lines: List[String]) raises:
+    var fh = BufferedWriter(open(String(file), "w"), buffer_capacity=128)
+    for i in range(len(expected_lines)):
+        fh.write_bytes(expected_lines[i].as_bytes())
+        fh.write_bytes("\n".as_bytes())
+    fh.flush()
+    fh.close()
+
+    test_read_until(String(file), expected_lines)
+
+```
+
+"""
+from std import math
+from std.algorithm import vectorize
+from std.memory import Layout, alloc, unsafe_memcpy
+from std.sys.info import simd_width_of
+from std.io import Writable
+
+
+from extramojo.bstr.bstr import (
+    find_chr_all_occurrences,
+)
+from extramojo.bstr.memchr import memchr
+
+
+comptime NEW_LINE = 10
+comptime SIMD_U8_WIDTH: Int = simd_width_of[DType.uint8]()
+# 128 KiB: http://git.savannah.gnu.org/gitweb/?p=coreutils.git;a=blob;f=src/ioblksize.h;h=266c209f48fc07cb4527139a2548b6398b75f740;hb=HEAD#l23
+comptime BUF_SIZE: Int = 1024 * 128
+
+
+def read_lines(
+    path: String, buf_size: Int = BUF_SIZE
+) raises -> List[List[UInt8]]:
+    """
+    Read all the lines in the file and return them as a List of Lists of bytes.
+
+    Args:
+        path: The file path to open and read.
+        buf_size: The size of the buffer to use.
+
+    Returns:
+        A list of lines, where each line is a `List[UInt8]`.
+    """
+    # TODO: make this an iterator
+    var fh = open(path, "r")
+    var result = List[List[UInt8]]()
+    var file_pos: Int = 0
+
+    while True:
+        _ = fh.seek(file_pos)
+        var buffer = fh.read_bytes(buf_size)
+        var newlines = find_chr_all_occurrences(buffer, NEW_LINE)
+        var start: Int = 0
+        for i in range(0, len(newlines)):
+            var newline = newlines[i]
+            result.append(List(buffer[Int(start) : newline]))
+            start = newline + 1
+
+        if len(buffer) < BUF_SIZE:
+            break
+        file_pos += start
+    return result^
+
+
+def for_each_line(
+    path: String,
+    func: Some[def(Span[UInt8, _], Int, Int) -> None],
+    buf_size: Int = BUF_SIZE,
+) raises:
+    """
+    Call the provided callback on each line.
+
+    The callback will be given a buffer, and the [start, end) of where the line is in that buffer.
+
+    Args:
+        path: The file path to open and read.
+        func: The callback to run for each line, passed as a value.
+        buf_size: The size of the buffer to use.
+
+    """
+    var fh = open(path, "r")
+    # var result = List[Tensor[DType.int8]]()
+    var file_pos: Int = 0
+
+    while True:
+        _ = fh.seek(file_pos)
+        var buffer = fh.read_bytes(buf_size)
+        var buffer_index = 0
+
+        while True:
+            var newline = memchr(buffer, NEW_LINE, buffer_index)
+            if newline == -1:
+                break
+
+            func(buffer, buffer_index, newline)
+            buffer_index = newline + 1
+
+        file_pos += buffer_index
+        if len(buffer) < BUF_SIZE:
+            break
+
+
+@always_inline
+def get_next_line[
+    is_mutable: Bool, //, origin: Origin[mut=is_mutable]
+](buffer: Span[UInt8, origin], start: Int) -> Span[UInt8, origin]:
+    """Function to get the next line using either SIMD instruction (default) or iteratively.
+
+    Args:
+        buffer: The buffer to search for the next newline character.
+        start: The start position to use inside the buffer.
+
+    Returns:
+        A span of bytes from [start, newline).
+    """
+
+    var in_start = start
+    while buffer[in_start] == NEW_LINE:  # Skip leading \n
+        in_start += 1
+        if in_start >= len(buffer):
+            return buffer[0:0]
+
+    var next_line_pos = memchr(buffer, NEW_LINE, in_start)
+    if next_line_pos == -1:
+        next_line_pos = len(
+            buffer
+        )  # If no line separator found, return the reminder of the string, behavior subject to change
+    return buffer[in_start:next_line_pos]
+
+
+struct BufferedReader(Movable):
+    """
+    BufferedReader for readying lines and bytes from a file in a buffered way.
+
+    ## Example
+
+    ```mojo
+    from extramojo.io.buffered import BufferedReader
+
+    def read_bytes(imm file: String) raises -> List[UInt8]:
+        var fh = open(file, "r")
+        var reader = BufferedReader(fh^, buffer_capacity=50)
+        var buffer = List[UInt8](capacity=125)
+        for _ in range(0, 125):
+            buffer.append(0)
+        var found_file = List[UInt8]()
+
+        # Read bytes from the buf reader, copy to found
+        var bytes_read = 0
+        while True:
+            bytes_read = reader.read_bytes(buffer)
+            if bytes_read == 0:
+                break
+            found_file.extend(buffer[0:bytes_read])
+        return found_file^
+    ```
+    """
+
+    var fh: FileHandle
+    """The internal filehandle to read from."""
+    var buffer: Pointer[UInt8, MutUntrackedOrigin]
+    """The internal buffer."""
+    var file_offset: Int
+    """Current offset into the file."""
+    var buffer_offset: Int
+    """Current offset into the buffer."""
+    var buffer_capacity: Int
+    """Total capacity of the buffer."""
+    var buffer_len: Int
+    """Total filled capacity of the buffer."""
+
+    def __init__(
+        out self, var fh: FileHandle, buffer_capacity: Int = BUF_SIZE
+    ) raises:
+        """Create a `BufferedReader`.
+
+        Args:
+            fh: The filehandle to read from.
+            buffer_capacity: The size of the buffer to use.
+        """
+        self.fh = fh^
+        self.file_offset = 0
+        self.buffer_offset = 0
+        self.buffer_capacity = buffer_capacity
+        self.buffer = alloc(
+            Layout[UInt8](count=self.buffer_capacity)
+        ).unsafe_leak()
+        self.buffer_len = 0
+        _ = self._fill_buffer()
+
+    def __deinit__(deinit self):
+        try:
+            self.fh.close()
+        except:
+            pass
+        self.buffer.unsafe_free()
+
+    def __enter__(var self) -> Self:
+        return self^
+
+    def __init__(out self, *, deinit move: Self):
+        self.fh = move.fh^
+        self.file_offset = move.file_offset
+        self.buffer_offset = move.buffer_offset
+        self.buffer = move.buffer
+        self.buffer_capacity = move.buffer_capacity
+        self.buffer_len = move.buffer_len
+
+    def read_bytes(mut self, mut buffer: List[UInt8]) raises -> Int:
+        """Read up to `len(buffer)` bytes.
+
+        Args:
+            buffer: The buffer to read into. The `len` of the `buffer` determines how many bytes will be read.
+
+        Returns:
+            This returns the number of bytes read.
+            If the number of bytes read is less then `len(buffer)` then EOF has been reached.
+        """
+        var bytes_to_read = len(buffer)
+        var bytes_read = 0
+
+        while bytes_to_read > 0:
+            var out_buf_ptr = buffer.unsafe_ptr().unsafe_offset(bytes_read)
+            # Copy as much as possible into the buffer
+            var available_bytes = min(
+                self.buffer_len - self.buffer_offset, bytes_to_read
+            )
+            unsafe_memcpy(
+                dest=out_buf_ptr,
+                src=self.buffer.unsafe_offset(self.buffer_offset),
+                count=available_bytes,
+            )
+            self.buffer_offset += available_bytes
+            bytes_to_read -= available_bytes
+            bytes_read += available_bytes
+
+            if self.buffer_offset == self.buffer_len:
+                var bytes_filled = self._fill_buffer()
+                if bytes_filled == 0:
+                    return bytes_read
+
+        return bytes_read
+
+    def read_until(
+        mut self,
+        mut buffer: List[UInt8],
+        char: UInt = NEW_LINE,
+    ) raises -> Int:
+        """
+        Fill the given `line_buffer` until the given `char` is hit, or EOF.
+
+        **Note**: the callee is responsible for clearing (or not) the buffer between calls to `read_until`.
+
+        Args:
+            buffer: The buffer to filled with any bytes found before `char` is hit.
+            char: The character to use as the terminator.
+
+        Returns:
+            The number of bytes read.
+        """
+
+        var bytes_read: Int
+
+        while True:
+            # Find the next newline in the buffer
+            var newline_index = memchr(
+                Span[UInt8](unsafe_ptr=self.buffer, length=self.buffer_len),
+                UInt8(char),
+                self.buffer_offset,
+            )
+
+            # Copy the line into the provided buffer, if there was no newline, copy in the remainder of the buffer
+            var end = newline_index if newline_index != -1 else self.buffer_len
+            var size = end - self.buffer_offset
+            buffer.reserve(len(buffer) + size)
+            buffer._annotate_increase(n=size)  # for asan
+            var line_ptr = buffer.unsafe_ptr().unsafe_offset(len(buffer))
+            unsafe_memcpy(
+                dest=line_ptr,
+                src=self.buffer.unsafe_offset(self.buffer_offset),
+                count=size,
+            )
+            # TODO: is there a better way to do this?
+            buffer._len += size
+
+            # Advance our position in our buffer
+            self.buffer_offset = newline_index + 1
+            bytes_read = len(buffer) + newline_index + 1
+
+            # Try to refill the buffer
+            if newline_index == -1:
+                self.file_offset += self.buffer_offset
+                var bytes_filled = self._fill_buffer()
+                if bytes_filled == 0:
+                    break
+            else:
+                break
+
+        return bytes_read
+
+    def _fill_buffer(mut self) raises -> Int:
+        """Fill the buffer, dropping anything currently not read.
+
+        Returns:
+            The number of bytes read
+        """
+        var buf_ptr = self.buffer
+        var bytes_read = self.fh.read(
+            Span[UInt8](unsafe_ptr=buf_ptr, length=self.buffer_capacity)
+        )
+        self.buffer_len = bytes_read.__int__()
+        self.buffer_offset = 0
+        return self.buffer_len
+
+
+struct BufferedWriter[W: Movable & Deinitable & Writer](Movable, Writer):
+    """A BufferedWriter.
+
+    ## Example
+
+    ```mojo
+    from extramojo.io.buffered import BufferedWriter
+    def write_to_file(imm file: String, imm expected_lines: List[String]) raises:
+        var fh = BufferedWriter(open(String(file), "w"), buffer_capacity=128)
+        for i in range(len(expected_lines)):
+            fh.write_bytes(expected_lines[i].as_bytes())
+            fh.write_bytes("\n".as_bytes())
+        fh.flush()
+        fh.close()
+    ```
+    """
+
+    var inner: Self.W
+    """The inner file handle to write to."""
+    var buffer: List[UInt8]
+    """The inner buffer."""
+    var buffer_capacity: Int
+    """The capacity of the inner buffer."""
+    var buffer_len: Int
+    """The number of bytes currently stored in the inner buffer."""
+
+    def __init__(
+        out self, var writer: Self.W, buffer_capacity: Int = BUF_SIZE
+    ) raises:
+        """Create a `BufferedReader`.
+
+        Args:
+            writer: The writer to write to.
+            buffer_capacity: The capacity of the inner buffer to use.
+        """
+        self.inner = writer^
+        self.buffer = List[UInt8](capacity=buffer_capacity)
+        self.buffer_capacity = buffer_capacity
+        self.buffer_len = 0
+
+    def __deinit__(deinit self):
+        self.flush()
+
+    def __enter__(var self) -> Self:
+        return self^
+
+    def __init__(out self, *, deinit move: Self):
+        self.inner = move.inner^
+        self.buffer = move.buffer^
+        self.buffer_capacity = move.buffer_capacity
+        self.buffer_len = move.buffer_len
+
+    def close(mut self) raises:
+        self.flush()
+        # self.fh.close()
+
+    def write_string(mut self, string: StringSpan):
+        self.write_bytes(string.as_bytes())
+
+    def write_bytes(mut self, bytes: Span[UInt8, _]):
+        """Write bytes to this writer.
+
+        Args:
+            bytes: The bytes that will be written to the underlying buffer.
+        """
+        var b = bytes
+        while True:
+            var end = min(self.buffer_capacity - self.buffer_len, len(b))
+
+            var to_copy = b[:end]
+            self.buffer._annotate_increase(n=len(to_copy))  # for asan
+            unsafe_memcpy(
+                dest=self.buffer.unsafe_ptr().unsafe_offset(self.buffer_len),
+                src=to_copy.unsafe_ptr(),
+                count=len(to_copy),
+            )
+            self.buffer._len += len(to_copy)
+            self.buffer_len += len(to_copy)
+            if len(to_copy) == len(b):
+                break
+            else:
+                self.flush()
+            b = b[end:]
+
+    def write[*Ts: Writable](mut self, *args: *Ts):
+        """Implement write.
+
+        Args:
+            args: Any `Writable` values that will be written to the writer.
+        """
+
+        def write_arg[T: Writable](arg: T) {mut self}:
+            arg.write_to(self)
+
+        comptime for i in range(0, args.__len__()):
+            write_arg(args[i])
+
+    def flush(mut self):
+        """Write any remaining bytes in the current buffer, then clear the buffer.
+        """
+        # TODO: replace the inner writer with something of our own
+        self.inner.write_string(StringSpan(unsafe_from_utf8=Span(self.buffer)))
+        self.buffer_len = 0
+        self.buffer.clear()
