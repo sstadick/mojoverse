@@ -2,6 +2,11 @@
 # Raw package exports
 # Source: src/raymath.h
 
+"""Raw C-layout types and FFI entry points for raylib and raymath.
+
+Use the top-level `mojo_raylib` package for the ergonomic, snake-case API.
+"""
+
 from .types import *
 from .raylib import *
 from .raymath import *

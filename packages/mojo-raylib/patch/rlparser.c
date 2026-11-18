@@ -255,10 +255,15 @@ static bool ShouldUseRefValueParam(const FunctionInfo *func, int paramIndex, cha
 static void GetMojoPublicSpanType(const char *pointerType, char *outType, int outTypeSize);
 static void GetMojoAliasTarget(const AliasInfo *alias, char *outType, int outTypeSize);
 static void SanitizeComment(const char *source, char *outComment, int outCommentSize);
+static void HumanizeIdentifier(const char *source, char *outText, int outTextSize);
+static void GetMojoParameterDescription(const FunctionInfo *func, int paramIndex, char *outText, int outTextSize);
 static void GetRelativeSourceName(const char *sourceName, char *outSourceName, int outSourceNameSize);
 static void WriteGeneratedHeader(FILE *outFile, const char *title, const char *sourceName);
 static void WriteMojoCommonImports(FILE *outFile);
 static void WriteMojoDocstring(FILE *outFile, const char *comment, int indentLevel);
+static void WriteMojoFunctionDocstring(FILE *outFile, const FunctionInfo *func, int indentLevel,
+    bool usePublicNames, bool collapseSpanCounts, int skippedParam, bool returnsValue,
+    bool returnsOwnedValue, const char *apiName);
 static void WriteMojoSignatureParams(FILE *outFile, const FunctionInfo *func, bool forCallbackParam);
 static void WriteMojoCallArgs(FILE *outFile, const FunctionInfo *func);
 static void WritePublicToRawArg(FILE *outFile, const char *cType, const char *expr);
@@ -1180,6 +1185,11 @@ int main(int argc, char *argv[])
 
         // Get function description
         GetDescription(&linePtr[funcEnd], funcs[i].desc);
+        // raylib prototypes keep their description at the end of the function
+        // line, while raymath definitions put it on the immediately preceding
+        // `//` line. Preserve either form for generated Mojo/LSP docs.
+        if ((funcs[i].desc[0] == '\0') && (funcLines[i] > 0))
+            GetDescription(lines[funcLines[i] - 1], funcs[i].desc);
 
         // Move array sizes from name to type
         for (int j = 0; j < funcs[i].paramCount; j++)
@@ -1713,18 +1723,37 @@ static void ExportMojoTypes(const char *rootDir)
         return;
 
     WriteGeneratedHeader(outFile, "Low-level raylib/raymath type declarations", inFileName);
+    fprintf(outFile, "\"\"\"Low-level C-layout types used by the generated raylib bindings.\n\n");
+    fprintf(outFile, "Prefer the value types exported from `mojo_raylib` in application code.\n");
+    fprintf(outFile, "These declarations mirror raylib's ABI and may contain untracked pointers.\n\"\"\"\n\n");
     WriteMojoCommonImports(outFile);
     fprintf(outFile, "\n");
 
     // Forward-declared opaque types from raylib.h (e.g. `typedef struct rAudioBuffer rAudioBuffer;`).
     // The parser intentionally skips these (line ~355) but other structs reference them.
     fprintf(outFile, "# Opaque forward-declared types (raylib internals)\n");
-    fprintf(outFile, "@fieldwise_init\nstruct rAudioBuffer(Copyable, ImplicitlyCopyable, Movable):\n    var _opaque: c_int\n\n");
-    fprintf(outFile, "@fieldwise_init\nstruct rAudioProcessor(Copyable, ImplicitlyCopyable, Movable):\n    var _opaque: c_int\n\n");
+    fprintf(outFile, "@fieldwise_init\nstruct rAudioBuffer(Copyable, ImplicitlyCopyable, Movable):\n");
+    fprintf(outFile, "    \"\"\"Opaque raylib audio-buffer handle used by the C ABI.\"\"\"\n");
+    fprintf(outFile, "    var _opaque: c_int\n");
+    fprintf(outFile, "    \"\"\"Placeholder storage; do not access this field directly.\"\"\"\n\n");
+    fprintf(outFile, "@fieldwise_init\nstruct rAudioProcessor(Copyable, ImplicitlyCopyable, Movable):\n");
+    fprintf(outFile, "    \"\"\"Opaque raylib audio-processor handle used by the C ABI.\"\"\"\n");
+    fprintf(outFile, "    var _opaque: c_int\n");
+    fprintf(outFile, "    \"\"\"Placeholder storage; do not access this field directly.\"\"\"\n\n");
     fprintf(outFile, "@fieldwise_init\nstruct float3(TrivialRegisterPassable):\n");
-    for (int k = 0; k < 3; k++) fprintf(outFile, "    var v%d: c_float\n", k);
+    fprintf(outFile, "    \"\"\"C-layout storage for a three-component raymath float vector.\"\"\"\n");
+    for (int k = 0; k < 3; k++)
+    {
+        fprintf(outFile, "    var v%d: c_float\n", k);
+        fprintf(outFile, "    \"\"\"Component %d.\"\"\"\n", k);
+    }
     fprintf(outFile, "\n@fieldwise_init\nstruct float16(TrivialRegisterPassable):\n");
-    for (int k = 0; k < 16; k++) fprintf(outFile, "    var v%d: c_float\n", k);
+    fprintf(outFile, "    \"\"\"C-layout storage for sixteen raymath float values.\"\"\"\n");
+    for (int k = 0; k < 16; k++)
+    {
+        fprintf(outFile, "    var v%d: c_float\n", k);
+        fprintf(outFile, "    \"\"\"Component %d.\"\"\"\n", k);
+    }
     fprintf(outFile, "\n");
 
     // Aliases first so structs that use them resolve. Mojo doesn't forward-reference comptime aliases.
@@ -1740,23 +1769,28 @@ static void ExportMojoTypes(const char *rootDir)
         CopyText(aliasName, aliases[i].name + start, sizeof(aliasName));
         GetMojoAliasTarget(&aliases[i], aliasTarget, sizeof(aliasTarget));
         SanitizeComment(aliases[i].desc, comment, sizeof(comment));
-        if (comment[0] != '\0')
-            fprintf(outFile, "# %s\n", comment);
-        fprintf(outFile, "comptime %s = %s\n\n", aliasName, aliasTarget);
+        if (comment[0] == '\0')
+            snprintf(comment, sizeof(comment), "C-compatible alias for `%s`", aliasName);
+        fprintf(outFile, "comptime %s = %s\n", aliasName, aliasTarget);
+        WriteMojoDocstring(outFile, comment, 0);
+        fprintf(outFile, "\n");
     }
 
     for (int i = 0; i < structCount; i++)
     {
         char comment[256] = {0};
         SanitizeComment(structs[i].desc, comment, sizeof(comment));
-        if (comment[0] != '\0')
-            fprintf(outFile, "# %s\n", comment);
-
         fprintf(outFile, "@fieldwise_init\n");
         fprintf(outFile, "struct %s(TrivialRegisterPassable):\n", structs[i].name);
+        if (comment[0] == '\0')
+            snprintf(comment, sizeof(comment), "C-layout representation of `%s`", structs[i].name);
+        WriteMojoDocstring(outFile, comment, 4);
 
         if (structs[i].fieldCount == 0)
+        {
             fprintf(outFile, "    var _unused: c_int\n");
+            fprintf(outFile, "    \"\"\"Placeholder storage for an empty C structure.\"\"\"\n");
+        }
         for (int j = 0; j < structs[i].fieldCount; j++)
         {
             char mojoType[256] = {0};
@@ -1765,20 +1799,28 @@ static void ExportMojoTypes(const char *rootDir)
             int arraySize = 0;
 
             SanitizeComment(structs[i].fieldDesc[j], fieldComment, sizeof(fieldComment));
-            if (fieldComment[0] != '\0')
-                fprintf(outFile, "    # %s\n", fieldComment);
+            if (fieldComment[0] == '\0')
+            {
+                char humanName[128] = {0};
+                HumanizeIdentifier(structs[i].fieldName[j], humanName, sizeof(humanName));
+                snprintf(fieldComment, sizeof(fieldComment), "The %s field", humanName);
+            }
 
             // Expand `Struct[N]` into N separate fields so the enclosing struct
             // can stay TrivialRegisterPassable.
             if (IsArrayOfKnownStruct(structs[i].fieldType[j], elementName, sizeof(elementName), &arraySize))
             {
                 for (int k = 0; k < arraySize; k++)
+                {
                     fprintf(outFile, "    var %s_%d: %s\n", structs[i].fieldName[j], k, elementName);
+                    WriteMojoDocstring(outFile, fieldComment, 4);
+                }
             }
             else
             {
                 GetMojoType(structs[i].fieldType[j], false, false, true, mojoType, sizeof(mojoType));
                 fprintf(outFile, "    var %s: %s\n", structs[i].fieldName[j], mojoType);
+                WriteMojoDocstring(outFile, fieldComment, 4);
             }
         }
 
@@ -1789,16 +1831,18 @@ static void ExportMojoTypes(const char *rootDir)
     {
         char comment[256] = {0};
         SanitizeComment(enums[i].desc, comment, sizeof(comment));
-        if (comment[0] != '\0')
-            fprintf(outFile, "# %s\n", comment);
         fprintf(outFile, "comptime %s = c_int\n", enums[i].name);
+        if (comment[0] == '\0')
+            snprintf(comment, sizeof(comment), "C-compatible values for `%s`", enums[i].name);
+        WriteMojoDocstring(outFile, comment, 0);
         for (int j = 0; j < enums[i].valueCount; j++)
         {
             char valueComment[256] = {0};
             SanitizeComment(enums[i].valueDesc[j], valueComment, sizeof(valueComment));
-            if (valueComment[0] != '\0')
-                fprintf(outFile, "# %s\n", valueComment);
             fprintf(outFile, "comptime %s = %i\n", enums[i].valueName[j], enums[i].valueInteger[j]);
+            if (valueComment[0] == '\0')
+                snprintf(valueComment, sizeof(valueComment), "Value for `%s`", enums[i].valueName[j]);
+            WriteMojoDocstring(outFile, valueComment, 0);
         }
         fprintf(outFile, "\n");
     }
@@ -1810,11 +1854,13 @@ static void ExportMojoTypes(const char *rootDir)
         GetMojoType(callbacks[i].retType, true, false, false, returnType, sizeof(returnType));
         SanitizeComment(callbacks[i].desc, comment, sizeof(comment));
 
-        if (comment[0] != '\0')
-            fprintf(outFile, "# %s\n", comment);
         fprintf(outFile, "comptime %s = def(", callbacks[i].name);
         WriteMojoSignatureParams(outFile, &callbacks[i], true);
-        fprintf(outFile, ") -> %s\n\n", returnType);
+        fprintf(outFile, ") -> %s\n", returnType);
+        if (comment[0] == '\0')
+            snprintf(comment, sizeof(comment), "C callback signature for `%s`", callbacks[i].name);
+        WriteMojoDocstring(outFile, comment, 0);
+        fprintf(outFile, "\n");
     }
 
     for (int i = 0; i < defineCount; i++)
@@ -1825,6 +1871,11 @@ static void ExportMojoTypes(const char *rootDir)
             (defines[i].type == LONG_MATH))
         {
             fprintf(outFile, "comptime %s = %s\n", defines[i].name, defines[i].value);
+            char comment[256] = {0};
+            SanitizeComment(defines[i].desc, comment, sizeof(comment));
+            if (comment[0] == '\0')
+                snprintf(comment, sizeof(comment), "Numeric value for `%s`", defines[i].name);
+            WriteMojoDocstring(outFile, comment, 0);
         }
         else if ((defines[i].type == FLOAT) || (defines[i].type == FLOAT_MATH))
         {
@@ -1850,6 +1901,11 @@ static void ExportMojoTypes(const char *rootDir)
             }
             scrubbed[sj] = '\0';
             fprintf(outFile, "comptime %s = %s\n", defines[i].name, scrubbed);
+            char comment[256] = {0};
+            SanitizeComment(defines[i].desc, comment, sizeof(comment));
+            if (comment[0] == '\0')
+                snprintf(comment, sizeof(comment), "Numeric value for `%s`", defines[i].name);
+            WriteMojoDocstring(outFile, comment, 0);
         }
     }
 
@@ -1866,30 +1922,61 @@ static void ExportMojoPublicTypes(const char *rootDir)
         return;
 
     WriteGeneratedHeader(outFile, "Public Mojo value types", inFileName);
+    fprintf(outFile, "\"\"\"Mojo-native value types for raylib and raymath.\n\n");
+    fprintf(outFile, "Each type preserves the corresponding C layout while exposing Mojo scalar\n");
+    fprintf(outFile, "fields and conversion helpers for the low-level FFI representation.\n\"\"\"\n\n");
     fprintf(outFile, "import mojo_raylib.raw.types as raw_types\n");
     fprintf(outFile, "from std.ffi import c_char, c_uchar, c_short, c_ushort, c_int, c_uint, c_long, c_ulong, c_float, c_double\n");
     fprintf(outFile, "from std.collections import InlineArray\n\n");
 
     // Forward-declared opaque types — same stubs as raw/types.mojo for layout parity.
-    fprintf(outFile, "@fieldwise_init\nstruct rAudioBuffer(TrivialRegisterPassable):\n    var _opaque: c_int\n\n");
-    fprintf(outFile, "@fieldwise_init\nstruct rAudioProcessor(TrivialRegisterPassable):\n    var _opaque: c_int\n\n");
+    fprintf(outFile, "@fieldwise_init\nstruct rAudioBuffer(TrivialRegisterPassable):\n");
+    fprintf(outFile, "    \"\"\"Opaque raylib audio-buffer handle.\"\"\"\n");
+    fprintf(outFile, "    var _opaque: c_int\n");
+    fprintf(outFile, "    \"\"\"Placeholder storage; do not access this field directly.\"\"\"\n\n");
+    fprintf(outFile, "@fieldwise_init\nstruct rAudioProcessor(TrivialRegisterPassable):\n");
+    fprintf(outFile, "    \"\"\"Opaque raylib audio-processor handle.\"\"\"\n");
+    fprintf(outFile, "    var _opaque: c_int\n");
+    fprintf(outFile, "    \"\"\"Placeholder storage; do not access this field directly.\"\"\"\n\n");
     // raymath float3/float16: misnomer — both are flat float arrays
     // (`struct { float v[N]; }`), N = 3 or 16. Public mirrors hold Float32 fields
     // and provide round-trip conversion to the raw FFI structs.
     fprintf(outFile, "@fieldwise_init\nstruct float3(Copyable, ImplicitlyCopyable, Movable):\n");
-    for (int k = 0; k < 3; k++) fprintf(outFile, "    var v%d: Float32\n", k);
+    fprintf(outFile, "    \"\"\"Three-component float storage used by raymath.\"\"\"\n");
+    for (int k = 0; k < 3; k++)
+    {
+        fprintf(outFile, "    var v%d: Float32\n", k);
+        fprintf(outFile, "    \"\"\"Component %d.\"\"\"\n", k);
+    }
     fprintf(outFile, "\n    @always_inline\n    @staticmethod\n    def from_raw(value: raw_types.float3) -> Self:\n");
+    fprintf(outFile, "        \"\"\"Create a public value from its C-layout representation.\n\n");
+    fprintf(outFile, "        Args:\n            value: The raw value to convert.\n\n");
+    fprintf(outFile, "        Returns:\n            The converted public value.\n        \"\"\"\n");
     fprintf(outFile, "        return float3(Float32(value.v0), Float32(value.v1), Float32(value.v2))\n");
     fprintf(outFile, "\n    @always_inline\n    def to_raw(self) -> raw_types.float3:\n");
+    fprintf(outFile, "        \"\"\"Convert this value to its C-layout representation.\n\n");
+    fprintf(outFile, "        Returns:\n            The converted raw value.\n        \"\"\"\n");
     fprintf(outFile, "        return raw_types.float3(c_float(self.v0), c_float(self.v1), c_float(self.v2))\n\n");
     fprintf(outFile, "@always_inline\ndef _to_raw_float3(value: float3) -> raw_types.float3:\n    return value.to_raw()\n\n");
     fprintf(outFile, "@always_inline\ndef _from_raw_float3(value: raw_types.float3) -> float3:\n    return float3.from_raw(value)\n\n");
 
     fprintf(outFile, "@fieldwise_init\nstruct float16(Copyable, ImplicitlyCopyable, Movable):\n");
-    for (int k = 0; k < 16; k++) fprintf(outFile, "    var v%d: Float32\n", k);
-    fprintf(outFile, "\n    @always_inline\n    @staticmethod\n    def from_raw(value: raw_types.float16) -> Self:\n        return float16(");
+    fprintf(outFile, "    \"\"\"Sixteen-component float storage used by raymath.\"\"\"\n");
+    for (int k = 0; k < 16; k++)
+    {
+        fprintf(outFile, "    var v%d: Float32\n", k);
+        fprintf(outFile, "    \"\"\"Component %d.\"\"\"\n", k);
+    }
+    fprintf(outFile, "\n    @always_inline\n    @staticmethod\n    def from_raw(value: raw_types.float16) -> Self:\n");
+    fprintf(outFile, "        \"\"\"Create a public value from its C-layout representation.\n\n");
+    fprintf(outFile, "        Args:\n            value: The raw value to convert.\n\n");
+    fprintf(outFile, "        Returns:\n            The converted public value.\n        \"\"\"\n");
+    fprintf(outFile, "        return float16(");
     for (int k = 0; k < 16; k++) fprintf(outFile, "%sFloat32(value.v%d)", k ? ", " : "", k);
-    fprintf(outFile, ")\n\n    @always_inline\n    def to_raw(self) -> raw_types.float16:\n        return raw_types.float16(");
+    fprintf(outFile, ")\n\n    @always_inline\n    def to_raw(self) -> raw_types.float16:\n");
+    fprintf(outFile, "        \"\"\"Convert this value to its C-layout representation.\n\n");
+    fprintf(outFile, "        Returns:\n            The converted raw value.\n        \"\"\"\n");
+    fprintf(outFile, "        return raw_types.float16(");
     for (int k = 0; k < 16; k++) fprintf(outFile, "%sc_float(self.v%d)", k ? ", " : "", k);
     fprintf(outFile, ")\n\n");
     fprintf(outFile, "@always_inline\ndef _to_raw_float16(value: float16) -> raw_types.float16:\n    return value.to_raw()\n\n");
@@ -1906,20 +1993,29 @@ static void ExportMojoPublicTypes(const char *rootDir)
         CopyText(aliasName, aliases[i].name + start, sizeof(aliasName));
         GetMojoAliasTarget(&aliases[i], aliasTarget, sizeof(aliasTarget));
         if (aliases[i].name[0] == '*')
-            fprintf(outFile, "comptime %s = %s\n\n", aliasName, aliasTarget);
+        {
+            char comment[256] = {0};
+            SanitizeComment(aliases[i].desc, comment, sizeof(comment));
+            if (comment[0] == '\0')
+                snprintf(comment, sizeof(comment), "Pointer alias for `%s`", aliasName);
+            fprintf(outFile, "comptime %s = %s\n", aliasName, aliasTarget);
+            WriteMojoDocstring(outFile, comment, 0);
+            fprintf(outFile, "\n");
+        }
     }
 
     for (int i = 0; i < structCount; i++)
     {
         char comment[256] = {0};
         SanitizeComment(structs[i].desc, comment, sizeof(comment));
-        if (comment[0] != '\0')
-            fprintf(outFile, "# %s\n", comment);
-
         fprintf(outFile, "struct %s(TrivialRegisterPassable):\n", structs[i].name);
+        if (comment[0] == '\0')
+            snprintf(comment, sizeof(comment), "Mojo value corresponding to raylib's `%s`", structs[i].name);
+        WriteMojoDocstring(outFile, comment, 4);
         if (structs[i].fieldCount == 0)
         {
             fprintf(outFile, "    var _unused: Int32\n");
+            fprintf(outFile, "    \"\"\"Placeholder storage for an empty C structure.\"\"\"\n");
         }
         else
         {
@@ -1931,18 +2027,26 @@ static void ExportMojoPublicTypes(const char *rootDir)
                 int arraySize = 0;
 
                 SanitizeComment(structs[i].fieldDesc[j], fieldComment, sizeof(fieldComment));
-                if (fieldComment[0] != '\0')
-                    fprintf(outFile, "    # %s\n", fieldComment);
+                if (fieldComment[0] == '\0')
+                {
+                    char humanName[128] = {0};
+                    HumanizeIdentifier(structs[i].fieldName[j], humanName, sizeof(humanName));
+                    snprintf(fieldComment, sizeof(fieldComment), "The %s field", humanName);
+                }
 
                 if (IsArrayOfKnownStruct(structs[i].fieldType[j], elementName, sizeof(elementName), &arraySize))
                 {
                     for (int k = 0; k < arraySize; k++)
+                    {
                         fprintf(outFile, "    var %s_%d: %s\n", structs[i].fieldName[j], k, elementName);
+                        WriteMojoDocstring(outFile, fieldComment, 4);
+                    }
                 }
                 else
                 {
                     GetMojoLayoutType(structs[i].fieldType[j], fieldType, sizeof(fieldType));
                     fprintf(outFile, "    var %s: %s\n", structs[i].fieldName[j], fieldType);
+                    WriteMojoDocstring(outFile, fieldComment, 4);
                 }
             }
         }
@@ -1965,6 +2069,53 @@ static void ExportMojoPublicTypes(const char *rootDir)
             }
         }
         fprintf(outFile, "):\n");
+        fprintf(outFile, "        \"\"\"Create a `%s` value", structs[i].name);
+        if (structs[i].fieldCount == 0)
+        {
+            fprintf(outFile, ".\"\"\"\n");
+        }
+        else
+        {
+            fprintf(outFile, ".\n\n        Args:\n");
+            for (int j = 0; j < structs[i].fieldCount; j++)
+            {
+                char fieldComment[256] = {0};
+                char humanName[128] = {0};
+                char elementName[128] = {0};
+                int arraySize = 0;
+                SanitizeComment(structs[i].fieldDesc[j], fieldComment, sizeof(fieldComment));
+                HumanizeIdentifier(structs[i].fieldName[j], humanName, sizeof(humanName));
+                if (fieldComment[0] == '\0')
+                    snprintf(fieldComment, sizeof(fieldComment), "The %s field", humanName);
+
+                if (IsArrayOfKnownStruct(structs[i].fieldType[j], elementName, sizeof(elementName), &arraySize))
+                {
+                    for (int k = 0; k < arraySize; k++)
+                    {
+                        fprintf(outFile, "            %s_%d: %s", structs[i].fieldName[j], k, fieldComment);
+                        int length = (int)TextLength(fieldComment);
+                        if ((length == 0) || ((fieldComment[length - 1] != '.') &&
+                            (fieldComment[length - 1] != '!') && (fieldComment[length - 1] != '?')))
+                        {
+                            fputc('.', outFile);
+                        }
+                        fprintf(outFile, "\n");
+                    }
+                }
+                else
+                {
+                    fprintf(outFile, "            %s: %s", structs[i].fieldName[j], fieldComment);
+                    int length = (int)TextLength(fieldComment);
+                    if ((length == 0) || ((fieldComment[length - 1] != '.') &&
+                        (fieldComment[length - 1] != '!') && (fieldComment[length - 1] != '?')))
+                    {
+                        fputc('.', outFile);
+                    }
+                    fprintf(outFile, "\n");
+                }
+            }
+            fprintf(outFile, "        \"\"\"\n");
+        }
         if (structs[i].fieldCount == 0)
             fprintf(outFile, "        self._unused = 0\n");
         else
@@ -1988,6 +2139,9 @@ static void ExportMojoPublicTypes(const char *rootDir)
         fprintf(outFile, "    @always_inline\n");
         fprintf(outFile, "    @staticmethod\n");
         fprintf(outFile, "    def from_raw(value: raw_types.%s) -> Self:\n", structs[i].name);
+        fprintf(outFile, "        \"\"\"Create a `%s` from its C-layout representation.\n\n", structs[i].name);
+        fprintf(outFile, "        Args:\n            value: The raw value to convert.\n\n");
+        fprintf(outFile, "        Returns:\n            The converted public value.\n        \"\"\"\n");
         if (structs[i].fieldCount == 0)
             fprintf(outFile, "        return %s(0)\n\n", structs[i].name);
         else
@@ -2024,6 +2178,8 @@ static void ExportMojoPublicTypes(const char *rootDir)
 
         fprintf(outFile, "    @always_inline\n");
         fprintf(outFile, "    def to_raw(self) -> raw_types.%s:\n", structs[i].name);
+        fprintf(outFile, "        \"\"\"Convert this `%s` to its C-layout representation.\n\n", structs[i].name);
+        fprintf(outFile, "        Returns:\n            The converted raw value.\n        \"\"\"\n");
         if (structs[i].fieldCount == 0)
             fprintf(outFile, "        return raw_types.%s(c_int(0))\n\n", structs[i].name);
         else
@@ -2085,9 +2241,11 @@ static void ExportMojoPublicTypes(const char *rootDir)
         ResolveStructOrAliasName(aliasName, resolvedName, sizeof(resolvedName));
         GetMojoLayoutType(aliases[i].type, aliasTarget, sizeof(aliasTarget));
         SanitizeComment(aliases[i].desc, comment, sizeof(comment));
-        if (comment[0] != '\0')
-            fprintf(outFile, "# %s\n", comment);
-        fprintf(outFile, "comptime %s = %s\n\n", aliasName, aliasTarget);
+        if (comment[0] == '\0')
+            snprintf(comment, sizeof(comment), "Public alias for `%s`", aliasName);
+        fprintf(outFile, "comptime %s = %s\n", aliasName, aliasTarget);
+        WriteMojoDocstring(outFile, comment, 0);
+        fprintf(outFile, "\n");
         if (IsKnownStructOrAlias(resolvedName))
         {
             ToSnakeCase(aliasName, snakeName, sizeof(snakeName));
@@ -2119,13 +2277,27 @@ static void ExportMojoRawModule(const char *rootDir, const char *moduleName, con
         return;
 
     WriteGeneratedHeader(outFile, moduleName, inFileName);
+    if (IsRaymathApi())
+    {
+        fprintf(outFile, "\"\"\"Low-level FFI calls for raymath.\n\n");
+        fprintf(outFile, "Prefer `mojo_raylib.raymath_safe` unless exact C-layout values and pointer\n");
+        fprintf(outFile, "semantics are required.\n\"\"\"\n\n");
+    }
+    else
+    {
+        fprintf(outFile, "\"\"\"Low-level FFI calls for raylib.\n\n");
+        fprintf(outFile, "Prefer the snake-case functions exported from `mojo_raylib` in application\n");
+        fprintf(outFile, "code. Callers of this module are responsible for C pointer validity and\n");
+        fprintf(outFile, "resource lifetimes.\n\"\"\"\n\n");
+    }
     fprintf(outFile, "from .types import *\n");
     WriteMojoCommonImports(outFile);
     fprintf(outFile, "\n");
 
     if (IsRaymathApi())
     {
-        fprintf(outFile, "comptime TraceLogCallbackSimple = def(log_level: c_int, text: Pointer[c_char, ImmUntrackedOrigin]) -> NoneType\n\n");
+        fprintf(outFile, "comptime TraceLogCallbackSimple = def(log_level: c_int, text: Pointer[c_char, ImmUntrackedOrigin]) -> NoneType\n");
+        fprintf(outFile, "\"\"\"Simplified C callback signature for formatted raylib log messages.\"\"\"\n\n");
     }
 
     for (int i = 0; i < funcCount; i++)
@@ -2151,7 +2323,8 @@ static void ExportMojoRawModule(const char *rootDir, const char *moduleName, con
         if (!IsVoidType(funcs[i].retType))
             fprintf(outFile, " -> %s", returnType);
         fprintf(outFile, ":\n");
-        WriteMojoDocstring(outFile, funcs[i].desc, 4);
+        WriteMojoFunctionDocstring(outFile, &funcs[i], 4, false, false, -1,
+            !IsVoidType(funcs[i].retType), false, IsRaymathApi() ? "raymath" : "raylib");
 
         if (useShim && returnsStruct)
         {
@@ -2216,11 +2389,19 @@ static void ExportMojoRawModule(const char *rootDir, const char *moduleName, con
     {
         fprintf(outFile, "# Shim-backed helpers for unsupported varargs and callback adaptation.\n");
         fprintf(outFile, "def TraceLogText(log_level: c_int, text: Pointer[mut=False, c_char, _]):\n");
+        fprintf(outFile, "    \"\"\"Write a preformatted message through raylib's trace logger.\n\n");
+        fprintf(outFile, "    Args:\n        log_level: The raylib trace-log level.\n        text: The null-terminated message.\n    \"\"\"\n");
         fprintf(outFile, "    external_call[\"mojo_raylib_TraceLogLiteral\", NoneType](log_level, text)\n\n");
         fprintf(outFile, "def TextFormatText(text: Pointer[mut=False, c_char, _]) -> Pointer[c_char, MutUntrackedOrigin]:\n");
+        fprintf(outFile, "    \"\"\"Copy preformatted text through raylib's text-format buffer.\n\n");
+        fprintf(outFile, "    Args:\n        text: The null-terminated source text.\n\n");
+        fprintf(outFile, "    Returns:\n        A pointer to raylib's internal formatted-text buffer.\n    \"\"\"\n");
         fprintf(outFile, "    return external_call[\"mojo_raylib_TextFormatLiteral\", Pointer[c_char, MutUntrackedOrigin]](text)\n\n");
         fprintf(outFile, "comptime TraceLogCallbackSimple = def(log_level: c_int, text: Pointer[c_char, ImmUntrackedOrigin]) -> NoneType\n");
+        fprintf(outFile, "\"\"\"Simplified C callback signature for formatted raylib log messages.\"\"\"\n");
         fprintf(outFile, "def SetTraceLogCallbackSimple(callback: Pointer[mut=True, NoneType, _]):\n");
+        fprintf(outFile, "    \"\"\"Install a simplified trace-log callback through the native shim.\n\n");
+        fprintf(outFile, "    Args:\n        callback: A C-compatible callback function pointer.\n    \"\"\"\n");
         fprintf(outFile, "    external_call[\"mojo_raylib_SetTraceLogCallback\", NoneType](callback)\n\n");
     }
 
@@ -2237,6 +2418,8 @@ static void ExportMojoRawInit(const char *rootDir)
         return;
 
     WriteGeneratedHeader(outFile, "Raw package exports", inFileName);
+    fprintf(outFile, "\"\"\"Raw C-layout types and FFI entry points for raylib and raymath.\n\n");
+    fprintf(outFile, "Use the top-level `mojo_raylib` package for the ergonomic, snake-case API.\n\"\"\"\n\n");
     fprintf(outFile, "from .types import *\n");
     fprintf(outFile, "from .raylib import *\n");
     fprintf(outFile, "from .raymath import *\n");
@@ -2253,6 +2436,9 @@ static void ExportMojoSafe(const char *rootDir)
         return;
 
     WriteGeneratedHeader(outFile, "Generated Mojo-native wrappers for raylib", inFileName);
+    fprintf(outFile, "\"\"\"Ergonomic Mojo wrappers for the raylib API.\n\n");
+    fprintf(outFile, "Functions use snake-case names, Mojo value types, `Span` for counted buffers,\n");
+    fprintf(outFile, "and owning return wrappers where raylib allocates memory for the caller.\n\"\"\"\n\n");
     fprintf(outFile, "from .types import *\n");
     fprintf(outFile, "import mojo_raylib.types as public_types\n");
     fprintf(outFile, "import mojo_raylib.raw.types as raw_types\n");
@@ -2311,10 +2497,17 @@ static void ExportMojoSafe(const char *rootDir)
 
         fprintf(outFile, "@fieldwise_init\n");
         fprintf(outFile, "struct %s:\n", ownedStructName);
+        fprintf(outFile, "    \"\"\"Own the allocation returned by `%s`.\n\n", funcs[i].name);
+        fprintf(outFile, "    The allocation is released with `%s` when this value is destroyed.\n    \"\"\"\n", releaseName);
         fprintf(outFile, "    var data: %s\n", ownedDataType);
+        fprintf(outFile, "    \"\"\"The owned raylib allocation.\"\"\"\n");
         if (hasOutCount)
+        {
             fprintf(outFile, "    var count: Int\n");
+            fprintf(outFile, "    \"\"\"The number of elements in `data`.\"\"\"\n");
+        }
         fprintf(outFile, "    def __deinit__(deinit self):\n");
+        fprintf(outFile, "        \"\"\"Release the owned raylib allocation.\"\"\"\n");
         if (releaseMode == 1)
         {
             // Some Unload* helpers want (data, count); detect by inspecting the
@@ -2421,7 +2614,8 @@ static void ExportMojoSafe(const char *rootDir)
         else if (!returnsVoid)
             fprintf(outFile, " -> %s", returnType);
         fprintf(outFile, ":\n");
-        WriteMojoDocstring(outFile, funcs[i].desc, 4);
+        WriteMojoFunctionDocstring(outFile, &funcs[i], 4, true, true, outCountParam,
+            !returnsVoid, hasOwnedReturn, "raylib");
 
         if (outCountParam > -1)
             fprintf(outFile, "    var count: c_int = 0\n");
@@ -2489,6 +2683,9 @@ static void ExportMojoRaymathSafe(const char *rootDir)
         return;
 
     WriteGeneratedHeader(outFile, "Generated Mojo-native wrappers for raymath", inFileName);
+    fprintf(outFile, "\"\"\"Mojo-native wrappers for raymath vector, matrix, and quaternion operations.\n\n");
+    fprintf(outFile, "The wrappers accept the public `mojo_raylib` value types and convert to the\n");
+    fprintf(outFile, "C-layout FFI representation internally.\n\"\"\"\n\n");
     fprintf(outFile, "from .types import *\n");
     fprintf(outFile, "import mojo_raylib.types as public_types\n");
     fprintf(outFile, "import mojo_raylib.raw.types as raw_types\n");
@@ -2546,7 +2743,8 @@ static void ExportMojoRaymathSafe(const char *rootDir)
         if (!IsVoidType(funcs[i].retType))
             fprintf(outFile, " -> %s", returnType);
         fprintf(outFile, ":\n");
-        WriteMojoDocstring(outFile, funcs[i].desc, 4);
+        WriteMojoFunctionDocstring(outFile, &funcs[i], 4, true, true, -1,
+            !IsVoidType(funcs[i].retType), false, "raymath");
         if (!IsVoidType(funcs[i].retType))
             fprintf(outFile, "    var result = ");
         else
@@ -2599,6 +2797,10 @@ static void ExportMojoPackageInit(const char *rootDir)
         return;
 
     WriteGeneratedHeader(outFile, "Public package exports", inFileName);
+    fprintf(outFile, "\"\"\"Mojo 1.0 bindings for raylib and raymath.\n\n");
+    fprintf(outFile, "Import this package for public value types, snake-case functions, constants,\n");
+    fprintf(outFile, "callback helpers, and automatically managed results. The `raw` subpackage\n");
+    fprintf(outFile, "provides the lower-level C ABI when needed.\n\"\"\"\n\n");
     fprintf(outFile, "from .types import *\n");
     fprintf(outFile, "from .safe import *\n");
     fprintf(outFile, "from .raymath_safe import *\n");
@@ -3686,17 +3888,149 @@ static void GetMojoAliasTarget(const AliasInfo *alias, char *outType, int outTyp
 static void SanitizeComment(const char *source, char *outComment, int outCommentSize)
 {
     int j = 0;
+    bool previousWasSpace = false;
     if ((source == NULL) || (outComment == NULL) || (outCommentSize <= 0))
         return;
 
     for (int i = 0; (source[i] != '\0') && (j < outCommentSize - 1); i++)
     {
-        if ((source[i] == '\n') || (source[i] == '\r') || (source[i] == '\t'))
-            outComment[j++] = ' ';
+        if ((source[i] == '\n') || (source[i] == '\r') || (source[i] == '\t') || (source[i] == ' '))
+        {
+            if ((j > 0) && !previousWasSpace)
+            {
+                outComment[j++] = ' ';
+                previousWasSpace = true;
+            }
+        }
+        else if ((source[i] == '\\') && (j < outCommentSize - 2))
+        {
+            // Mojo string literals interpret escapes. Double the slash so API
+            // text such as `\\n` remains visible text in LSP documentation.
+            outComment[j++] = '\\';
+            outComment[j++] = '\\';
+            previousWasSpace = false;
+        }
         else
+        {
             outComment[j++] = source[i];
+            previousWasSpace = false;
+        }
     }
+    while ((j > 0) && (outComment[j - 1] == ' '))
+        j--;
     outComment[j] = '\0';
+}
+
+static void HumanizeIdentifier(const char *source, char *outText, int outTextSize)
+{
+    int j = 0;
+    if ((source == NULL) || (outText == NULL) || (outTextSize <= 0))
+        return;
+
+    for (int i = 0; (source[i] != '\0') && (j < outTextSize - 1); i++)
+    {
+        unsigned char current = (unsigned char)source[i];
+        unsigned char previous = (i > 0) ? (unsigned char)source[i - 1] : 0;
+        unsigned char next = (unsigned char)source[i + 1];
+
+        if ((current == '_') || (current == '-'))
+        {
+            if ((j > 0) && (outText[j - 1] != ' '))
+                outText[j++] = ' ';
+            continue;
+        }
+
+        if (isupper(current) && (j > 0) && (outText[j - 1] != ' ') &&
+            (islower(previous) || isdigit(previous) || (isupper(previous) && islower(next))))
+        {
+            if (j < outTextSize - 1)
+                outText[j++] = ' ';
+        }
+
+        outText[j++] = (char)tolower(current);
+    }
+
+    while ((j > 0) && (outText[j - 1] == ' '))
+        j--;
+    outText[j] = '\0';
+}
+
+static void GetMojoParameterDescription(const FunctionInfo *func, int paramIndex, char *outText, int outTextSize)
+{
+    char parsedDescription[256] = {0};
+    char humanName[128] = {0};
+    if ((func == NULL) || (paramIndex < 0) || (paramIndex >= func->paramCount) ||
+        (outText == NULL) || (outTextSize <= 0))
+    {
+        return;
+    }
+
+    SanitizeComment(func->paramDesc[paramIndex], parsedDescription, sizeof(parsedDescription));
+    if (parsedDescription[0] != '\0')
+    {
+        CopyText(outText, parsedDescription, outTextSize);
+        return;
+    }
+
+    HumanizeIdentifier(func->paramName[paramIndex], humanName, sizeof(humanName));
+    bool isVector = (TextFindIndex(func->paramType[paramIndex], "Vector") > -1);
+    bool isQuaternion = (TextFindIndex(func->paramType[paramIndex], "Quaternion") > -1);
+    if (isVector && (IsTextEqual(humanName, "v1", 3) || IsTextEqual(humanName, "p", 2)))
+        CopyText(outText, "The first vector", outTextSize);
+    else if (isVector && (IsTextEqual(humanName, "v2", 3) || IsTextEqual(humanName, "q", 2)))
+        CopyText(outText, "The second vector", outTextSize);
+    else if (isVector && IsTextEqual(humanName, "v", 2))
+        CopyText(outText, "The input vector", outTextSize);
+    else if (isVector && IsTextEqual(humanName, "n", 2))
+        CopyText(outText, "The normal vector", outTextSize);
+    else if (isQuaternion && IsTextEqual(humanName, "q", 2))
+        CopyText(outText, "The quaternion", outTextSize);
+    else if (IsTextEqual(func->name, "FloatEquals", 12) && IsTextEqual(humanName, "x", 2))
+        CopyText(outText, "The first floating-point value", outTextSize);
+    else if (IsTextEqual(func->name, "FloatEquals", 12) && IsTextEqual(humanName, "y", 2))
+        CopyText(outText, "The second floating-point value", outTextSize);
+    else if (IsTextEqual(humanName, "x", 2))
+        CopyText(outText, "The x-coordinate or component", outTextSize);
+    else if (IsTextEqual(humanName, "y", 2))
+        CopyText(outText, "The y-coordinate or component", outTextSize);
+    else if (IsTextEqual(humanName, "z", 2))
+        CopyText(outText, "The z-coordinate or component", outTextSize);
+    else if (IsTextEqual(humanName, "w", 2))
+        CopyText(outText, "The w component", outTextSize);
+    else if (IsTextEqual(humanName, "min", 4))
+        CopyText(outText, "The lower bound", outTextSize);
+    else if (IsTextEqual(humanName, "max", 4))
+        CopyText(outText, "The upper bound", outTextSize);
+    else if (TextFindIndex(humanName, "file name") > -1)
+        CopyText(outText, "The file path", outTextSize);
+    else if (TextFindIndex(humanName, "directory path") > -1)
+        CopyText(outText, "The directory path", outTextSize);
+    else if (TextFindIndex(humanName, "data size") > -1)
+        CopyText(outText, "The data size in bytes", outTextSize);
+    else if (TextFindIndex(humanName, "font size") > -1)
+        CopyText(outText, "The font size in pixels", outTextSize);
+    else if (TextFindIndex(humanName, "width") > -1)
+        snprintf(outText, outTextSize, "The %s in pixels", humanName);
+    else if (TextFindIndex(humanName, "height") > -1)
+        snprintf(outText, outTextSize, "The %s in pixels", humanName);
+    else if (IsTextEqual(humanName, "count", 6) || (TextFindIndex(humanName, " count") > -1))
+        snprintf(outText, outTextSize, "The %s", humanName);
+    else if (TextFindIndex(humanName, "index") > -1)
+        snprintf(outText, outTextSize, "The zero-based %s", humanName);
+    else if (IsTextEqual(humanName, "title", 6))
+        CopyText(outText, "The window title", outTextSize);
+    else if (IsTextEqual(humanName, "fps", 4))
+        CopyText(outText, "The target frames per second", outTextSize);
+    else if (IsTextEqual(humanName, "anim", 5))
+        CopyText(outText, "The animation", outTextSize);
+    else if (IsTextEqual(humanName, "rec", 4))
+        CopyText(outText, "The rectangle", outTextSize);
+    else if (IsTextEqual(humanName, "tex", 4))
+        CopyText(outText, "The texture", outTextSize);
+    else if (IsTextEqual(humanName, "mat", 4))
+        CopyText(outText, "The transformation matrix", outTextSize);
+    else
+        snprintf(outText, outTextSize, "The %s", humanName[0] ? humanName : "input value");
 }
 
 static void GetRelativeSourceName(const char *sourceName, char *outSourceName, int outSourceNameSize)
@@ -3747,9 +4081,139 @@ static void WriteMojoDocstring(FILE *outFile, const char *comment, int indentLev
             sanitized[i] = '\'';
     }
 
+    if (islower((unsigned char)sanitized[0]))
+        sanitized[0] = (char)toupper((unsigned char)sanitized[0]);
+
     for (int i = 0; i < indentLevel; i++)
         fputc(' ', outFile);
-    fprintf(outFile, "\"\"\"%s.\"\"\"\n", sanitized);
+    fprintf(outFile, "\"\"\"%s", sanitized);
+    int length = (int)TextLength(sanitized);
+    if ((length == 0) || ((sanitized[length - 1] != '.') &&
+        (sanitized[length - 1] != '!') && (sanitized[length - 1] != '?')))
+    {
+        fputc('.', outFile);
+    }
+    fprintf(outFile, "\"\"\"\n");
+}
+
+static void WriteMojoFunctionDocstring(FILE *outFile, const FunctionInfo *func, int indentLevel,
+    bool usePublicNames, bool collapseSpanCounts, int skippedParam, bool returnsValue,
+    bool returnsOwnedValue, const char *apiName)
+{
+    char summary[640] = {0};
+    char fallback[256] = {0};
+    bool hasArgs = false;
+
+    SanitizeComment(func->desc, summary, sizeof(summary));
+    if (summary[0] == '\0')
+    {
+        snprintf(fallback, sizeof(fallback), "Call `%s` from %s", func->name, apiName);
+        SanitizeComment(fallback, summary, sizeof(summary));
+    }
+    for (int i = 0; summary[i] != '\0'; i++)
+    {
+        if (summary[i] == '"')
+            summary[i] = '\'';
+    }
+    if (islower((unsigned char)summary[0]))
+        summary[0] = (char)toupper((unsigned char)summary[0]);
+
+    for (int p = 0; p < func->paramCount; p++)
+    {
+        int spanCountIndex = -1;
+        if (IsTextEqual(func->paramType[p], "...", 4) || (p == skippedParam))
+            continue;
+        if (collapseSpanCounts && (p > 0) &&
+            GetSpanCompanionIndex(func, p - 1, &spanCountIndex) && (spanCountIndex == p))
+        {
+            continue;
+        }
+        hasArgs = true;
+    }
+
+    for (int i = 0; i < indentLevel; i++)
+        fputc(' ', outFile);
+    fprintf(outFile, "\"\"\"%s", summary);
+    int summaryLength = (int)TextLength(summary);
+    if ((summaryLength == 0) || ((summary[summaryLength - 1] != '.') &&
+        (summary[summaryLength - 1] != '!') && (summary[summaryLength - 1] != '?')))
+    {
+        fputc('.', outFile);
+    }
+
+    if (!hasArgs && !returnsValue)
+    {
+        fprintf(outFile, "\"\"\"\n");
+        return;
+    }
+
+    fprintf(outFile, "\n");
+    if (hasArgs)
+    {
+        fprintf(outFile, "\n");
+        for (int i = 0; i < indentLevel; i++) fputc(' ', outFile);
+        fprintf(outFile, "Args:\n");
+        for (int p = 0; p < func->paramCount; p++)
+        {
+            char publicName[64] = {0};
+            char escapedName[64] = {0};
+            char paramDescription[256] = {0};
+            int spanCountIndex = -1;
+
+            if (IsTextEqual(func->paramType[p], "...", 4) || (p == skippedParam))
+                continue;
+            if (collapseSpanCounts && (p > 0) &&
+                GetSpanCompanionIndex(func, p - 1, &spanCountIndex) && (spanCountIndex == p))
+            {
+                continue;
+            }
+
+            if (usePublicNames)
+                ToSnakeCase(func->paramName[p], publicName, sizeof(publicName));
+            else
+                CopyText(publicName, EscapeMojoKeyword(func->paramName[p], escapedName, sizeof(escapedName)), sizeof(publicName));
+
+            GetMojoParameterDescription(func, p, paramDescription, sizeof(paramDescription));
+            if (islower((unsigned char)paramDescription[0]))
+                paramDescription[0] = (char)toupper((unsigned char)paramDescription[0]);
+
+            for (int i = 0; i < indentLevel + 4; i++) fputc(' ', outFile);
+            fprintf(outFile, "%s: %s", publicName, paramDescription);
+            int descLength = (int)TextLength(paramDescription);
+            if ((descLength == 0) || ((paramDescription[descLength - 1] != '.') &&
+                (paramDescription[descLength - 1] != '!') && (paramDescription[descLength - 1] != '?')))
+            {
+                fputc('.', outFile);
+            }
+            fprintf(outFile, "\n");
+        }
+    }
+
+    if (returnsValue)
+    {
+        fprintf(outFile, "\n");
+        for (int i = 0; i < indentLevel; i++) fputc(' ', outFile);
+        fprintf(outFile, "Returns:\n");
+        for (int i = 0; i < indentLevel + 4; i++) fputc(' ', outFile);
+        if (returnsOwnedValue)
+            fprintf(outFile, "An owning result that releases its raylib allocation automatically.\n");
+        else if (IsTextEqual(apiName, "raymath", 8))
+            fprintf(outFile, "The computed result.\n");
+        else if (IsTextEqual(func->retType, "bool", 5))
+            fprintf(outFile, "`True` if the documented condition is met; otherwise, `False`.\n");
+        else if (TextFindIndex(func->name, "Load") == 0)
+            fprintf(outFile, "The loaded result.\n");
+        else if (TextFindIndex(func->name, "Get") == 0)
+            fprintf(outFile, "The requested value.\n");
+        else if (usePublicNames)
+            fprintf(outFile, "The resulting value.\n");
+        else
+            fprintf(outFile, "The value returned by raylib.\n");
+    }
+
+    for (int i = 0; i < indentLevel; i++)
+        fputc(' ', outFile);
+    fprintf(outFile, "\"\"\"\n");
 }
 
 static const char *EscapeMojoKeyword(const char *name, char *buffer, int bufferSize)

@@ -2,6 +2,13 @@
 # Public package exports
 # Source: src/raylib.h
 
+"""Mojo 1.0 bindings for raylib and raymath.
+
+Import this package for public value types, snake-case functions, constants,
+callback helpers, and automatically managed results. The `raw` subpackage
+provides the lower-level C ABI when needed.
+"""
+
 from .types import *
 from .safe import *
 from .raymath_safe import *

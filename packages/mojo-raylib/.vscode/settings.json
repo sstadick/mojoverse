@@ -1,0 +1,8 @@
+{
+  "mojo.preferWorkspaceEnv": true,
+  "python.defaultInterpreterPath": "${workspaceFolder}/.pixi/envs/default/bin/python",
+  "[mojo]": {
+    "editor.defaultFormatter": "modular-mojotools.vscode-mojo",
+    "editor.formatOnSave": true
+  }
+}

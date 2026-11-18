@@ -2,31 +2,58 @@
 # Public Mojo value types
 # Source: src/raylib.h
 
+"""Mojo-native value types for raylib and raymath.
+
+Each type preserves the corresponding C layout while exposing Mojo scalar
+fields and conversion helpers for the low-level FFI representation.
+"""
+
 import mojo_raylib.raw.types as raw_types
 from std.ffi import c_char, c_uchar, c_short, c_ushort, c_int, c_uint, c_long, c_ulong, c_float, c_double
 from std.collections import InlineArray
 
 @fieldwise_init
 struct rAudioBuffer(TrivialRegisterPassable):
+    """Opaque raylib audio-buffer handle."""
     var _opaque: c_int
+    """Placeholder storage; do not access this field directly."""
 
 @fieldwise_init
 struct rAudioProcessor(TrivialRegisterPassable):
+    """Opaque raylib audio-processor handle."""
     var _opaque: c_int
+    """Placeholder storage; do not access this field directly."""
 
 @fieldwise_init
 struct float3(Copyable, ImplicitlyCopyable, Movable):
+    """Three-component float storage used by raymath."""
     var v0: Float32
+    """Component 0."""
     var v1: Float32
+    """Component 1."""
     var v2: Float32
+    """Component 2."""
 
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.float3) -> Self:
+        """Create a public value from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return float3(Float32(value.v0), Float32(value.v1), Float32(value.v2))
 
     @always_inline
     def to_raw(self) -> raw_types.float3:
+        """Convert this value to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.float3(c_float(self.v0), c_float(self.v1), c_float(self.v2))
 
 @always_inline
@@ -39,30 +66,60 @@ def _from_raw_float3(value: raw_types.float3) -> float3:
 
 @fieldwise_init
 struct float16(Copyable, ImplicitlyCopyable, Movable):
+    """Sixteen-component float storage used by raymath."""
     var v0: Float32
+    """Component 0."""
     var v1: Float32
+    """Component 1."""
     var v2: Float32
+    """Component 2."""
     var v3: Float32
+    """Component 3."""
     var v4: Float32
+    """Component 4."""
     var v5: Float32
+    """Component 5."""
     var v6: Float32
+    """Component 6."""
     var v7: Float32
+    """Component 7."""
     var v8: Float32
+    """Component 8."""
     var v9: Float32
+    """Component 9."""
     var v10: Float32
+    """Component 10."""
     var v11: Float32
+    """Component 11."""
     var v12: Float32
+    """Component 12."""
     var v13: Float32
+    """Component 13."""
     var v14: Float32
+    """Component 14."""
     var v15: Float32
+    """Component 15."""
 
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.float16) -> Self:
+        """Create a public value from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return float16(Float32(value.v0), Float32(value.v1), Float32(value.v2), Float32(value.v3), Float32(value.v4), Float32(value.v5), Float32(value.v6), Float32(value.v7), Float32(value.v8), Float32(value.v9), Float32(value.v10), Float32(value.v11), Float32(value.v12), Float32(value.v13), Float32(value.v14), Float32(value.v15))
 
     @always_inline
     def to_raw(self) -> raw_types.float16:
+        """Convert this value to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.float16(c_float(self.v0), c_float(self.v1), c_float(self.v2), c_float(self.v3), c_float(self.v4), c_float(self.v5), c_float(self.v6), c_float(self.v7), c_float(self.v8), c_float(self.v9), c_float(self.v10), c_float(self.v11), c_float(self.v12), c_float(self.v13), c_float(self.v14), c_float(self.v15))
 
 @always_inline
@@ -74,25 +131,45 @@ def _from_raw_float16(value: raw_types.float16) -> float16:
     return float16.from_raw(value)
 
 comptime ModelAnimPose = Pointer[Transform, MutUntrackedOrigin]
+"""Anim pose, an array of Transform[]."""
 
-# Vector2, 2 components
 struct Vector2(TrivialRegisterPassable):
-    # Vector x component
+    """Vector2, 2 components."""
     var x: Float32
-    # Vector y component
+    """Vector x component."""
     var y: Float32
+    """Vector y component."""
 
     def __init__(out self, x: Float32, y: Float32):
+        """Create a `Vector2` value.
+
+        Args:
+            x: Vector x component.
+            y: Vector y component.
+        """
         self.x = x
         self.y = y
 
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Vector2) -> Self:
+        """Create a `Vector2` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Vector2(Float32(value.x), Float32(value.y))
 
     @always_inline
     def to_raw(self) -> raw_types.Vector2:
+        """Convert this `Vector2` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Vector2(c_float(self.x), c_float(self.y))
 
 @always_inline
@@ -103,16 +180,23 @@ def _to_raw_vector2(value: Vector2) -> raw_types.Vector2:
 def _from_raw_vector2(value: raw_types.Vector2) -> Vector2:
     return Vector2.from_raw(value)
 
-# Vector3, 3 components
 struct Vector3(TrivialRegisterPassable):
-    # Vector x component
+    """Vector3, 3 components."""
     var x: Float32
-    # Vector y component
+    """Vector x component."""
     var y: Float32
-    # Vector z component
+    """Vector y component."""
     var z: Float32
+    """Vector z component."""
 
     def __init__(out self, x: Float32, y: Float32, z: Float32):
+        """Create a `Vector3` value.
+
+        Args:
+            x: Vector x component.
+            y: Vector y component.
+            z: Vector z component.
+        """
         self.x = x
         self.y = y
         self.z = z
@@ -120,10 +204,23 @@ struct Vector3(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Vector3) -> Self:
+        """Create a `Vector3` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Vector3(Float32(value.x), Float32(value.y), Float32(value.z))
 
     @always_inline
     def to_raw(self) -> raw_types.Vector3:
+        """Convert this `Vector3` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Vector3(c_float(self.x), c_float(self.y), c_float(self.z))
 
 @always_inline
@@ -134,18 +231,26 @@ def _to_raw_vector3(value: Vector3) -> raw_types.Vector3:
 def _from_raw_vector3(value: raw_types.Vector3) -> Vector3:
     return Vector3.from_raw(value)
 
-# Vector4, 4 components
 struct Vector4(TrivialRegisterPassable):
-    # Vector x component
+    """Vector4, 4 components."""
     var x: Float32
-    # Vector y component
+    """Vector x component."""
     var y: Float32
-    # Vector z component
+    """Vector y component."""
     var z: Float32
-    # Vector w component
+    """Vector z component."""
     var w: Float32
+    """Vector w component."""
 
     def __init__(out self, x: Float32, y: Float32, z: Float32, w: Float32):
+        """Create a `Vector4` value.
+
+        Args:
+            x: Vector x component.
+            y: Vector y component.
+            z: Vector z component.
+            w: Vector w component.
+        """
         self.x = x
         self.y = y
         self.z = z
@@ -154,10 +259,23 @@ struct Vector4(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Vector4) -> Self:
+        """Create a `Vector4` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Vector4(Float32(value.x), Float32(value.y), Float32(value.z), Float32(value.w))
 
     @always_inline
     def to_raw(self) -> raw_types.Vector4:
+        """Convert this `Vector4` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Vector4(c_float(self.x), c_float(self.y), c_float(self.z), c_float(self.w))
 
 @always_inline
@@ -168,42 +286,62 @@ def _to_raw_vector4(value: Vector4) -> raw_types.Vector4:
 def _from_raw_vector4(value: raw_types.Vector4) -> Vector4:
     return Vector4.from_raw(value)
 
-# Matrix, 4x4 components, column major, OpenGL style, right-handed
 struct Matrix(TrivialRegisterPassable):
-    # Matrix first row (4 components)
+    """Matrix, 4x4 components, column major, OpenGL style, right-handed."""
     var m0: Float32
-    # Matrix first row (4 components)
+    """Matrix first row (4 components)."""
     var m4: Float32
-    # Matrix first row (4 components)
+    """Matrix first row (4 components)."""
     var m8: Float32
-    # Matrix first row (4 components)
+    """Matrix first row (4 components)."""
     var m12: Float32
-    # Matrix second row (4 components)
+    """Matrix first row (4 components)."""
     var m1: Float32
-    # Matrix second row (4 components)
+    """Matrix second row (4 components)."""
     var m5: Float32
-    # Matrix second row (4 components)
+    """Matrix second row (4 components)."""
     var m9: Float32
-    # Matrix second row (4 components)
+    """Matrix second row (4 components)."""
     var m13: Float32
-    # Matrix third row (4 components)
+    """Matrix second row (4 components)."""
     var m2: Float32
-    # Matrix third row (4 components)
+    """Matrix third row (4 components)."""
     var m6: Float32
-    # Matrix third row (4 components)
+    """Matrix third row (4 components)."""
     var m10: Float32
-    # Matrix third row (4 components)
+    """Matrix third row (4 components)."""
     var m14: Float32
-    # Matrix fourth row (4 components)
+    """Matrix third row (4 components)."""
     var m3: Float32
-    # Matrix fourth row (4 components)
+    """Matrix fourth row (4 components)."""
     var m7: Float32
-    # Matrix fourth row (4 components)
+    """Matrix fourth row (4 components)."""
     var m11: Float32
-    # Matrix fourth row (4 components)
+    """Matrix fourth row (4 components)."""
     var m15: Float32
+    """Matrix fourth row (4 components)."""
 
     def __init__(out self, m0: Float32, m4: Float32, m8: Float32, m12: Float32, m1: Float32, m5: Float32, m9: Float32, m13: Float32, m2: Float32, m6: Float32, m10: Float32, m14: Float32, m3: Float32, m7: Float32, m11: Float32, m15: Float32):
+        """Create a `Matrix` value.
+
+        Args:
+            m0: Matrix first row (4 components).
+            m4: Matrix first row (4 components).
+            m8: Matrix first row (4 components).
+            m12: Matrix first row (4 components).
+            m1: Matrix second row (4 components).
+            m5: Matrix second row (4 components).
+            m9: Matrix second row (4 components).
+            m13: Matrix second row (4 components).
+            m2: Matrix third row (4 components).
+            m6: Matrix third row (4 components).
+            m10: Matrix third row (4 components).
+            m14: Matrix third row (4 components).
+            m3: Matrix fourth row (4 components).
+            m7: Matrix fourth row (4 components).
+            m11: Matrix fourth row (4 components).
+            m15: Matrix fourth row (4 components).
+        """
         self.m0 = m0
         self.m4 = m4
         self.m8 = m8
@@ -224,10 +362,23 @@ struct Matrix(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Matrix) -> Self:
+        """Create a `Matrix` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Matrix(Float32(value.m0), Float32(value.m4), Float32(value.m8), Float32(value.m12), Float32(value.m1), Float32(value.m5), Float32(value.m9), Float32(value.m13), Float32(value.m2), Float32(value.m6), Float32(value.m10), Float32(value.m14), Float32(value.m3), Float32(value.m7), Float32(value.m11), Float32(value.m15))
 
     @always_inline
     def to_raw(self) -> raw_types.Matrix:
+        """Convert this `Matrix` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Matrix(c_float(self.m0), c_float(self.m4), c_float(self.m8), c_float(self.m12), c_float(self.m1), c_float(self.m5), c_float(self.m9), c_float(self.m13), c_float(self.m2), c_float(self.m6), c_float(self.m10), c_float(self.m14), c_float(self.m3), c_float(self.m7), c_float(self.m11), c_float(self.m15))
 
 @always_inline
@@ -238,18 +389,26 @@ def _to_raw_matrix(value: Matrix) -> raw_types.Matrix:
 def _from_raw_matrix(value: raw_types.Matrix) -> Matrix:
     return Matrix.from_raw(value)
 
-# Color, 4 components, R8G8B8A8 (32bit)
 struct Color(TrivialRegisterPassable):
-    # Color red value
+    """Color, 4 components, R8G8B8A8 (32bit)."""
     var r: UInt8
-    # Color green value
+    """Color red value."""
     var g: UInt8
-    # Color blue value
+    """Color green value."""
     var b: UInt8
-    # Color alpha value
+    """Color blue value."""
     var a: UInt8
+    """Color alpha value."""
 
     def __init__(out self, r: UInt8, g: UInt8, b: UInt8, a: UInt8):
+        """Create a `Color` value.
+
+        Args:
+            r: Color red value.
+            g: Color green value.
+            b: Color blue value.
+            a: Color alpha value.
+        """
         self.r = r
         self.g = g
         self.b = b
@@ -258,10 +417,23 @@ struct Color(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Color) -> Self:
+        """Create a `Color` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Color(UInt8(value.r), UInt8(value.g), UInt8(value.b), UInt8(value.a))
 
     @always_inline
     def to_raw(self) -> raw_types.Color:
+        """Convert this `Color` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Color(c_uchar(self.r), c_uchar(self.g), c_uchar(self.b), c_uchar(self.a))
 
 @always_inline
@@ -272,18 +444,26 @@ def _to_raw_color(value: Color) -> raw_types.Color:
 def _from_raw_color(value: raw_types.Color) -> Color:
     return Color.from_raw(value)
 
-# Rectangle, 4 components
 struct Rectangle(TrivialRegisterPassable):
-    # Rectangle top-left corner position x
+    """Rectangle, 4 components."""
     var x: Float32
-    # Rectangle top-left corner position y
+    """Rectangle top-left corner position x."""
     var y: Float32
-    # Rectangle width
+    """Rectangle top-left corner position y."""
     var width: Float32
-    # Rectangle height
+    """Rectangle width."""
     var height: Float32
+    """Rectangle height."""
 
     def __init__(out self, x: Float32, y: Float32, width: Float32, height: Float32):
+        """Create a `Rectangle` value.
+
+        Args:
+            x: Rectangle top-left corner position x.
+            y: Rectangle top-left corner position y.
+            width: Rectangle width.
+            height: Rectangle height.
+        """
         self.x = x
         self.y = y
         self.width = width
@@ -292,10 +472,23 @@ struct Rectangle(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Rectangle) -> Self:
+        """Create a `Rectangle` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Rectangle(Float32(value.x), Float32(value.y), Float32(value.width), Float32(value.height))
 
     @always_inline
     def to_raw(self) -> raw_types.Rectangle:
+        """Convert this `Rectangle` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Rectangle(c_float(self.x), c_float(self.y), c_float(self.width), c_float(self.height))
 
 @always_inline
@@ -306,20 +499,29 @@ def _to_raw_rectangle(value: Rectangle) -> raw_types.Rectangle:
 def _from_raw_rectangle(value: raw_types.Rectangle) -> Rectangle:
     return Rectangle.from_raw(value)
 
-# Image, pixel data stored in CPU memory (RAM)
 struct Image(TrivialRegisterPassable):
-    # Image raw data
+    """Image, pixel data stored in CPU memory (RAM)."""
     var data: Pointer[NoneType, MutUntrackedOrigin]
-    # Image base width
+    """Image raw data."""
     var width: Int32
-    # Image base height
+    """Image base width."""
     var height: Int32
-    # Mipmap levels, 1 by default
+    """Image base height."""
     var mipmaps: Int32
-    # Data format (PixelFormat type)
+    """Mipmap levels, 1 by default."""
     var format: Int32
+    """Data format (PixelFormat type)."""
 
     def __init__(out self, data: Pointer[NoneType, MutUntrackedOrigin], width: Int32, height: Int32, mipmaps: Int32, format: Int32):
+        """Create a `Image` value.
+
+        Args:
+            data: Image raw data.
+            width: Image base width.
+            height: Image base height.
+            mipmaps: Mipmap levels, 1 by default.
+            format: Data format (PixelFormat type).
+        """
         self.data = data
         self.width = width
         self.height = height
@@ -329,10 +531,23 @@ struct Image(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Image) -> Self:
+        """Create a `Image` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Image(value.data, Int32(value.width), Int32(value.height), Int32(value.mipmaps), Int32(value.format))
 
     @always_inline
     def to_raw(self) -> raw_types.Image:
+        """Convert this `Image` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Image(self.data, c_int(self.width), c_int(self.height), c_int(self.mipmaps), c_int(self.format))
 
 @always_inline
@@ -343,20 +558,29 @@ def _to_raw_image(value: Image) -> raw_types.Image:
 def _from_raw_image(value: raw_types.Image) -> Image:
     return Image.from_raw(value)
 
-# Texture, tex data stored in GPU memory (VRAM)
 struct Texture(TrivialRegisterPassable):
-    # OpenGL texture id
+    """Texture, tex data stored in GPU memory (VRAM)."""
     var id: UInt32
-    # Texture base width
+    """OpenGL texture id."""
     var width: Int32
-    # Texture base height
+    """Texture base width."""
     var height: Int32
-    # Mipmap levels, 1 by default
+    """Texture base height."""
     var mipmaps: Int32
-    # Data format (PixelFormat type)
+    """Mipmap levels, 1 by default."""
     var format: Int32
+    """Data format (PixelFormat type)."""
 
     def __init__(out self, id: UInt32, width: Int32, height: Int32, mipmaps: Int32, format: Int32):
+        """Create a `Texture` value.
+
+        Args:
+            id: OpenGL texture id.
+            width: Texture base width.
+            height: Texture base height.
+            mipmaps: Mipmap levels, 1 by default.
+            format: Data format (PixelFormat type).
+        """
         self.id = id
         self.width = width
         self.height = height
@@ -366,10 +590,23 @@ struct Texture(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Texture) -> Self:
+        """Create a `Texture` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Texture(UInt32(value.id), Int32(value.width), Int32(value.height), Int32(value.mipmaps), Int32(value.format))
 
     @always_inline
     def to_raw(self) -> raw_types.Texture:
+        """Convert this `Texture` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Texture(c_uint(self.id), c_int(self.width), c_int(self.height), c_int(self.mipmaps), c_int(self.format))
 
 @always_inline
@@ -380,16 +617,23 @@ def _to_raw_texture(value: Texture) -> raw_types.Texture:
 def _from_raw_texture(value: raw_types.Texture) -> Texture:
     return Texture.from_raw(value)
 
-# RenderTexture, fbo for texture rendering
 struct RenderTexture(TrivialRegisterPassable):
-    # OpenGL framebuffer object id
+    """RenderTexture, fbo for texture rendering."""
     var id: UInt32
-    # Color buffer attachment texture
+    """OpenGL framebuffer object id."""
     var texture: Texture
-    # Depth buffer attachment texture
+    """Color buffer attachment texture."""
     var depth: Texture
+    """Depth buffer attachment texture."""
 
     def __init__(out self, id: UInt32, texture: Texture, depth: Texture):
+        """Create a `RenderTexture` value.
+
+        Args:
+            id: OpenGL framebuffer object id.
+            texture: Color buffer attachment texture.
+            depth: Depth buffer attachment texture.
+        """
         self.id = id
         self.texture = texture
         self.depth = depth
@@ -397,10 +641,23 @@ struct RenderTexture(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.RenderTexture) -> Self:
+        """Create a `RenderTexture` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return RenderTexture(UInt32(value.id), _from_raw_texture(value.texture), _from_raw_texture(value.depth))
 
     @always_inline
     def to_raw(self) -> raw_types.RenderTexture:
+        """Convert this `RenderTexture` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.RenderTexture(c_uint(self.id), _to_raw_texture(self.texture), _to_raw_texture(self.depth))
 
 @always_inline
@@ -411,22 +668,32 @@ def _to_raw_render_texture(value: RenderTexture) -> raw_types.RenderTexture:
 def _from_raw_render_texture(value: raw_types.RenderTexture) -> RenderTexture:
     return RenderTexture.from_raw(value)
 
-# NPatchInfo, n-patch layout info
 struct NPatchInfo(TrivialRegisterPassable):
-    # Texture source rectangle
+    """NPatchInfo, n-patch layout info."""
     var source: Rectangle
-    # Left border offset
+    """Texture source rectangle."""
     var left: Int32
-    # Top border offset
+    """Left border offset."""
     var top: Int32
-    # Right border offset
+    """Top border offset."""
     var right: Int32
-    # Bottom border offset
+    """Right border offset."""
     var bottom: Int32
-    # Layout of the n-patch: 3x3, 1x3 or 3x1
+    """Bottom border offset."""
     var layout: Int32
+    """Layout of the n-patch: 3x3, 1x3 or 3x1."""
 
     def __init__(out self, source: Rectangle, left: Int32, top: Int32, right: Int32, bottom: Int32, layout: Int32):
+        """Create a `NPatchInfo` value.
+
+        Args:
+            source: Texture source rectangle.
+            left: Left border offset.
+            top: Top border offset.
+            right: Right border offset.
+            bottom: Bottom border offset.
+            layout: Layout of the n-patch: 3x3, 1x3 or 3x1.
+        """
         self.source = source
         self.left = left
         self.top = top
@@ -437,10 +704,23 @@ struct NPatchInfo(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.NPatchInfo) -> Self:
+        """Create a `NPatchInfo` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return NPatchInfo(_from_raw_rectangle(value.source), Int32(value.left), Int32(value.top), Int32(value.right), Int32(value.bottom), Int32(value.layout))
 
     @always_inline
     def to_raw(self) -> raw_types.NPatchInfo:
+        """Convert this `NPatchInfo` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.NPatchInfo(_to_raw_rectangle(self.source), c_int(self.left), c_int(self.top), c_int(self.right), c_int(self.bottom), c_int(self.layout))
 
 @always_inline
@@ -451,20 +731,29 @@ def _to_raw_n_patch_info(value: NPatchInfo) -> raw_types.NPatchInfo:
 def _from_raw_n_patch_info(value: raw_types.NPatchInfo) -> NPatchInfo:
     return NPatchInfo.from_raw(value)
 
-# GlyphInfo, font characters glyphs info
 struct GlyphInfo(TrivialRegisterPassable):
-    # Character value (Unicode)
+    """GlyphInfo, font characters glyphs info."""
     var value: Int32
-    # Character offset X when drawing
+    """Character value (Unicode)."""
     var offsetX: Int32
-    # Character offset Y when drawing
+    """Character offset X when drawing."""
     var offsetY: Int32
-    # Character advance position X
+    """Character offset Y when drawing."""
     var advanceX: Int32
-    # Character image data
+    """Character advance position X."""
     var image: Image
+    """Character image data."""
 
     def __init__(out self, value: Int32, offsetX: Int32, offsetY: Int32, advanceX: Int32, image: Image):
+        """Create a `GlyphInfo` value.
+
+        Args:
+            value: Character value (Unicode).
+            offsetX: Character offset X when drawing.
+            offsetY: Character offset Y when drawing.
+            advanceX: Character advance position X.
+            image: Character image data.
+        """
         self.value = value
         self.offsetX = offsetX
         self.offsetY = offsetY
@@ -474,10 +763,23 @@ struct GlyphInfo(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.GlyphInfo) -> Self:
+        """Create a `GlyphInfo` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return GlyphInfo(Int32(value.value), Int32(value.offsetX), Int32(value.offsetY), Int32(value.advanceX), _from_raw_image(value.image))
 
     @always_inline
     def to_raw(self) -> raw_types.GlyphInfo:
+        """Convert this `GlyphInfo` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.GlyphInfo(c_int(self.value), c_int(self.offsetX), c_int(self.offsetY), c_int(self.advanceX), _to_raw_image(self.image))
 
 @always_inline
@@ -488,22 +790,32 @@ def _to_raw_glyph_info(value: GlyphInfo) -> raw_types.GlyphInfo:
 def _from_raw_glyph_info(value: raw_types.GlyphInfo) -> GlyphInfo:
     return GlyphInfo.from_raw(value)
 
-# Font, font texture and GlyphInfo array data
 struct Font(TrivialRegisterPassable):
-    # Base size (default chars height)
+    """Font, font texture and GlyphInfo array data."""
     var baseSize: Int32
-    # Number of glyph characters
+    """Base size (default chars height)."""
     var glyphCount: Int32
-    # Padding around the glyph characters
+    """Number of glyph characters."""
     var glyphPadding: Int32
-    # Texture atlas containing the glyphs
+    """Padding around the glyph characters."""
     var texture: Texture2D
-    # Rectangles in texture for the glyphs
+    """Texture atlas containing the glyphs."""
     var recs: Pointer[Rectangle, MutUntrackedOrigin]
-    # Glyphs info data
+    """Rectangles in texture for the glyphs."""
     var glyphs: Pointer[GlyphInfo, MutUntrackedOrigin]
+    """Glyphs info data."""
 
     def __init__(out self, baseSize: Int32, glyphCount: Int32, glyphPadding: Int32, texture: Texture2D, recs: Pointer[Rectangle, MutUntrackedOrigin], glyphs: Pointer[GlyphInfo, MutUntrackedOrigin]):
+        """Create a `Font` value.
+
+        Args:
+            baseSize: Base size (default chars height).
+            glyphCount: Number of glyph characters.
+            glyphPadding: Padding around the glyph characters.
+            texture: Texture atlas containing the glyphs.
+            recs: Rectangles in texture for the glyphs.
+            glyphs: Glyphs info data.
+        """
         self.baseSize = baseSize
         self.glyphCount = glyphCount
         self.glyphPadding = glyphPadding
@@ -514,10 +826,23 @@ struct Font(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Font) -> Self:
+        """Create a `Font` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Font(Int32(value.baseSize), Int32(value.glyphCount), Int32(value.glyphPadding), _from_raw_texture_2d(value.texture), value.recs.unsafe_bitcast[Rectangle](), value.glyphs.unsafe_bitcast[GlyphInfo]())
 
     @always_inline
     def to_raw(self) -> raw_types.Font:
+        """Convert this `Font` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Font(c_int(self.baseSize), c_int(self.glyphCount), c_int(self.glyphPadding), _to_raw_texture_2d(self.texture), self.recs.unsafe_bitcast[raw_types.Rectangle](), self.glyphs.unsafe_bitcast[raw_types.GlyphInfo]())
 
 @always_inline
@@ -528,20 +853,29 @@ def _to_raw_font(value: Font) -> raw_types.Font:
 def _from_raw_font(value: raw_types.Font) -> Font:
     return Font.from_raw(value)
 
-# Camera, defines position/orientation in 3d space
 struct Camera3D(TrivialRegisterPassable):
-    # Camera position
+    """Camera, defines position/orientation in 3d space."""
     var position: Vector3
-    # Camera target it looks-at
+    """Camera position."""
     var target: Vector3
-    # Camera up vector (rotation over its axis)
+    """Camera target it looks-at."""
     var up: Vector3
-    # Camera field-of-view aperture in Y (degrees) in perspective, used as near plane height in world units in orthographic
+    """Camera up vector (rotation over its axis)."""
     var fovy: Float32
-    # Camera projection: CAMERA_PERSPECTIVE or CAMERA_ORTHOGRAPHIC
+    """Camera field-of-view aperture in Y (degrees) in perspective, used as near plane height in world units in orthographic."""
     var projection: Int32
+    """Camera projection: CAMERA_PERSPECTIVE or CAMERA_ORTHOGRAPHIC."""
 
     def __init__(out self, position: Vector3, target: Vector3, up: Vector3, fovy: Float32, projection: Int32):
+        """Create a `Camera3D` value.
+
+        Args:
+            position: Camera position.
+            target: Camera target it looks-at.
+            up: Camera up vector (rotation over its axis).
+            fovy: Camera field-of-view aperture in Y (degrees) in perspective, used as near plane height in world units in orthographic.
+            projection: Camera projection: CAMERA_PERSPECTIVE or CAMERA_ORTHOGRAPHIC.
+        """
         self.position = position
         self.target = target
         self.up = up
@@ -551,10 +885,23 @@ struct Camera3D(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Camera3D) -> Self:
+        """Create a `Camera3D` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Camera3D(_from_raw_vector3(value.position), _from_raw_vector3(value.target), _from_raw_vector3(value.up), Float32(value.fovy), Int32(value.projection))
 
     @always_inline
     def to_raw(self) -> raw_types.Camera3D:
+        """Convert this `Camera3D` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Camera3D(_to_raw_vector3(self.position), _to_raw_vector3(self.target), _to_raw_vector3(self.up), c_float(self.fovy), c_int(self.projection))
 
 @always_inline
@@ -565,18 +912,26 @@ def _to_raw_camera_3d(value: Camera3D) -> raw_types.Camera3D:
 def _from_raw_camera_3d(value: raw_types.Camera3D) -> Camera3D:
     return Camera3D.from_raw(value)
 
-# Camera2D, defines position/orientation in 2d space
 struct Camera2D(TrivialRegisterPassable):
-    # Camera offset (screen space offset from window origin)
+    """Camera2D, defines position/orientation in 2d space."""
     var offset: Vector2
-    # Camera target (world space target point that is mapped to screen space offset)
+    """Camera offset (screen space offset from window origin)."""
     var target: Vector2
-    # Camera rotation in degrees (pivots around target)
+    """Camera target (world space target point that is mapped to screen space offset)."""
     var rotation: Float32
-    # Camera zoom (scaling around target), must not be set to 0, set to 1.0f for no scale
+    """Camera rotation in degrees (pivots around target)."""
     var zoom: Float32
+    """Camera zoom (scaling around target), must not be set to 0, set to 1.0f for no scale."""
 
     def __init__(out self, offset: Vector2, target: Vector2, rotation: Float32, zoom: Float32):
+        """Create a `Camera2D` value.
+
+        Args:
+            offset: Camera offset (screen space offset from window origin).
+            target: Camera target (world space target point that is mapped to screen space offset).
+            rotation: Camera rotation in degrees (pivots around target).
+            zoom: Camera zoom (scaling around target), must not be set to 0, set to 1.0f for no scale.
+        """
         self.offset = offset
         self.target = target
         self.rotation = rotation
@@ -585,10 +940,23 @@ struct Camera2D(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Camera2D) -> Self:
+        """Create a `Camera2D` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Camera2D(_from_raw_vector2(value.offset), _from_raw_vector2(value.target), Float32(value.rotation), Float32(value.zoom))
 
     @always_inline
     def to_raw(self) -> raw_types.Camera2D:
+        """Convert this `Camera2D` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Camera2D(_to_raw_vector2(self.offset), _to_raw_vector2(self.target), c_float(self.rotation), c_float(self.zoom))
 
 @always_inline
@@ -599,42 +967,62 @@ def _to_raw_camera_2d(value: Camera2D) -> raw_types.Camera2D:
 def _from_raw_camera_2d(value: raw_types.Camera2D) -> Camera2D:
     return Camera2D.from_raw(value)
 
-# Mesh, vertex data and vao/vbo
 struct Mesh(TrivialRegisterPassable):
-    # Number of vertices stored in arrays
+    """Mesh, vertex data and vao/vbo."""
     var vertexCount: Int32
-    # Number of triangles stored (indexed or not)
+    """Number of vertices stored in arrays."""
     var triangleCount: Int32
-    # Vertex position (XYZ - 3 components per vertex) (shader-location = 0)
+    """Number of triangles stored (indexed or not)."""
     var vertices: Pointer[c_float, MutUntrackedOrigin]
-    # Vertex texture coordinates (UV - 2 components per vertex) (shader-location = 1)
+    """Vertex position (XYZ - 3 components per vertex) (shader-location = 0)."""
     var texcoords: Pointer[c_float, MutUntrackedOrigin]
-    # Vertex texture second coordinates (UV - 2 components per vertex) (shader-location = 5)
+    """Vertex texture coordinates (UV - 2 components per vertex) (shader-location = 1)."""
     var texcoords2: Pointer[c_float, MutUntrackedOrigin]
-    # Vertex normals (XYZ - 3 components per vertex) (shader-location = 2)
+    """Vertex texture second coordinates (UV - 2 components per vertex) (shader-location = 5)."""
     var normals: Pointer[c_float, MutUntrackedOrigin]
-    # Vertex tangents (XYZW - 4 components per vertex) (shader-location = 4)
+    """Vertex normals (XYZ - 3 components per vertex) (shader-location = 2)."""
     var tangents: Pointer[c_float, MutUntrackedOrigin]
-    # Vertex colors (RGBA - 4 components per vertex) (shader-location = 3)
+    """Vertex tangents (XYZW - 4 components per vertex) (shader-location = 4)."""
     var colors: Pointer[c_uchar, MutUntrackedOrigin]
-    # Vertex indices (in case vertex data comes indexed)
+    """Vertex colors (RGBA - 4 components per vertex) (shader-location = 3)."""
     var indices: Pointer[c_ushort, MutUntrackedOrigin]
-    # Number of bones (MAX: 256 bones)
+    """Vertex indices (in case vertex data comes indexed)."""
     var boneCount: Int32
-    # Vertex bone indices, up to 4 bones influence by vertex (skinning) (shader-location = 6)
+    """Number of bones (MAX: 256 bones)."""
     var boneIndices: Pointer[c_uchar, MutUntrackedOrigin]
-    # Vertex bone weight, up to 4 bones influence by vertex (skinning) (shader-location = 7)
+    """Vertex bone indices, up to 4 bones influence by vertex (skinning) (shader-location = 6)."""
     var boneWeights: Pointer[c_float, MutUntrackedOrigin]
-    # Animated vertex positions (after bones transformations)
+    """Vertex bone weight, up to 4 bones influence by vertex (skinning) (shader-location = 7)."""
     var animVertices: Pointer[c_float, MutUntrackedOrigin]
-    # Animated normals (after bones transformations)
+    """Animated vertex positions (after bones transformations)."""
     var animNormals: Pointer[c_float, MutUntrackedOrigin]
-    # OpenGL Vertex Array Object id
+    """Animated normals (after bones transformations)."""
     var vaoId: UInt32
-    # OpenGL Vertex Buffer Objects id (default vertex data)
+    """OpenGL Vertex Array Object id."""
     var vboId: Pointer[c_uint, MutUntrackedOrigin]
+    """OpenGL Vertex Buffer Objects id (default vertex data)."""
 
     def __init__(out self, vertexCount: Int32, triangleCount: Int32, vertices: Pointer[c_float, MutUntrackedOrigin], texcoords: Pointer[c_float, MutUntrackedOrigin], texcoords2: Pointer[c_float, MutUntrackedOrigin], normals: Pointer[c_float, MutUntrackedOrigin], tangents: Pointer[c_float, MutUntrackedOrigin], colors: Pointer[c_uchar, MutUntrackedOrigin], indices: Pointer[c_ushort, MutUntrackedOrigin], boneCount: Int32, boneIndices: Pointer[c_uchar, MutUntrackedOrigin], boneWeights: Pointer[c_float, MutUntrackedOrigin], animVertices: Pointer[c_float, MutUntrackedOrigin], animNormals: Pointer[c_float, MutUntrackedOrigin], vaoId: UInt32, vboId: Pointer[c_uint, MutUntrackedOrigin]):
+        """Create a `Mesh` value.
+
+        Args:
+            vertexCount: Number of vertices stored in arrays.
+            triangleCount: Number of triangles stored (indexed or not).
+            vertices: Vertex position (XYZ - 3 components per vertex) (shader-location = 0).
+            texcoords: Vertex texture coordinates (UV - 2 components per vertex) (shader-location = 1).
+            texcoords2: Vertex texture second coordinates (UV - 2 components per vertex) (shader-location = 5).
+            normals: Vertex normals (XYZ - 3 components per vertex) (shader-location = 2).
+            tangents: Vertex tangents (XYZW - 4 components per vertex) (shader-location = 4).
+            colors: Vertex colors (RGBA - 4 components per vertex) (shader-location = 3).
+            indices: Vertex indices (in case vertex data comes indexed).
+            boneCount: Number of bones (MAX: 256 bones).
+            boneIndices: Vertex bone indices, up to 4 bones influence by vertex (skinning) (shader-location = 6).
+            boneWeights: Vertex bone weight, up to 4 bones influence by vertex (skinning) (shader-location = 7).
+            animVertices: Animated vertex positions (after bones transformations).
+            animNormals: Animated normals (after bones transformations).
+            vaoId: OpenGL Vertex Array Object id.
+            vboId: OpenGL Vertex Buffer Objects id (default vertex data).
+        """
         self.vertexCount = vertexCount
         self.triangleCount = triangleCount
         self.vertices = vertices
@@ -655,10 +1043,23 @@ struct Mesh(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Mesh) -> Self:
+        """Create a `Mesh` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Mesh(Int32(value.vertexCount), Int32(value.triangleCount), value.vertices, value.texcoords, value.texcoords2, value.normals, value.tangents, value.colors, value.indices, Int32(value.boneCount), value.boneIndices, value.boneWeights, value.animVertices, value.animNormals, UInt32(value.vaoId), value.vboId)
 
     @always_inline
     def to_raw(self) -> raw_types.Mesh:
+        """Convert this `Mesh` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Mesh(c_int(self.vertexCount), c_int(self.triangleCount), self.vertices, self.texcoords, self.texcoords2, self.normals, self.tangents, self.colors, self.indices, c_int(self.boneCount), self.boneIndices, self.boneWeights, self.animVertices, self.animNormals, c_uint(self.vaoId), self.vboId)
 
 @always_inline
@@ -669,24 +1070,43 @@ def _to_raw_mesh(value: Mesh) -> raw_types.Mesh:
 def _from_raw_mesh(value: raw_types.Mesh) -> Mesh:
     return Mesh.from_raw(value)
 
-# Shader
 struct Shader(TrivialRegisterPassable):
-    # Shader program id
+    """Shader."""
     var id: UInt32
-    # Shader locations array (RL_MAX_SHADER_LOCATIONS)
+    """Shader program id."""
     var locs: Pointer[c_int, MutUntrackedOrigin]
+    """Shader locations array (RL_MAX_SHADER_LOCATIONS)."""
 
     def __init__(out self, id: UInt32, locs: Pointer[c_int, MutUntrackedOrigin]):
+        """Create a `Shader` value.
+
+        Args:
+            id: Shader program id.
+            locs: Shader locations array (RL_MAX_SHADER_LOCATIONS).
+        """
         self.id = id
         self.locs = locs
 
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Shader) -> Self:
+        """Create a `Shader` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Shader(UInt32(value.id), value.locs)
 
     @always_inline
     def to_raw(self) -> raw_types.Shader:
+        """Convert this `Shader` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Shader(c_uint(self.id), self.locs)
 
 @always_inline
@@ -697,16 +1117,23 @@ def _to_raw_shader(value: Shader) -> raw_types.Shader:
 def _from_raw_shader(value: raw_types.Shader) -> Shader:
     return Shader.from_raw(value)
 
-# MaterialMap
 struct MaterialMap(TrivialRegisterPassable):
-    # Material map texture
+    """MaterialMap."""
     var texture: Texture2D
-    # Material map color
+    """Material map texture."""
     var color: Color
-    # Material map value
+    """Material map color."""
     var value: Float32
+    """Material map value."""
 
     def __init__(out self, texture: Texture2D, color: Color, value: Float32):
+        """Create a `MaterialMap` value.
+
+        Args:
+            texture: Material map texture.
+            color: Material map color.
+            value: Material map value.
+        """
         self.texture = texture
         self.color = color
         self.value = value
@@ -714,10 +1141,23 @@ struct MaterialMap(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.MaterialMap) -> Self:
+        """Create a `MaterialMap` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return MaterialMap(_from_raw_texture_2d(value.texture), _from_raw_color(value.color), Float32(value.value))
 
     @always_inline
     def to_raw(self) -> raw_types.MaterialMap:
+        """Convert this `MaterialMap` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.MaterialMap(_to_raw_texture_2d(self.texture), _to_raw_color(self.color), c_float(self.value))
 
 @always_inline
@@ -728,16 +1168,23 @@ def _to_raw_material_map(value: MaterialMap) -> raw_types.MaterialMap:
 def _from_raw_material_map(value: raw_types.MaterialMap) -> MaterialMap:
     return MaterialMap.from_raw(value)
 
-# Material, includes shader and maps
 struct Material(TrivialRegisterPassable):
-    # Material shader
+    """Material, includes shader and maps."""
     var shader: Shader
-    # Material maps array (MAX_MATERIAL_MAPS)
+    """Material shader."""
     var maps: Pointer[MaterialMap, MutUntrackedOrigin]
-    # Material generic parameters (if required)
+    """Material maps array (MAX_MATERIAL_MAPS)."""
     var params: SIMD[DType.float32, 4]
+    """Material generic parameters (if required)."""
 
     def __init__(out self, shader: Shader, maps: Pointer[MaterialMap, MutUntrackedOrigin], params: SIMD[DType.float32, 4]):
+        """Create a `Material` value.
+
+        Args:
+            shader: Material shader.
+            maps: Material maps array (MAX_MATERIAL_MAPS).
+            params: Material generic parameters (if required).
+        """
         self.shader = shader
         self.maps = maps
         self.params = params
@@ -745,10 +1192,23 @@ struct Material(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Material) -> Self:
+        """Create a `Material` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Material(_from_raw_shader(value.shader), value.maps.unsafe_bitcast[MaterialMap](), value.params)
 
     @always_inline
     def to_raw(self) -> raw_types.Material:
+        """Convert this `Material` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Material(_to_raw_shader(self.shader), self.maps.unsafe_bitcast[raw_types.MaterialMap](), self.params)
 
 @always_inline
@@ -759,16 +1219,23 @@ def _to_raw_material(value: Material) -> raw_types.Material:
 def _from_raw_material(value: raw_types.Material) -> Material:
     return Material.from_raw(value)
 
-# Transform, vertex transformation data
 struct Transform(TrivialRegisterPassable):
-    # Translation
+    """Transform, vertex transformation data."""
     var translation: Vector3
-    # Rotation
+    """Translation."""
     var rotation: Quaternion
-    # Scale
+    """Rotation."""
     var scale: Vector3
+    """Scale."""
 
     def __init__(out self, translation: Vector3, rotation: Quaternion, scale: Vector3):
+        """Create a `Transform` value.
+
+        Args:
+            translation: Translation.
+            rotation: Rotation.
+            scale: Scale.
+        """
         self.translation = translation
         self.rotation = rotation
         self.scale = scale
@@ -776,10 +1243,23 @@ struct Transform(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Transform) -> Self:
+        """Create a `Transform` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Transform(_from_raw_vector3(value.translation), _from_raw_quaternion(value.rotation), _from_raw_vector3(value.scale))
 
     @always_inline
     def to_raw(self) -> raw_types.Transform:
+        """Convert this `Transform` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Transform(_to_raw_vector3(self.translation), _to_raw_quaternion(self.rotation), _to_raw_vector3(self.scale))
 
 @always_inline
@@ -790,24 +1270,43 @@ def _to_raw_transform(value: Transform) -> raw_types.Transform:
 def _from_raw_transform(value: raw_types.Transform) -> Transform:
     return Transform.from_raw(value)
 
-# Bone, skeletal animation bone
 struct BoneInfo(TrivialRegisterPassable):
-    # Bone name
+    """Bone, skeletal animation bone."""
     var name: SIMD[DType.int8, 32]
-    # Bone parent
+    """Bone name."""
     var parent: Int32
+    """Bone parent."""
 
     def __init__(out self, name: SIMD[DType.int8, 32], parent: Int32):
+        """Create a `BoneInfo` value.
+
+        Args:
+            name: Bone name.
+            parent: Bone parent.
+        """
         self.name = name
         self.parent = parent
 
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.BoneInfo) -> Self:
+        """Create a `BoneInfo` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return BoneInfo(value.name, Int32(value.parent))
 
     @always_inline
     def to_raw(self) -> raw_types.BoneInfo:
+        """Convert this `BoneInfo` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.BoneInfo(self.name, c_int(self.parent))
 
 @always_inline
@@ -818,16 +1317,23 @@ def _to_raw_bone_info(value: BoneInfo) -> raw_types.BoneInfo:
 def _from_raw_bone_info(value: raw_types.BoneInfo) -> BoneInfo:
     return BoneInfo.from_raw(value)
 
-# Skeleton, animation bones hierarchy
 struct ModelSkeleton(TrivialRegisterPassable):
-    # Number of bones
+    """Skeleton, animation bones hierarchy."""
     var boneCount: Int32
-    # Bones information (skeleton)
+    """Number of bones."""
     var bones: Pointer[BoneInfo, MutUntrackedOrigin]
-    # Bones base transformation (Transform[])
+    """Bones information (skeleton)."""
     var bindPose: ModelAnimPose
+    """Bones base transformation (Transform[])."""
 
     def __init__(out self, boneCount: Int32, bones: Pointer[BoneInfo, MutUntrackedOrigin], bindPose: ModelAnimPose):
+        """Create a `ModelSkeleton` value.
+
+        Args:
+            boneCount: Number of bones.
+            bones: Bones information (skeleton).
+            bindPose: Bones base transformation (Transform[]).
+        """
         self.boneCount = boneCount
         self.bones = bones
         self.bindPose = bindPose
@@ -835,10 +1341,23 @@ struct ModelSkeleton(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.ModelSkeleton) -> Self:
+        """Create a `ModelSkeleton` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return ModelSkeleton(Int32(value.boneCount), value.bones.unsafe_bitcast[BoneInfo](), value.bindPose.unsafe_bitcast[Transform]())
 
     @always_inline
     def to_raw(self) -> raw_types.ModelSkeleton:
+        """Convert this `ModelSkeleton` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.ModelSkeleton(c_int(self.boneCount), self.bones.unsafe_bitcast[raw_types.BoneInfo](), self.bindPose.unsafe_bitcast[raw_types.Transform]())
 
 @always_inline
@@ -849,28 +1368,41 @@ def _to_raw_model_skeleton(value: ModelSkeleton) -> raw_types.ModelSkeleton:
 def _from_raw_model_skeleton(value: raw_types.ModelSkeleton) -> ModelSkeleton:
     return ModelSkeleton.from_raw(value)
 
-# Model, meshes, materials and animation data
 struct Model(TrivialRegisterPassable):
-    # Local transform matrix
+    """Model, meshes, materials and animation data."""
     var transform: Matrix
-    # Number of meshes
+    """Local transform matrix."""
     var meshCount: Int32
-    # Number of materials
+    """Number of meshes."""
     var materialCount: Int32
-    # Meshes array
+    """Number of materials."""
     var meshes: Pointer[Mesh, MutUntrackedOrigin]
-    # Materials array
+    """Meshes array."""
     var materials: Pointer[Material, MutUntrackedOrigin]
-    # Mesh material number
+    """Materials array."""
     var meshMaterial: Pointer[c_int, MutUntrackedOrigin]
-    # Skeleton for animation
+    """Mesh material number."""
     var skeleton: ModelSkeleton
-    # Current animation pose (Transform[])
+    """Skeleton for animation."""
     var currentPose: ModelAnimPose
-    # Bones animated transformation matrices
+    """Current animation pose (Transform[])."""
     var boneMatrices: Pointer[Matrix, MutUntrackedOrigin]
+    """Bones animated transformation matrices."""
 
     def __init__(out self, transform: Matrix, meshCount: Int32, materialCount: Int32, meshes: Pointer[Mesh, MutUntrackedOrigin], materials: Pointer[Material, MutUntrackedOrigin], meshMaterial: Pointer[c_int, MutUntrackedOrigin], skeleton: ModelSkeleton, currentPose: ModelAnimPose, boneMatrices: Pointer[Matrix, MutUntrackedOrigin]):
+        """Create a `Model` value.
+
+        Args:
+            transform: Local transform matrix.
+            meshCount: Number of meshes.
+            materialCount: Number of materials.
+            meshes: Meshes array.
+            materials: Materials array.
+            meshMaterial: Mesh material number.
+            skeleton: Skeleton for animation.
+            currentPose: Current animation pose (Transform[]).
+            boneMatrices: Bones animated transformation matrices.
+        """
         self.transform = transform
         self.meshCount = meshCount
         self.materialCount = materialCount
@@ -884,10 +1416,23 @@ struct Model(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Model) -> Self:
+        """Create a `Model` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Model(_from_raw_matrix(value.transform), Int32(value.meshCount), Int32(value.materialCount), value.meshes.unsafe_bitcast[Mesh](), value.materials.unsafe_bitcast[Material](), value.meshMaterial, _from_raw_model_skeleton(value.skeleton), value.currentPose.unsafe_bitcast[Transform](), value.boneMatrices.unsafe_bitcast[Matrix]())
 
     @always_inline
     def to_raw(self) -> raw_types.Model:
+        """Convert this `Model` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Model(_to_raw_matrix(self.transform), c_int(self.meshCount), c_int(self.materialCount), self.meshes.unsafe_bitcast[raw_types.Mesh](), self.materials.unsafe_bitcast[raw_types.Material](), self.meshMaterial, _to_raw_model_skeleton(self.skeleton), self.currentPose.unsafe_bitcast[raw_types.Transform](), self.boneMatrices.unsafe_bitcast[raw_types.Matrix]())
 
 @always_inline
@@ -898,18 +1443,26 @@ def _to_raw_model(value: Model) -> raw_types.Model:
 def _from_raw_model(value: raw_types.Model) -> Model:
     return Model.from_raw(value)
 
-# ModelAnimation, contains a full animation sequence
 struct ModelAnimation(TrivialRegisterPassable):
-    # Animation name
+    """ModelAnimation, contains a full animation sequence."""
     var name: SIMD[DType.int8, 32]
-    # Number of bones (per pose)
+    """Animation name."""
     var boneCount: Int32
-    # Number of animation key frames
+    """Number of bones (per pose)."""
     var keyframeCount: Int32
-    # Animation sequence keyframe poses [keyframe][pose]
+    """Number of animation key frames."""
     var keyframePoses: Pointer[ModelAnimPose, MutUntrackedOrigin]
+    """Animation sequence keyframe poses [keyframe][pose]."""
 
     def __init__(out self, name: SIMD[DType.int8, 32], boneCount: Int32, keyframeCount: Int32, keyframePoses: Pointer[ModelAnimPose, MutUntrackedOrigin]):
+        """Create a `ModelAnimation` value.
+
+        Args:
+            name: Animation name.
+            boneCount: Number of bones (per pose).
+            keyframeCount: Number of animation key frames.
+            keyframePoses: Animation sequence keyframe poses [keyframe][pose].
+        """
         self.name = name
         self.boneCount = boneCount
         self.keyframeCount = keyframeCount
@@ -918,10 +1471,23 @@ struct ModelAnimation(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.ModelAnimation) -> Self:
+        """Create a `ModelAnimation` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return ModelAnimation(value.name, Int32(value.boneCount), Int32(value.keyframeCount), value.keyframePoses.unsafe_bitcast[ModelAnimPose]())
 
     @always_inline
     def to_raw(self) -> raw_types.ModelAnimation:
+        """Convert this `ModelAnimation` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.ModelAnimation(self.name, c_int(self.boneCount), c_int(self.keyframeCount), self.keyframePoses.unsafe_bitcast[raw_types.ModelAnimPose]())
 
 @always_inline
@@ -932,24 +1498,43 @@ def _to_raw_model_animation(value: ModelAnimation) -> raw_types.ModelAnimation:
 def _from_raw_model_animation(value: raw_types.ModelAnimation) -> ModelAnimation:
     return ModelAnimation.from_raw(value)
 
-# Ray, ray for raycasting
 struct Ray(TrivialRegisterPassable):
-    # Ray position (origin)
+    """Ray, ray for raycasting."""
     var position: Vector3
-    # Ray direction (normalized)
+    """Ray position (origin)."""
     var direction: Vector3
+    """Ray direction (normalized)."""
 
     def __init__(out self, position: Vector3, direction: Vector3):
+        """Create a `Ray` value.
+
+        Args:
+            position: Ray position (origin).
+            direction: Ray direction (normalized).
+        """
         self.position = position
         self.direction = direction
 
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Ray) -> Self:
+        """Create a `Ray` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Ray(_from_raw_vector3(value.position), _from_raw_vector3(value.direction))
 
     @always_inline
     def to_raw(self) -> raw_types.Ray:
+        """Convert this `Ray` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Ray(_to_raw_vector3(self.position), _to_raw_vector3(self.direction))
 
 @always_inline
@@ -960,18 +1545,26 @@ def _to_raw_ray(value: Ray) -> raw_types.Ray:
 def _from_raw_ray(value: raw_types.Ray) -> Ray:
     return Ray.from_raw(value)
 
-# RayCollision, ray hit information
 struct RayCollision(TrivialRegisterPassable):
-    # Did the ray hit something?
+    """RayCollision, ray hit information."""
     var hit: Bool
-    # Distance to the nearest hit
+    """Did the ray hit something?"""
     var distance: Float32
-    # Point of the nearest hit
+    """Distance to the nearest hit."""
     var point: Vector3
-    # Surface normal of hit
+    """Point of the nearest hit."""
     var normal: Vector3
+    """Surface normal of hit."""
 
     def __init__(out self, hit: Bool, distance: Float32, point: Vector3, normal: Vector3):
+        """Create a `RayCollision` value.
+
+        Args:
+            hit: Did the ray hit something?
+            distance: Distance to the nearest hit.
+            point: Point of the nearest hit.
+            normal: Surface normal of hit.
+        """
         self.hit = hit
         self.distance = distance
         self.point = point
@@ -980,10 +1573,23 @@ struct RayCollision(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.RayCollision) -> Self:
+        """Create a `RayCollision` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return RayCollision(value.hit, Float32(value.distance), _from_raw_vector3(value.point), _from_raw_vector3(value.normal))
 
     @always_inline
     def to_raw(self) -> raw_types.RayCollision:
+        """Convert this `RayCollision` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.RayCollision(self.hit, c_float(self.distance), _to_raw_vector3(self.point), _to_raw_vector3(self.normal))
 
 @always_inline
@@ -994,24 +1600,43 @@ def _to_raw_ray_collision(value: RayCollision) -> raw_types.RayCollision:
 def _from_raw_ray_collision(value: raw_types.RayCollision) -> RayCollision:
     return RayCollision.from_raw(value)
 
-# BoundingBox
 struct BoundingBox(TrivialRegisterPassable):
-    # Minimum vertex box-corner
+    """BoundingBox."""
     var min: Vector3
-    # Maximum vertex box-corner
+    """Minimum vertex box-corner."""
     var max: Vector3
+    """Maximum vertex box-corner."""
 
     def __init__(out self, min: Vector3, max: Vector3):
+        """Create a `BoundingBox` value.
+
+        Args:
+            min: Minimum vertex box-corner.
+            max: Maximum vertex box-corner.
+        """
         self.min = min
         self.max = max
 
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.BoundingBox) -> Self:
+        """Create a `BoundingBox` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return BoundingBox(_from_raw_vector3(value.min), _from_raw_vector3(value.max))
 
     @always_inline
     def to_raw(self) -> raw_types.BoundingBox:
+        """Convert this `BoundingBox` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.BoundingBox(_to_raw_vector3(self.min), _to_raw_vector3(self.max))
 
 @always_inline
@@ -1022,20 +1647,29 @@ def _to_raw_bounding_box(value: BoundingBox) -> raw_types.BoundingBox:
 def _from_raw_bounding_box(value: raw_types.BoundingBox) -> BoundingBox:
     return BoundingBox.from_raw(value)
 
-# Wave, audio wave data
 struct Wave(TrivialRegisterPassable):
-    # Total number of frames (considering channels)
+    """Wave, audio wave data."""
     var frameCount: UInt32
-    # Frequency (samples per second)
+    """Total number of frames (considering channels)."""
     var sampleRate: UInt32
-    # Bit depth (bits per sample): 8, 16, 32 (24 not supported)
+    """Frequency (samples per second)."""
     var sampleSize: UInt32
-    # Number of channels (1-mono, 2-stereo, ...)
+    """Bit depth (bits per sample): 8, 16, 32 (24 not supported)."""
     var channels: UInt32
-    # Buffer data pointer
+    """Number of channels (1-mono, 2-stereo, ...)."""
     var data: Pointer[NoneType, MutUntrackedOrigin]
+    """Buffer data pointer."""
 
     def __init__(out self, frameCount: UInt32, sampleRate: UInt32, sampleSize: UInt32, channels: UInt32, data: Pointer[NoneType, MutUntrackedOrigin]):
+        """Create a `Wave` value.
+
+        Args:
+            frameCount: Total number of frames (considering channels).
+            sampleRate: Frequency (samples per second).
+            sampleSize: Bit depth (bits per sample): 8, 16, 32 (24 not supported).
+            channels: Number of channels (1-mono, 2-stereo, ...).
+            data: Buffer data pointer.
+        """
         self.frameCount = frameCount
         self.sampleRate = sampleRate
         self.sampleSize = sampleSize
@@ -1045,10 +1679,23 @@ struct Wave(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Wave) -> Self:
+        """Create a `Wave` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Wave(UInt32(value.frameCount), UInt32(value.sampleRate), UInt32(value.sampleSize), UInt32(value.channels), value.data)
 
     @always_inline
     def to_raw(self) -> raw_types.Wave:
+        """Convert this `Wave` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Wave(c_uint(self.frameCount), c_uint(self.sampleRate), c_uint(self.sampleSize), c_uint(self.channels), self.data)
 
 @always_inline
@@ -1059,20 +1706,29 @@ def _to_raw_wave(value: Wave) -> raw_types.Wave:
 def _from_raw_wave(value: raw_types.Wave) -> Wave:
     return Wave.from_raw(value)
 
-# AudioStream, custom audio stream
 struct AudioStream(TrivialRegisterPassable):
-    # Pointer to internal data used by the audio system
+    """AudioStream, custom audio stream."""
     var buffer: Pointer[rAudioBuffer, MutUntrackedOrigin]
-    # Pointer to internal data processor, useful for audio effects
+    """Pointer to internal data used by the audio system."""
     var processor: Pointer[rAudioProcessor, MutUntrackedOrigin]
-    # Frequency (samples per second)
+    """Pointer to internal data processor, useful for audio effects."""
     var sampleRate: UInt32
-    # Bit depth (bits per sample): 8, 16, 32 (24 not supported)
+    """Frequency (samples per second)."""
     var sampleSize: UInt32
-    # Number of channels (1-mono, 2-stereo, ...)
+    """Bit depth (bits per sample): 8, 16, 32 (24 not supported)."""
     var channels: UInt32
+    """Number of channels (1-mono, 2-stereo, ...)."""
 
     def __init__(out self, buffer: Pointer[rAudioBuffer, MutUntrackedOrigin], processor: Pointer[rAudioProcessor, MutUntrackedOrigin], sampleRate: UInt32, sampleSize: UInt32, channels: UInt32):
+        """Create a `AudioStream` value.
+
+        Args:
+            buffer: Pointer to internal data used by the audio system.
+            processor: Pointer to internal data processor, useful for audio effects.
+            sampleRate: Frequency (samples per second).
+            sampleSize: Bit depth (bits per sample): 8, 16, 32 (24 not supported).
+            channels: Number of channels (1-mono, 2-stereo, ...).
+        """
         self.buffer = buffer
         self.processor = processor
         self.sampleRate = sampleRate
@@ -1082,10 +1738,23 @@ struct AudioStream(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.AudioStream) -> Self:
+        """Create a `AudioStream` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return AudioStream(value.buffer.unsafe_bitcast[rAudioBuffer](), value.processor.unsafe_bitcast[rAudioProcessor](), UInt32(value.sampleRate), UInt32(value.sampleSize), UInt32(value.channels))
 
     @always_inline
     def to_raw(self) -> raw_types.AudioStream:
+        """Convert this `AudioStream` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.AudioStream(self.buffer.unsafe_bitcast[raw_types.rAudioBuffer](), self.processor.unsafe_bitcast[raw_types.rAudioProcessor](), c_uint(self.sampleRate), c_uint(self.sampleSize), c_uint(self.channels))
 
 @always_inline
@@ -1096,24 +1765,43 @@ def _to_raw_audio_stream(value: AudioStream) -> raw_types.AudioStream:
 def _from_raw_audio_stream(value: raw_types.AudioStream) -> AudioStream:
     return AudioStream.from_raw(value)
 
-# Sound
 struct Sound(TrivialRegisterPassable):
-    # Audio stream
+    """Sound."""
     var stream: AudioStream
-    # Total number of frames (considering channels)
+    """Audio stream."""
     var frameCount: UInt32
+    """Total number of frames (considering channels)."""
 
     def __init__(out self, stream: AudioStream, frameCount: UInt32):
+        """Create a `Sound` value.
+
+        Args:
+            stream: Audio stream.
+            frameCount: Total number of frames (considering channels).
+        """
         self.stream = stream
         self.frameCount = frameCount
 
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Sound) -> Self:
+        """Create a `Sound` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Sound(_from_raw_audio_stream(value.stream), UInt32(value.frameCount))
 
     @always_inline
     def to_raw(self) -> raw_types.Sound:
+        """Convert this `Sound` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Sound(_to_raw_audio_stream(self.stream), c_uint(self.frameCount))
 
 @always_inline
@@ -1124,20 +1812,29 @@ def _to_raw_sound(value: Sound) -> raw_types.Sound:
 def _from_raw_sound(value: raw_types.Sound) -> Sound:
     return Sound.from_raw(value)
 
-# Music, audio stream, anything longer than ~10 seconds should be streamed
 struct Music(TrivialRegisterPassable):
-    # Audio stream
+    """Music, audio stream, anything longer than ~10 seconds should be streamed."""
     var stream: AudioStream
-    # Total number of frames (considering channels)
+    """Audio stream."""
     var frameCount: UInt32
-    # Music looping enable
+    """Total number of frames (considering channels)."""
     var looping: Bool
-    # Type of music context (audio filetype)
+    """Music looping enable."""
     var ctxType: Int32
-    # Audio context data, depends on type
+    """Type of music context (audio filetype)."""
     var ctxData: Pointer[NoneType, MutUntrackedOrigin]
+    """Audio context data, depends on type."""
 
     def __init__(out self, stream: AudioStream, frameCount: UInt32, looping: Bool, ctxType: Int32, ctxData: Pointer[NoneType, MutUntrackedOrigin]):
+        """Create a `Music` value.
+
+        Args:
+            stream: Audio stream.
+            frameCount: Total number of frames (considering channels).
+            looping: Music looping enable.
+            ctxType: Type of music context (audio filetype).
+            ctxData: Audio context data, depends on type.
+        """
         self.stream = stream
         self.frameCount = frameCount
         self.looping = looping
@@ -1147,10 +1844,23 @@ struct Music(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.Music) -> Self:
+        """Create a `Music` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return Music(_from_raw_audio_stream(value.stream), UInt32(value.frameCount), value.looping, Int32(value.ctxType), value.ctxData)
 
     @always_inline
     def to_raw(self) -> raw_types.Music:
+        """Convert this `Music` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.Music(_to_raw_audio_stream(self.stream), c_uint(self.frameCount), self.looping, c_int(self.ctxType), self.ctxData)
 
 @always_inline
@@ -1161,28 +1871,41 @@ def _to_raw_music(value: Music) -> raw_types.Music:
 def _from_raw_music(value: raw_types.Music) -> Music:
     return Music.from_raw(value)
 
-# VrDeviceInfo, Head-Mounted-Display device parameters
 struct VrDeviceInfo(TrivialRegisterPassable):
-    # Horizontal resolution in pixels
+    """VrDeviceInfo, Head-Mounted-Display device parameters."""
     var hResolution: Int32
-    # Vertical resolution in pixels
+    """Horizontal resolution in pixels."""
     var vResolution: Int32
-    # Horizontal size in meters
+    """Vertical resolution in pixels."""
     var hScreenSize: Float32
-    # Vertical size in meters
+    """Horizontal size in meters."""
     var vScreenSize: Float32
-    # Distance between eye and display in meters
+    """Vertical size in meters."""
     var eyeToScreenDistance: Float32
-    # Lens separation distance in meters
+    """Distance between eye and display in meters."""
     var lensSeparationDistance: Float32
-    # IPD (distance between pupils) in meters
+    """Lens separation distance in meters."""
     var interpupillaryDistance: Float32
-    # Lens distortion constant parameters
+    """IPD (distance between pupils) in meters."""
     var lensDistortionValues: SIMD[DType.float32, 4]
-    # Chromatic aberration correction parameters
+    """Lens distortion constant parameters."""
     var chromaAbCorrection: SIMD[DType.float32, 4]
+    """Chromatic aberration correction parameters."""
 
     def __init__(out self, hResolution: Int32, vResolution: Int32, hScreenSize: Float32, vScreenSize: Float32, eyeToScreenDistance: Float32, lensSeparationDistance: Float32, interpupillaryDistance: Float32, lensDistortionValues: SIMD[DType.float32, 4], chromaAbCorrection: SIMD[DType.float32, 4]):
+        """Create a `VrDeviceInfo` value.
+
+        Args:
+            hResolution: Horizontal resolution in pixels.
+            vResolution: Vertical resolution in pixels.
+            hScreenSize: Horizontal size in meters.
+            vScreenSize: Vertical size in meters.
+            eyeToScreenDistance: Distance between eye and display in meters.
+            lensSeparationDistance: Lens separation distance in meters.
+            interpupillaryDistance: IPD (distance between pupils) in meters.
+            lensDistortionValues: Lens distortion constant parameters.
+            chromaAbCorrection: Chromatic aberration correction parameters.
+        """
         self.hResolution = hResolution
         self.vResolution = vResolution
         self.hScreenSize = hScreenSize
@@ -1196,10 +1919,23 @@ struct VrDeviceInfo(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.VrDeviceInfo) -> Self:
+        """Create a `VrDeviceInfo` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return VrDeviceInfo(Int32(value.hResolution), Int32(value.vResolution), Float32(value.hScreenSize), Float32(value.vScreenSize), Float32(value.eyeToScreenDistance), Float32(value.lensSeparationDistance), Float32(value.interpupillaryDistance), value.lensDistortionValues, value.chromaAbCorrection)
 
     @always_inline
     def to_raw(self) -> raw_types.VrDeviceInfo:
+        """Convert this `VrDeviceInfo` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.VrDeviceInfo(c_int(self.hResolution), c_int(self.vResolution), c_float(self.hScreenSize), c_float(self.vScreenSize), c_float(self.eyeToScreenDistance), c_float(self.lensSeparationDistance), c_float(self.interpupillaryDistance), self.lensDistortionValues, self.chromaAbCorrection)
 
 @always_inline
@@ -1210,28 +1946,44 @@ def _to_raw_vr_device_info(value: VrDeviceInfo) -> raw_types.VrDeviceInfo:
 def _from_raw_vr_device_info(value: raw_types.VrDeviceInfo) -> VrDeviceInfo:
     return VrDeviceInfo.from_raw(value)
 
-# VrStereoConfig, VR stereo rendering configuration for simulator
 struct VrStereoConfig(TrivialRegisterPassable):
-    # VR projection matrices (per eye)
+    """VrStereoConfig, VR stereo rendering configuration for simulator."""
     var projection_0: Matrix
+    """VR projection matrices (per eye)."""
     var projection_1: Matrix
-    # VR view offset matrices (per eye)
+    """VR projection matrices (per eye)."""
     var viewOffset_0: Matrix
+    """VR view offset matrices (per eye)."""
     var viewOffset_1: Matrix
-    # VR left lens center
+    """VR view offset matrices (per eye)."""
     var leftLensCenter: SIMD[DType.float32, 2]
-    # VR right lens center
+    """VR left lens center."""
     var rightLensCenter: SIMD[DType.float32, 2]
-    # VR left screen center
+    """VR right lens center."""
     var leftScreenCenter: SIMD[DType.float32, 2]
-    # VR right screen center
+    """VR left screen center."""
     var rightScreenCenter: SIMD[DType.float32, 2]
-    # VR distortion scale
+    """VR right screen center."""
     var scale: SIMD[DType.float32, 2]
-    # VR distortion scale in
+    """VR distortion scale."""
     var scaleIn: SIMD[DType.float32, 2]
+    """VR distortion scale in."""
 
     def __init__(out self, projection_0: Matrix, projection_1: Matrix, viewOffset_0: Matrix, viewOffset_1: Matrix, leftLensCenter: SIMD[DType.float32, 2], rightLensCenter: SIMD[DType.float32, 2], leftScreenCenter: SIMD[DType.float32, 2], rightScreenCenter: SIMD[DType.float32, 2], scale: SIMD[DType.float32, 2], scaleIn: SIMD[DType.float32, 2]):
+        """Create a `VrStereoConfig` value.
+
+        Args:
+            projection_0: VR projection matrices (per eye).
+            projection_1: VR projection matrices (per eye).
+            viewOffset_0: VR view offset matrices (per eye).
+            viewOffset_1: VR view offset matrices (per eye).
+            leftLensCenter: VR left lens center.
+            rightLensCenter: VR right lens center.
+            leftScreenCenter: VR left screen center.
+            rightScreenCenter: VR right screen center.
+            scale: VR distortion scale.
+            scaleIn: VR distortion scale in.
+        """
         self.projection_0 = projection_0
         self.projection_1 = projection_1
         self.viewOffset_0 = viewOffset_0
@@ -1246,10 +1998,23 @@ struct VrStereoConfig(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.VrStereoConfig) -> Self:
+        """Create a `VrStereoConfig` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return VrStereoConfig(_from_raw_matrix(value.projection_0), _from_raw_matrix(value.projection_1), _from_raw_matrix(value.viewOffset_0), _from_raw_matrix(value.viewOffset_1), value.leftLensCenter, value.rightLensCenter, value.leftScreenCenter, value.rightScreenCenter, value.scale, value.scaleIn)
 
     @always_inline
     def to_raw(self) -> raw_types.VrStereoConfig:
+        """Convert this `VrStereoConfig` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.VrStereoConfig(_to_raw_matrix(self.projection_0), _to_raw_matrix(self.projection_1), _to_raw_matrix(self.viewOffset_0), _to_raw_matrix(self.viewOffset_1), self.leftLensCenter, self.rightLensCenter, self.leftScreenCenter, self.rightScreenCenter, self.scale, self.scaleIn)
 
 @always_inline
@@ -1260,24 +2025,43 @@ def _to_raw_vr_stereo_config(value: VrStereoConfig) -> raw_types.VrStereoConfig:
 def _from_raw_vr_stereo_config(value: raw_types.VrStereoConfig) -> VrStereoConfig:
     return VrStereoConfig.from_raw(value)
 
-# File path list
 struct FilePathList(TrivialRegisterPassable):
-    # Filepaths entries count
+    """File path list."""
     var count: UInt32
-    # Filepaths entries
+    """Filepaths entries count."""
     var paths: Pointer[Pointer[c_char, MutUntrackedOrigin], MutUntrackedOrigin]
+    """Filepaths entries."""
 
     def __init__(out self, count: UInt32, paths: Pointer[Pointer[c_char, MutUntrackedOrigin], MutUntrackedOrigin]):
+        """Create a `FilePathList` value.
+
+        Args:
+            count: Filepaths entries count.
+            paths: Filepaths entries.
+        """
         self.count = count
         self.paths = paths
 
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.FilePathList) -> Self:
+        """Create a `FilePathList` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return FilePathList(UInt32(value.count), value.paths)
 
     @always_inline
     def to_raw(self) -> raw_types.FilePathList:
+        """Convert this `FilePathList` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.FilePathList(c_uint(self.count), self.paths)
 
 @always_inline
@@ -1288,16 +2072,23 @@ def _to_raw_file_path_list(value: FilePathList) -> raw_types.FilePathList:
 def _from_raw_file_path_list(value: raw_types.FilePathList) -> FilePathList:
     return FilePathList.from_raw(value)
 
-# Automation event
 struct AutomationEvent(TrivialRegisterPassable):
-    # Event frame
+    """Automation event."""
     var frame: UInt32
-    # Event type (AutomationEventType)
+    """Event frame."""
     var type: UInt32
-    # Event parameters (if required)
+    """Event type (AutomationEventType)."""
     var params: SIMD[DType.int32, 4]
+    """Event parameters (if required)."""
 
     def __init__(out self, frame: UInt32, type: UInt32, params: SIMD[DType.int32, 4]):
+        """Create a `AutomationEvent` value.
+
+        Args:
+            frame: Event frame.
+            type: Event type (AutomationEventType).
+            params: Event parameters (if required).
+        """
         self.frame = frame
         self.type = type
         self.params = params
@@ -1305,10 +2096,23 @@ struct AutomationEvent(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.AutomationEvent) -> Self:
+        """Create a `AutomationEvent` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return AutomationEvent(UInt32(value.frame), UInt32(value.type), value.params)
 
     @always_inline
     def to_raw(self) -> raw_types.AutomationEvent:
+        """Convert this `AutomationEvent` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.AutomationEvent(c_uint(self.frame), c_uint(self.type), self.params)
 
 @always_inline
@@ -1319,16 +2123,23 @@ def _to_raw_automation_event(value: AutomationEvent) -> raw_types.AutomationEven
 def _from_raw_automation_event(value: raw_types.AutomationEvent) -> AutomationEvent:
     return AutomationEvent.from_raw(value)
 
-# Automation event list
 struct AutomationEventList(TrivialRegisterPassable):
-    # Events max entries (MAX_AUTOMATION_EVENTS)
+    """Automation event list."""
     var capacity: UInt32
-    # Events entries count
+    """Events max entries (MAX_AUTOMATION_EVENTS)."""
     var count: UInt32
-    # Events entries
+    """Events entries count."""
     var events: Pointer[AutomationEvent, MutUntrackedOrigin]
+    """Events entries."""
 
     def __init__(out self, capacity: UInt32, count: UInt32, events: Pointer[AutomationEvent, MutUntrackedOrigin]):
+        """Create a `AutomationEventList` value.
+
+        Args:
+            capacity: Events max entries (MAX_AUTOMATION_EVENTS).
+            count: Events entries count.
+            events: Events entries.
+        """
         self.capacity = capacity
         self.count = count
         self.events = events
@@ -1336,10 +2147,23 @@ struct AutomationEventList(TrivialRegisterPassable):
     @always_inline
     @staticmethod
     def from_raw(value: raw_types.AutomationEventList) -> Self:
+        """Create a `AutomationEventList` from its C-layout representation.
+
+        Args:
+            value: The raw value to convert.
+
+        Returns:
+            The converted public value.
+        """
         return AutomationEventList(UInt32(value.capacity), UInt32(value.count), value.events.unsafe_bitcast[AutomationEvent]())
 
     @always_inline
     def to_raw(self) -> raw_types.AutomationEventList:
+        """Convert this `AutomationEventList` to its C-layout representation.
+
+        Returns:
+            The converted raw value.
+        """
         return raw_types.AutomationEventList(c_uint(self.capacity), c_uint(self.count), self.events.unsafe_bitcast[raw_types.AutomationEvent]())
 
 @always_inline
@@ -1350,8 +2174,8 @@ def _to_raw_automation_event_list(value: AutomationEventList) -> raw_types.Autom
 def _from_raw_automation_event_list(value: raw_types.AutomationEventList) -> AutomationEventList:
     return AutomationEventList.from_raw(value)
 
-# Quaternion, 4 components (Vector4 alias)
 comptime Quaternion = Vector4
+"""Quaternion, 4 components (Vector4 alias)."""
 
 @always_inline
 def _to_raw_quaternion(value: Quaternion) -> raw_types.Quaternion:
@@ -1361,8 +2185,8 @@ def _to_raw_quaternion(value: Quaternion) -> raw_types.Quaternion:
 def _from_raw_quaternion(value: raw_types.Quaternion) -> Quaternion:
     return _from_raw_vector4(value)
 
-# Texture2D, same as Texture
 comptime Texture2D = Texture
+"""Texture2D, same as Texture."""
 
 @always_inline
 def _to_raw_texture_2d(value: Texture2D) -> raw_types.Texture2D:
@@ -1372,8 +2196,8 @@ def _to_raw_texture_2d(value: Texture2D) -> raw_types.Texture2D:
 def _from_raw_texture_2d(value: raw_types.Texture2D) -> Texture2D:
     return _from_raw_texture(value)
 
-# TextureCubemap, same as Texture
 comptime TextureCubemap = Texture
+"""TextureCubemap, same as Texture."""
 
 @always_inline
 def _to_raw_texture_cubemap(value: TextureCubemap) -> raw_types.TextureCubemap:
@@ -1383,8 +2207,8 @@ def _to_raw_texture_cubemap(value: TextureCubemap) -> raw_types.TextureCubemap:
 def _from_raw_texture_cubemap(value: raw_types.TextureCubemap) -> TextureCubemap:
     return _from_raw_texture(value)
 
-# RenderTexture2D, same as RenderTexture
 comptime RenderTexture2D = RenderTexture
+"""RenderTexture2D, same as RenderTexture."""
 
 @always_inline
 def _to_raw_render_texture_2d(value: RenderTexture2D) -> raw_types.RenderTexture2D:
@@ -1394,8 +2218,8 @@ def _to_raw_render_texture_2d(value: RenderTexture2D) -> raw_types.RenderTexture
 def _from_raw_render_texture_2d(value: raw_types.RenderTexture2D) -> RenderTexture2D:
     return _from_raw_render_texture(value)
 
-# Camera type fallback, defaults to Camera3D
 comptime Camera = Camera3D
+"""Camera type fallback, defaults to Camera3D."""
 
 @always_inline
 def _to_raw_camera(value: Camera) -> raw_types.Camera:

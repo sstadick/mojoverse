@@ -29,6 +29,51 @@ Code generation is fully automated and provides 100% coverage, although not ever
 
 - [Pixi](https://prefix.dev/) — installs Mojo 1.0.0, raylib, and the build toolchain.
 
+## Editor and LSP setup
+
+This repository includes workspace settings for the official
+[Mojo VS Code extension](https://github.com/modular/vscode-mojo), including
+format-on-save and automatic selection of the workspace-local Pixi environment.
+The same setup works in VS Code-compatible editors such as Cursor.
+
+```sh
+pixi install
+code .
+```
+
+Install the recommended Mojo and Python extensions when prompted, then open a
+`.mojo` file. The Mojo status item should show the SDK from
+`.pixi/envs/default`. Hover over a type or function for its summary and use
+signature help to see its documented arguments and return value. Public
+functions also expose snake-case parameter names in completion:
+
+```mojo
+from mojo_raylib import init_window, window_should_close
+
+init_window(800, 450, "LSP-ready raylib")
+if window_should_close():
+    pass
+```
+
+In a project that consumes `mojo_raylib`, run `pixi install` and open that
+project's root (the directory containing its `pixi.toml`). The LSP resolves the
+installed `mojo_raylib.mojoc` package from that project's Pixi environment, so
+no manual include path is required.
+
+If the extension does not find Mojo, run **Python: Select Interpreter** and
+choose `.pixi/envs/default/bin/python`. As a final fallback, set
+`mojo.sdk.path` to the absolute path of `.pixi/envs/default`; the extension
+requires an absolute SDK path for this override.
+
+The ergonomic API is documented at the package root. The `mojo_raylib.raw`
+subpackage is also documented, but intentionally exposes C-layout types,
+untracked pointers, and manual resource-lifetime requirements.
+
+```sh
+pixi run doc-check  # enforce complete, well-formed public docstrings
+pixi run docs       # write build/docs/mojo_raylib.json
+```
+
 ## Run an example
 
 ```sh
@@ -81,7 +126,13 @@ The Mojo bindings + C shim are emitted by a patched `rlparser` (`patch/rlparser.
 ```sh
 pixi run -e codegen generate      # regenerate mojo_raylib/ + native/mojo_raylib_shim.c
 pixi run -e codegen regen-check   # CI: fail if regeneration would change anything
+pixi run doc-check                # fail on missing or malformed API documentation
 ```
+
+The generator turns raylib's API comments into Mojo docstrings and adds
+structured `Args`, `Returns`, and ownership information so hover and signature
+help stay complete after every regeneration. Hand-written APIs follow Mojo's
+[docstring style guide](https://github.com/modular/modular/blob/main/mojo/stdlib/docs/docstring-style-guide.md).
 
 ## Layout
 

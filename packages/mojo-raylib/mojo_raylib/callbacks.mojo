@@ -19,27 +19,42 @@
 # type can't be carried here), so each function documents the exact C signature
 # its callback must have — getting it wrong is undefined behaviour.
 
+"""Register C-compatible callbacks with raylib's safe Mojo API.
+
+Callbacks are inferred compile-time parameters so Mojo can materialize stable C
+function pointers. Each helper documents the exact callback signature required
+by raylib.
+"""
+
 from std.ffi import c_char, c_int, c_uint, external_call
 import mojo_raylib.types as public_types
 from mojo_raylib.types import AudioStream
 
 
-def set_trace_log_callback[
-    CbT: ImplicitlyCopyable & Deinitable, //, cb: CbT
-]():
+def set_trace_log_callback[CbT: ImplicitlyCopyable & Deinitable, //, cb: CbT]():
     """Set a custom trace-log handler.
+
+    Parameters:
+        CbT: The inferred Mojo type of `cb`.
+        cb: The C-compatible callback function.
 
     Callback: `def(level: c_int, text: Pointer[c_char, ImmUntrackedOrigin]) abi("C")`.
     Routed through the native shim, which formats raylib's `va_list` message
     into a plain C string before invoking `cb`.
     """
-    external_call["mojo_raylib_SetTraceLogCallback", NoneType](materialize[cb]())
+    external_call["mojo_raylib_SetTraceLogCallback", NoneType](
+        materialize[cb]()
+    )
 
 
 def set_load_file_data_callback[
     CbT: ImplicitlyCopyable & Deinitable, //, cb: CbT
 ]():
     """Set a custom binary-file loader.
+
+    Parameters:
+        CbT: The inferred Mojo type of `cb`.
+        cb: The C-compatible callback function.
 
     Callback: `def(fileName: Pointer[c_char, ImmUntrackedOrigin], dataSize: Pointer[c_int, MutUntrackedOrigin]) -> Pointer[c_uchar, MutUntrackedOrigin] abi("C")`.
     """
@@ -51,6 +66,10 @@ def set_save_file_data_callback[
 ]():
     """Set a custom binary-file saver.
 
+    Parameters:
+        CbT: The inferred Mojo type of `cb`.
+        cb: The C-compatible callback function.
+
     Callback: `def(fileName: Pointer[c_char, ImmUntrackedOrigin], data: Pointer[NoneType, MutUntrackedOrigin], dataSize: c_int) -> Bool abi("C")`.
     """
     external_call["SetSaveFileDataCallback", NoneType](materialize[cb]())
@@ -60,6 +79,10 @@ def set_load_file_text_callback[
     CbT: ImplicitlyCopyable & Deinitable, //, cb: CbT
 ]():
     """Set a custom text-file loader.
+
+    Parameters:
+        CbT: The inferred Mojo type of `cb`.
+        cb: The C-compatible callback function.
 
     Callback: `def(fileName: Pointer[c_char, ImmUntrackedOrigin]) -> Pointer[c_char, MutUntrackedOrigin] abi("C")`.
     """
@@ -71,6 +94,10 @@ def set_save_file_text_callback[
 ]():
     """Set a custom text-file saver.
 
+    Parameters:
+        CbT: The inferred Mojo type of `cb`.
+        cb: The C-compatible callback function.
+
     Callback: `def(fileName: Pointer[c_char, ImmUntrackedOrigin], text: Pointer[c_char, ImmUntrackedOrigin]) -> Bool abi("C")`.
     """
     external_call["SetSaveFileTextCallback", NoneType](materialize[cb]())
@@ -81,6 +108,10 @@ def attach_audio_mixed_processor[
 ]():
     """Attach an audio processor to the entire audio pipeline.
 
+    Parameters:
+        CbT: The inferred Mojo type of `cb`.
+        cb: The C-compatible callback function.
+
     Callback: `def(bufferData: Pointer[NoneType, MutUntrackedOrigin], frames: c_uint) abi("C")`,
     receiving `frames` x 2 samples as `float` (stereo).
     """
@@ -90,7 +121,12 @@ def attach_audio_mixed_processor[
 def detach_audio_mixed_processor[
     CbT: ImplicitlyCopyable & Deinitable, //, cb: CbT
 ]():
-    """Detach a pipeline audio processor previously attached with the same `cb`."""
+    """Detach a pipeline audio processor previously attached with the same `cb`.
+
+    Parameters:
+        CbT: The inferred Mojo type of `cb`.
+        cb: The C-compatible callback function.
+    """
     external_call["DetachAudioMixedProcessor", NoneType](materialize[cb]())
 
 
@@ -98,6 +134,13 @@ def set_audio_stream_callback[
     CbT: ImplicitlyCopyable & Deinitable, //, cb: CbT
 ](stream: AudioStream):
     """Set the audio-thread callback that requests new data for `stream`.
+
+    Parameters:
+        CbT: The inferred Mojo type of `cb`.
+        cb: The C-compatible callback function.
+
+    Args:
+        stream: The audio stream that receives data from the callback.
 
     Callback: `def(bufferData: Pointer[NoneType, MutUntrackedOrigin], frames: c_uint) abi("C")`.
     """
@@ -112,6 +155,13 @@ def attach_audio_stream_processor[
 ](stream: AudioStream):
     """Attach an audio processor to `stream` (`frames` x 2 `float` samples, stereo).
 
+    Parameters:
+        CbT: The inferred Mojo type of `cb`.
+        cb: The C-compatible callback function.
+
+    Args:
+        stream: The audio stream to process.
+
     Callback: `def(bufferData: Pointer[NoneType, MutUntrackedOrigin], frames: c_uint) abi("C")`.
     """
     var raw_stream = public_types._to_raw_audio_stream(stream)
@@ -123,7 +173,15 @@ def attach_audio_stream_processor[
 def detach_audio_stream_processor[
     CbT: ImplicitlyCopyable & Deinitable, //, cb: CbT
 ](stream: AudioStream):
-    """Detach a processor previously attached to `stream` with the same `cb`."""
+    """Detach a processor previously attached to `stream` with the same `cb`.
+
+    Parameters:
+        CbT: The inferred Mojo type of `cb`.
+        cb: The C-compatible callback function.
+
+    Args:
+        stream: The audio stream from which to detach the processor.
+    """
     var raw_stream = public_types._to_raw_audio_stream(stream)
     external_call["mojo_raylib_DetachAudioStreamProcessor", NoneType](
         Pointer(to=raw_stream), materialize[cb]()

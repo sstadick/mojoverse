@@ -2,6 +2,12 @@
 # Low-level raylib/raymath type declarations
 # Source: src/raylib.h
 
+"""Low-level C-layout types used by the generated raylib bindings.
+
+Prefer the value types exported from `mojo_raylib` in application code.
+These declarations mirror raylib's ABI and may contain untracked pointers.
+"""
+
 from std.ffi import CStringSlice, c_char, c_uchar, c_short, c_ushort, c_int, c_uint, c_long, c_ulong, c_float, c_double, external_call
 from std.memory import stack_allocation
 from std.collections import InlineArray
@@ -10,1224 +16,1258 @@ from std.collections import InlineArray
 # Opaque forward-declared types (raylib internals)
 @fieldwise_init
 struct rAudioBuffer(Copyable, ImplicitlyCopyable, Movable):
+    """Opaque raylib audio-buffer handle used by the C ABI."""
     var _opaque: c_int
+    """Placeholder storage; do not access this field directly."""
 
 @fieldwise_init
 struct rAudioProcessor(Copyable, ImplicitlyCopyable, Movable):
+    """Opaque raylib audio-processor handle used by the C ABI."""
     var _opaque: c_int
+    """Placeholder storage; do not access this field directly."""
 
 @fieldwise_init
 struct float3(TrivialRegisterPassable):
+    """C-layout storage for a three-component raymath float vector."""
     var v0: c_float
+    """Component 0."""
     var v1: c_float
+    """Component 1."""
     var v2: c_float
+    """Component 2."""
 
 @fieldwise_init
 struct float16(TrivialRegisterPassable):
+    """C-layout storage for sixteen raymath float values."""
     var v0: c_float
+    """Component 0."""
     var v1: c_float
+    """Component 1."""
     var v2: c_float
+    """Component 2."""
     var v3: c_float
+    """Component 3."""
     var v4: c_float
+    """Component 4."""
     var v5: c_float
+    """Component 5."""
     var v6: c_float
+    """Component 6."""
     var v7: c_float
+    """Component 7."""
     var v8: c_float
+    """Component 8."""
     var v9: c_float
+    """Component 9."""
     var v10: c_float
+    """Component 10."""
     var v11: c_float
+    """Component 11."""
     var v12: c_float
+    """Component 12."""
     var v13: c_float
+    """Component 13."""
     var v14: c_float
+    """Component 14."""
     var v15: c_float
+    """Component 15."""
 
-# Quaternion, 4 components (Vector4 alias)
 comptime Quaternion = Vector4
+"""Quaternion, 4 components (Vector4 alias)."""
 
-# Texture2D, same as Texture
 comptime Texture2D = Texture
+"""Texture2D, same as Texture."""
 
-# TextureCubemap, same as Texture
 comptime TextureCubemap = Texture
+"""TextureCubemap, same as Texture."""
 
-# RenderTexture2D, same as RenderTexture
 comptime RenderTexture2D = RenderTexture
+"""RenderTexture2D, same as RenderTexture."""
 
-# Camera type fallback, defaults to Camera3D
 comptime Camera = Camera3D
+"""Camera type fallback, defaults to Camera3D."""
 
-# Anim pose, an array of Transform[]
 comptime ModelAnimPose = Pointer[Transform, MutUntrackedOrigin]
+"""Anim pose, an array of Transform[]."""
 
-# Vector2, 2 components
 @fieldwise_init
 struct Vector2(TrivialRegisterPassable):
-    # Vector x component
+    """Vector2, 2 components."""
     var x: c_float
-    # Vector y component
+    """Vector x component."""
     var y: c_float
+    """Vector y component."""
 
-# Vector3, 3 components
 @fieldwise_init
 struct Vector3(TrivialRegisterPassable):
-    # Vector x component
+    """Vector3, 3 components."""
     var x: c_float
-    # Vector y component
+    """Vector x component."""
     var y: c_float
-    # Vector z component
+    """Vector y component."""
     var z: c_float
+    """Vector z component."""
 
-# Vector4, 4 components
 @fieldwise_init
 struct Vector4(TrivialRegisterPassable):
-    # Vector x component
+    """Vector4, 4 components."""
     var x: c_float
-    # Vector y component
+    """Vector x component."""
     var y: c_float
-    # Vector z component
+    """Vector y component."""
     var z: c_float
-    # Vector w component
+    """Vector z component."""
     var w: c_float
+    """Vector w component."""
 
-# Matrix, 4x4 components, column major, OpenGL style, right-handed
 @fieldwise_init
 struct Matrix(TrivialRegisterPassable):
-    # Matrix first row (4 components)
+    """Matrix, 4x4 components, column major, OpenGL style, right-handed."""
     var m0: c_float
-    # Matrix first row (4 components)
+    """Matrix first row (4 components)."""
     var m4: c_float
-    # Matrix first row (4 components)
+    """Matrix first row (4 components)."""
     var m8: c_float
-    # Matrix first row (4 components)
+    """Matrix first row (4 components)."""
     var m12: c_float
-    # Matrix second row (4 components)
+    """Matrix first row (4 components)."""
     var m1: c_float
-    # Matrix second row (4 components)
+    """Matrix second row (4 components)."""
     var m5: c_float
-    # Matrix second row (4 components)
+    """Matrix second row (4 components)."""
     var m9: c_float
-    # Matrix second row (4 components)
+    """Matrix second row (4 components)."""
     var m13: c_float
-    # Matrix third row (4 components)
+    """Matrix second row (4 components)."""
     var m2: c_float
-    # Matrix third row (4 components)
+    """Matrix third row (4 components)."""
     var m6: c_float
-    # Matrix third row (4 components)
+    """Matrix third row (4 components)."""
     var m10: c_float
-    # Matrix third row (4 components)
+    """Matrix third row (4 components)."""
     var m14: c_float
-    # Matrix fourth row (4 components)
+    """Matrix third row (4 components)."""
     var m3: c_float
-    # Matrix fourth row (4 components)
+    """Matrix fourth row (4 components)."""
     var m7: c_float
-    # Matrix fourth row (4 components)
+    """Matrix fourth row (4 components)."""
     var m11: c_float
-    # Matrix fourth row (4 components)
+    """Matrix fourth row (4 components)."""
     var m15: c_float
+    """Matrix fourth row (4 components)."""
 
-# Color, 4 components, R8G8B8A8 (32bit)
 @fieldwise_init
 struct Color(TrivialRegisterPassable):
-    # Color red value
+    """Color, 4 components, R8G8B8A8 (32bit)."""
     var r: c_uchar
-    # Color green value
+    """Color red value."""
     var g: c_uchar
-    # Color blue value
+    """Color green value."""
     var b: c_uchar
-    # Color alpha value
+    """Color blue value."""
     var a: c_uchar
+    """Color alpha value."""
 
-# Rectangle, 4 components
 @fieldwise_init
 struct Rectangle(TrivialRegisterPassable):
-    # Rectangle top-left corner position x
+    """Rectangle, 4 components."""
     var x: c_float
-    # Rectangle top-left corner position y
+    """Rectangle top-left corner position x."""
     var y: c_float
-    # Rectangle width
+    """Rectangle top-left corner position y."""
     var width: c_float
-    # Rectangle height
+    """Rectangle width."""
     var height: c_float
+    """Rectangle height."""
 
-# Image, pixel data stored in CPU memory (RAM)
 @fieldwise_init
 struct Image(TrivialRegisterPassable):
-    # Image raw data
+    """Image, pixel data stored in CPU memory (RAM)."""
     var data: Pointer[NoneType, MutUntrackedOrigin]
-    # Image base width
+    """Image raw data."""
     var width: c_int
-    # Image base height
+    """Image base width."""
     var height: c_int
-    # Mipmap levels, 1 by default
+    """Image base height."""
     var mipmaps: c_int
-    # Data format (PixelFormat type)
+    """Mipmap levels, 1 by default."""
     var format: c_int
+    """Data format (PixelFormat type)."""
 
-# Texture, tex data stored in GPU memory (VRAM)
 @fieldwise_init
 struct Texture(TrivialRegisterPassable):
-    # OpenGL texture id
+    """Texture, tex data stored in GPU memory (VRAM)."""
     var id: c_uint
-    # Texture base width
+    """OpenGL texture id."""
     var width: c_int
-    # Texture base height
+    """Texture base width."""
     var height: c_int
-    # Mipmap levels, 1 by default
+    """Texture base height."""
     var mipmaps: c_int
-    # Data format (PixelFormat type)
+    """Mipmap levels, 1 by default."""
     var format: c_int
+    """Data format (PixelFormat type)."""
 
-# RenderTexture, fbo for texture rendering
 @fieldwise_init
 struct RenderTexture(TrivialRegisterPassable):
-    # OpenGL framebuffer object id
+    """RenderTexture, fbo for texture rendering."""
     var id: c_uint
-    # Color buffer attachment texture
+    """OpenGL framebuffer object id."""
     var texture: Texture
-    # Depth buffer attachment texture
+    """Color buffer attachment texture."""
     var depth: Texture
+    """Depth buffer attachment texture."""
 
-# NPatchInfo, n-patch layout info
 @fieldwise_init
 struct NPatchInfo(TrivialRegisterPassable):
-    # Texture source rectangle
+    """NPatchInfo, n-patch layout info."""
     var source: Rectangle
-    # Left border offset
+    """Texture source rectangle."""
     var left: c_int
-    # Top border offset
+    """Left border offset."""
     var top: c_int
-    # Right border offset
+    """Top border offset."""
     var right: c_int
-    # Bottom border offset
+    """Right border offset."""
     var bottom: c_int
-    # Layout of the n-patch: 3x3, 1x3 or 3x1
+    """Bottom border offset."""
     var layout: c_int
+    """Layout of the n-patch: 3x3, 1x3 or 3x1."""
 
-# GlyphInfo, font characters glyphs info
 @fieldwise_init
 struct GlyphInfo(TrivialRegisterPassable):
-    # Character value (Unicode)
+    """GlyphInfo, font characters glyphs info."""
     var value: c_int
-    # Character offset X when drawing
+    """Character value (Unicode)."""
     var offsetX: c_int
-    # Character offset Y when drawing
+    """Character offset X when drawing."""
     var offsetY: c_int
-    # Character advance position X
+    """Character offset Y when drawing."""
     var advanceX: c_int
-    # Character image data
+    """Character advance position X."""
     var image: Image
+    """Character image data."""
 
-# Font, font texture and GlyphInfo array data
 @fieldwise_init
 struct Font(TrivialRegisterPassable):
-    # Base size (default chars height)
+    """Font, font texture and GlyphInfo array data."""
     var baseSize: c_int
-    # Number of glyph characters
+    """Base size (default chars height)."""
     var glyphCount: c_int
-    # Padding around the glyph characters
+    """Number of glyph characters."""
     var glyphPadding: c_int
-    # Texture atlas containing the glyphs
+    """Padding around the glyph characters."""
     var texture: Texture2D
-    # Rectangles in texture for the glyphs
+    """Texture atlas containing the glyphs."""
     var recs: Pointer[Rectangle, MutUntrackedOrigin]
-    # Glyphs info data
+    """Rectangles in texture for the glyphs."""
     var glyphs: Pointer[GlyphInfo, MutUntrackedOrigin]
+    """Glyphs info data."""
 
-# Camera, defines position/orientation in 3d space
 @fieldwise_init
 struct Camera3D(TrivialRegisterPassable):
-    # Camera position
+    """Camera, defines position/orientation in 3d space."""
     var position: Vector3
-    # Camera target it looks-at
+    """Camera position."""
     var target: Vector3
-    # Camera up vector (rotation over its axis)
+    """Camera target it looks-at."""
     var up: Vector3
-    # Camera field-of-view aperture in Y (degrees) in perspective, used as near plane height in world units in orthographic
+    """Camera up vector (rotation over its axis)."""
     var fovy: c_float
-    # Camera projection: CAMERA_PERSPECTIVE or CAMERA_ORTHOGRAPHIC
+    """Camera field-of-view aperture in Y (degrees) in perspective, used as near plane height in world units in orthographic."""
     var projection: c_int
+    """Camera projection: CAMERA_PERSPECTIVE or CAMERA_ORTHOGRAPHIC."""
 
-# Camera2D, defines position/orientation in 2d space
 @fieldwise_init
 struct Camera2D(TrivialRegisterPassable):
-    # Camera offset (screen space offset from window origin)
+    """Camera2D, defines position/orientation in 2d space."""
     var offset: Vector2
-    # Camera target (world space target point that is mapped to screen space offset)
+    """Camera offset (screen space offset from window origin)."""
     var target: Vector2
-    # Camera rotation in degrees (pivots around target)
+    """Camera target (world space target point that is mapped to screen space offset)."""
     var rotation: c_float
-    # Camera zoom (scaling around target), must not be set to 0, set to 1.0f for no scale
+    """Camera rotation in degrees (pivots around target)."""
     var zoom: c_float
+    """Camera zoom (scaling around target), must not be set to 0, set to 1.0f for no scale."""
 
-# Mesh, vertex data and vao/vbo
 @fieldwise_init
 struct Mesh(TrivialRegisterPassable):
-    # Number of vertices stored in arrays
+    """Mesh, vertex data and vao/vbo."""
     var vertexCount: c_int
-    # Number of triangles stored (indexed or not)
+    """Number of vertices stored in arrays."""
     var triangleCount: c_int
-    # Vertex position (XYZ - 3 components per vertex) (shader-location = 0)
+    """Number of triangles stored (indexed or not)."""
     var vertices: Pointer[c_float, MutUntrackedOrigin]
-    # Vertex texture coordinates (UV - 2 components per vertex) (shader-location = 1)
+    """Vertex position (XYZ - 3 components per vertex) (shader-location = 0)."""
     var texcoords: Pointer[c_float, MutUntrackedOrigin]
-    # Vertex texture second coordinates (UV - 2 components per vertex) (shader-location = 5)
+    """Vertex texture coordinates (UV - 2 components per vertex) (shader-location = 1)."""
     var texcoords2: Pointer[c_float, MutUntrackedOrigin]
-    # Vertex normals (XYZ - 3 components per vertex) (shader-location = 2)
+    """Vertex texture second coordinates (UV - 2 components per vertex) (shader-location = 5)."""
     var normals: Pointer[c_float, MutUntrackedOrigin]
-    # Vertex tangents (XYZW - 4 components per vertex) (shader-location = 4)
+    """Vertex normals (XYZ - 3 components per vertex) (shader-location = 2)."""
     var tangents: Pointer[c_float, MutUntrackedOrigin]
-    # Vertex colors (RGBA - 4 components per vertex) (shader-location = 3)
+    """Vertex tangents (XYZW - 4 components per vertex) (shader-location = 4)."""
     var colors: Pointer[c_uchar, MutUntrackedOrigin]
-    # Vertex indices (in case vertex data comes indexed)
+    """Vertex colors (RGBA - 4 components per vertex) (shader-location = 3)."""
     var indices: Pointer[c_ushort, MutUntrackedOrigin]
-    # Number of bones (MAX: 256 bones)
+    """Vertex indices (in case vertex data comes indexed)."""
     var boneCount: c_int
-    # Vertex bone indices, up to 4 bones influence by vertex (skinning) (shader-location = 6)
+    """Number of bones (MAX: 256 bones)."""
     var boneIndices: Pointer[c_uchar, MutUntrackedOrigin]
-    # Vertex bone weight, up to 4 bones influence by vertex (skinning) (shader-location = 7)
+    """Vertex bone indices, up to 4 bones influence by vertex (skinning) (shader-location = 6)."""
     var boneWeights: Pointer[c_float, MutUntrackedOrigin]
-    # Animated vertex positions (after bones transformations)
+    """Vertex bone weight, up to 4 bones influence by vertex (skinning) (shader-location = 7)."""
     var animVertices: Pointer[c_float, MutUntrackedOrigin]
-    # Animated normals (after bones transformations)
+    """Animated vertex positions (after bones transformations)."""
     var animNormals: Pointer[c_float, MutUntrackedOrigin]
-    # OpenGL Vertex Array Object id
+    """Animated normals (after bones transformations)."""
     var vaoId: c_uint
-    # OpenGL Vertex Buffer Objects id (default vertex data)
+    """OpenGL Vertex Array Object id."""
     var vboId: Pointer[c_uint, MutUntrackedOrigin]
+    """OpenGL Vertex Buffer Objects id (default vertex data)."""
 
-# Shader
 @fieldwise_init
 struct Shader(TrivialRegisterPassable):
-    # Shader program id
+    """Shader."""
     var id: c_uint
-    # Shader locations array (RL_MAX_SHADER_LOCATIONS)
+    """Shader program id."""
     var locs: Pointer[c_int, MutUntrackedOrigin]
+    """Shader locations array (RL_MAX_SHADER_LOCATIONS)."""
 
-# MaterialMap
 @fieldwise_init
 struct MaterialMap(TrivialRegisterPassable):
-    # Material map texture
+    """MaterialMap."""
     var texture: Texture2D
-    # Material map color
+    """Material map texture."""
     var color: Color
-    # Material map value
+    """Material map color."""
     var value: c_float
+    """Material map value."""
 
-# Material, includes shader and maps
 @fieldwise_init
 struct Material(TrivialRegisterPassable):
-    # Material shader
+    """Material, includes shader and maps."""
     var shader: Shader
-    # Material maps array (MAX_MATERIAL_MAPS)
+    """Material shader."""
     var maps: Pointer[MaterialMap, MutUntrackedOrigin]
-    # Material generic parameters (if required)
+    """Material maps array (MAX_MATERIAL_MAPS)."""
     var params: SIMD[DType.float32, 4]
+    """Material generic parameters (if required)."""
 
-# Transform, vertex transformation data
 @fieldwise_init
 struct Transform(TrivialRegisterPassable):
-    # Translation
+    """Transform, vertex transformation data."""
     var translation: Vector3
-    # Rotation
+    """Translation."""
     var rotation: Quaternion
-    # Scale
+    """Rotation."""
     var scale: Vector3
+    """Scale."""
 
-# Bone, skeletal animation bone
 @fieldwise_init
 struct BoneInfo(TrivialRegisterPassable):
-    # Bone name
+    """Bone, skeletal animation bone."""
     var name: SIMD[DType.int8, 32]
-    # Bone parent
+    """Bone name."""
     var parent: c_int
+    """Bone parent."""
 
-# Skeleton, animation bones hierarchy
 @fieldwise_init
 struct ModelSkeleton(TrivialRegisterPassable):
-    # Number of bones
+    """Skeleton, animation bones hierarchy."""
     var boneCount: c_int
-    # Bones information (skeleton)
+    """Number of bones."""
     var bones: Pointer[BoneInfo, MutUntrackedOrigin]
-    # Bones base transformation (Transform[])
+    """Bones information (skeleton)."""
     var bindPose: ModelAnimPose
+    """Bones base transformation (Transform[])."""
 
-# Model, meshes, materials and animation data
 @fieldwise_init
 struct Model(TrivialRegisterPassable):
-    # Local transform matrix
+    """Model, meshes, materials and animation data."""
     var transform: Matrix
-    # Number of meshes
+    """Local transform matrix."""
     var meshCount: c_int
-    # Number of materials
+    """Number of meshes."""
     var materialCount: c_int
-    # Meshes array
+    """Number of materials."""
     var meshes: Pointer[Mesh, MutUntrackedOrigin]
-    # Materials array
+    """Meshes array."""
     var materials: Pointer[Material, MutUntrackedOrigin]
-    # Mesh material number
+    """Materials array."""
     var meshMaterial: Pointer[c_int, MutUntrackedOrigin]
-    # Skeleton for animation
+    """Mesh material number."""
     var skeleton: ModelSkeleton
-    # Current animation pose (Transform[])
+    """Skeleton for animation."""
     var currentPose: ModelAnimPose
-    # Bones animated transformation matrices
+    """Current animation pose (Transform[])."""
     var boneMatrices: Pointer[Matrix, MutUntrackedOrigin]
+    """Bones animated transformation matrices."""
 
-# ModelAnimation, contains a full animation sequence
 @fieldwise_init
 struct ModelAnimation(TrivialRegisterPassable):
-    # Animation name
+    """ModelAnimation, contains a full animation sequence."""
     var name: SIMD[DType.int8, 32]
-    # Number of bones (per pose)
+    """Animation name."""
     var boneCount: c_int
-    # Number of animation key frames
+    """Number of bones (per pose)."""
     var keyframeCount: c_int
-    # Animation sequence keyframe poses [keyframe][pose]
+    """Number of animation key frames."""
     var keyframePoses: Pointer[ModelAnimPose, MutUntrackedOrigin]
+    """Animation sequence keyframe poses [keyframe][pose]."""
 
-# Ray, ray for raycasting
 @fieldwise_init
 struct Ray(TrivialRegisterPassable):
-    # Ray position (origin)
+    """Ray, ray for raycasting."""
     var position: Vector3
-    # Ray direction (normalized)
+    """Ray position (origin)."""
     var direction: Vector3
+    """Ray direction (normalized)."""
 
-# RayCollision, ray hit information
 @fieldwise_init
 struct RayCollision(TrivialRegisterPassable):
-    # Did the ray hit something?
+    """RayCollision, ray hit information."""
     var hit: Bool
-    # Distance to the nearest hit
+    """Did the ray hit something?"""
     var distance: c_float
-    # Point of the nearest hit
+    """Distance to the nearest hit."""
     var point: Vector3
-    # Surface normal of hit
+    """Point of the nearest hit."""
     var normal: Vector3
+    """Surface normal of hit."""
 
-# BoundingBox
 @fieldwise_init
 struct BoundingBox(TrivialRegisterPassable):
-    # Minimum vertex box-corner
+    """BoundingBox."""
     var min: Vector3
-    # Maximum vertex box-corner
+    """Minimum vertex box-corner."""
     var max: Vector3
+    """Maximum vertex box-corner."""
 
-# Wave, audio wave data
 @fieldwise_init
 struct Wave(TrivialRegisterPassable):
-    # Total number of frames (considering channels)
+    """Wave, audio wave data."""
     var frameCount: c_uint
-    # Frequency (samples per second)
+    """Total number of frames (considering channels)."""
     var sampleRate: c_uint
-    # Bit depth (bits per sample): 8, 16, 32 (24 not supported)
+    """Frequency (samples per second)."""
     var sampleSize: c_uint
-    # Number of channels (1-mono, 2-stereo, ...)
+    """Bit depth (bits per sample): 8, 16, 32 (24 not supported)."""
     var channels: c_uint
-    # Buffer data pointer
+    """Number of channels (1-mono, 2-stereo, ...)."""
     var data: Pointer[NoneType, MutUntrackedOrigin]
+    """Buffer data pointer."""
 
-# AudioStream, custom audio stream
 @fieldwise_init
 struct AudioStream(TrivialRegisterPassable):
-    # Pointer to internal data used by the audio system
+    """AudioStream, custom audio stream."""
     var buffer: Pointer[rAudioBuffer, MutUntrackedOrigin]
-    # Pointer to internal data processor, useful for audio effects
+    """Pointer to internal data used by the audio system."""
     var processor: Pointer[rAudioProcessor, MutUntrackedOrigin]
-    # Frequency (samples per second)
+    """Pointer to internal data processor, useful for audio effects."""
     var sampleRate: c_uint
-    # Bit depth (bits per sample): 8, 16, 32 (24 not supported)
+    """Frequency (samples per second)."""
     var sampleSize: c_uint
-    # Number of channels (1-mono, 2-stereo, ...)
+    """Bit depth (bits per sample): 8, 16, 32 (24 not supported)."""
     var channels: c_uint
+    """Number of channels (1-mono, 2-stereo, ...)."""
 
-# Sound
 @fieldwise_init
 struct Sound(TrivialRegisterPassable):
-    # Audio stream
+    """Sound."""
     var stream: AudioStream
-    # Total number of frames (considering channels)
+    """Audio stream."""
     var frameCount: c_uint
+    """Total number of frames (considering channels)."""
 
-# Music, audio stream, anything longer than ~10 seconds should be streamed
 @fieldwise_init
 struct Music(TrivialRegisterPassable):
-    # Audio stream
+    """Music, audio stream, anything longer than ~10 seconds should be streamed."""
     var stream: AudioStream
-    # Total number of frames (considering channels)
+    """Audio stream."""
     var frameCount: c_uint
-    # Music looping enable
+    """Total number of frames (considering channels)."""
     var looping: Bool
-    # Type of music context (audio filetype)
+    """Music looping enable."""
     var ctxType: c_int
-    # Audio context data, depends on type
+    """Type of music context (audio filetype)."""
     var ctxData: Pointer[NoneType, MutUntrackedOrigin]
+    """Audio context data, depends on type."""
 
-# VrDeviceInfo, Head-Mounted-Display device parameters
 @fieldwise_init
 struct VrDeviceInfo(TrivialRegisterPassable):
-    # Horizontal resolution in pixels
+    """VrDeviceInfo, Head-Mounted-Display device parameters."""
     var hResolution: c_int
-    # Vertical resolution in pixels
+    """Horizontal resolution in pixels."""
     var vResolution: c_int
-    # Horizontal size in meters
+    """Vertical resolution in pixels."""
     var hScreenSize: c_float
-    # Vertical size in meters
+    """Horizontal size in meters."""
     var vScreenSize: c_float
-    # Distance between eye and display in meters
+    """Vertical size in meters."""
     var eyeToScreenDistance: c_float
-    # Lens separation distance in meters
+    """Distance between eye and display in meters."""
     var lensSeparationDistance: c_float
-    # IPD (distance between pupils) in meters
+    """Lens separation distance in meters."""
     var interpupillaryDistance: c_float
-    # Lens distortion constant parameters
+    """IPD (distance between pupils) in meters."""
     var lensDistortionValues: SIMD[DType.float32, 4]
-    # Chromatic aberration correction parameters
+    """Lens distortion constant parameters."""
     var chromaAbCorrection: SIMD[DType.float32, 4]
+    """Chromatic aberration correction parameters."""
 
-# VrStereoConfig, VR stereo rendering configuration for simulator
 @fieldwise_init
 struct VrStereoConfig(TrivialRegisterPassable):
-    # VR projection matrices (per eye)
+    """VrStereoConfig, VR stereo rendering configuration for simulator."""
     var projection_0: Matrix
+    """VR projection matrices (per eye)."""
     var projection_1: Matrix
-    # VR view offset matrices (per eye)
+    """VR projection matrices (per eye)."""
     var viewOffset_0: Matrix
+    """VR view offset matrices (per eye)."""
     var viewOffset_1: Matrix
-    # VR left lens center
+    """VR view offset matrices (per eye)."""
     var leftLensCenter: SIMD[DType.float32, 2]
-    # VR right lens center
+    """VR left lens center."""
     var rightLensCenter: SIMD[DType.float32, 2]
-    # VR left screen center
+    """VR right lens center."""
     var leftScreenCenter: SIMD[DType.float32, 2]
-    # VR right screen center
+    """VR left screen center."""
     var rightScreenCenter: SIMD[DType.float32, 2]
-    # VR distortion scale
+    """VR right screen center."""
     var scale: SIMD[DType.float32, 2]
-    # VR distortion scale in
+    """VR distortion scale."""
     var scaleIn: SIMD[DType.float32, 2]
+    """VR distortion scale in."""
 
-# File path list
 @fieldwise_init
 struct FilePathList(TrivialRegisterPassable):
-    # Filepaths entries count
+    """File path list."""
     var count: c_uint
-    # Filepaths entries
+    """Filepaths entries count."""
     var paths: Pointer[Pointer[c_char, MutUntrackedOrigin], MutUntrackedOrigin]
+    """Filepaths entries."""
 
-# Automation event
 @fieldwise_init
 struct AutomationEvent(TrivialRegisterPassable):
-    # Event frame
+    """Automation event."""
     var frame: c_uint
-    # Event type (AutomationEventType)
+    """Event frame."""
     var type: c_uint
-    # Event parameters (if required)
+    """Event type (AutomationEventType)."""
     var params: SIMD[DType.int32, 4]
+    """Event parameters (if required)."""
 
-# Automation event list
 @fieldwise_init
 struct AutomationEventList(TrivialRegisterPassable):
-    # Events max entries (MAX_AUTOMATION_EVENTS)
+    """Automation event list."""
     var capacity: c_uint
-    # Events entries count
+    """Events max entries (MAX_AUTOMATION_EVENTS)."""
     var count: c_uint
-    # Events entries
+    """Events entries count."""
     var events: Pointer[AutomationEvent, MutUntrackedOrigin]
+    """Events entries."""
 
-# System/Window config flags
 comptime ConfigFlags = c_int
-# Set to try enabling V-Sync on GPU
+"""System/Window config flags."""
 comptime FLAG_VSYNC_HINT = 64
-# Set to run program in fullscreen
+"""Set to try enabling V-Sync on GPU."""
 comptime FLAG_FULLSCREEN_MODE = 2
-# Set to allow resizable window
+"""Set to run program in fullscreen."""
 comptime FLAG_WINDOW_RESIZABLE = 4
-# Set to disable window decoration (frame and buttons)
+"""Set to allow resizable window."""
 comptime FLAG_WINDOW_UNDECORATED = 8
-# Set to hide window
+"""Set to disable window decoration (frame and buttons)."""
 comptime FLAG_WINDOW_HIDDEN = 128
-# Set to minimize window (iconify)
+"""Set to hide window."""
 comptime FLAG_WINDOW_MINIMIZED = 512
-# Set to maximize window (expanded to monitor)
+"""Set to minimize window (iconify)."""
 comptime FLAG_WINDOW_MAXIMIZED = 1024
-# Set to window non focused
+"""Set to maximize window (expanded to monitor)."""
 comptime FLAG_WINDOW_UNFOCUSED = 2048
-# Set to window always on top
+"""Set to window non focused."""
 comptime FLAG_WINDOW_TOPMOST = 4096
-# Set to allow windows running while minimized
+"""Set to window always on top."""
 comptime FLAG_WINDOW_ALWAYS_RUN = 256
-# Set to allow transparent framebuffer
+"""Set to allow windows running while minimized."""
 comptime FLAG_WINDOW_TRANSPARENT = 16
-# Set to support HighDPI
+"""Set to allow transparent framebuffer."""
 comptime FLAG_WINDOW_HIGHDPI = 8192
-# Set to support mouse passthrough, only supported when FLAG_WINDOW_UNDECORATED
+"""Set to support HighDPI."""
 comptime FLAG_WINDOW_MOUSE_PASSTHROUGH = 16384
-# Set to run program in borderless windowed mode
+"""Set to support mouse passthrough, only supported when FLAG_WINDOW_UNDECORATED."""
 comptime FLAG_BORDERLESS_WINDOWED_MODE = 32768
-# Set to try enabling MSAA 4X
+"""Set to run program in borderless windowed mode."""
 comptime FLAG_MSAA_4X_HINT = 32
-# Set to try enabling interlaced video format (for V3D)
+"""Set to try enabling MSAA 4X."""
 comptime FLAG_INTERLACED_HINT = 65536
+"""Set to try enabling interlaced video format (for V3D)."""
 
-# Trace log level
 comptime TraceLogLevel = c_int
-# Display all logs
+"""Trace log level."""
 comptime LOG_ALL = 0
-# Trace logging, intended for internal use only
+"""Display all logs."""
 comptime LOG_TRACE = 1
-# Debug logging, used for internal debugging, it should be disabled on release builds
+"""Trace logging, intended for internal use only."""
 comptime LOG_DEBUG = 2
-# Info logging, used for program execution info
+"""Debug logging, used for internal debugging, it should be disabled on release builds."""
 comptime LOG_INFO = 3
-# Warning logging, used on recoverable failures
+"""Info logging, used for program execution info."""
 comptime LOG_WARNING = 4
-# Error logging, used on unrecoverable failures
+"""Warning logging, used on recoverable failures."""
 comptime LOG_ERROR = 5
-# Fatal logging, used to abort program: exit(EXIT_FAILURE)
+"""Error logging, used on unrecoverable failures."""
 comptime LOG_FATAL = 6
-# Disable logging
+"""Fatal logging, used to abort program: exit(EXIT_FAILURE)."""
 comptime LOG_NONE = 7
+"""Disable logging."""
 
-# Keyboard keys (US keyboard layout)
 comptime KeyboardKey = c_int
-# Key: NULL, used for no key pressed
+"""Keyboard keys (US keyboard layout)."""
 comptime KEY_NULL = 0
-# Key: '
+"""Key: NULL, used for no key pressed."""
 comptime KEY_APOSTROPHE = 39
-# Key: ,
+"""Key: '."""
 comptime KEY_COMMA = 44
-# Key: -
+"""Key: ,."""
 comptime KEY_MINUS = 45
-# Key: .
+"""Key: -."""
 comptime KEY_PERIOD = 46
-# Key: /
+"""Key: ."""
 comptime KEY_SLASH = 47
-# Key: 0
+"""Key: /."""
 comptime KEY_ZERO = 48
-# Key: 1
+"""Key: 0."""
 comptime KEY_ONE = 49
-# Key: 2
+"""Key: 1."""
 comptime KEY_TWO = 50
-# Key: 3
+"""Key: 2."""
 comptime KEY_THREE = 51
-# Key: 4
+"""Key: 3."""
 comptime KEY_FOUR = 52
-# Key: 5
+"""Key: 4."""
 comptime KEY_FIVE = 53
-# Key: 6
+"""Key: 5."""
 comptime KEY_SIX = 54
-# Key: 7
+"""Key: 6."""
 comptime KEY_SEVEN = 55
-# Key: 8
+"""Key: 7."""
 comptime KEY_EIGHT = 56
-# Key: 9
+"""Key: 8."""
 comptime KEY_NINE = 57
-# Key: ;
+"""Key: 9."""
 comptime KEY_SEMICOLON = 59
-# Key: =
+"""Key: ;."""
 comptime KEY_EQUAL = 61
-# Key: A | a
+"""Key: =."""
 comptime KEY_A = 65
-# Key: B | b
+"""Key: A | a."""
 comptime KEY_B = 66
-# Key: C | c
+"""Key: B | b."""
 comptime KEY_C = 67
-# Key: D | d
+"""Key: C | c."""
 comptime KEY_D = 68
-# Key: E | e
+"""Key: D | d."""
 comptime KEY_E = 69
-# Key: F | f
+"""Key: E | e."""
 comptime KEY_F = 70
-# Key: G | g
+"""Key: F | f."""
 comptime KEY_G = 71
-# Key: H | h
+"""Key: G | g."""
 comptime KEY_H = 72
-# Key: I | i
+"""Key: H | h."""
 comptime KEY_I = 73
-# Key: J | j
+"""Key: I | i."""
 comptime KEY_J = 74
-# Key: K | k
+"""Key: J | j."""
 comptime KEY_K = 75
-# Key: L | l
+"""Key: K | k."""
 comptime KEY_L = 76
-# Key: M | m
+"""Key: L | l."""
 comptime KEY_M = 77
-# Key: N | n
+"""Key: M | m."""
 comptime KEY_N = 78
-# Key: O | o
+"""Key: N | n."""
 comptime KEY_O = 79
-# Key: P | p
+"""Key: O | o."""
 comptime KEY_P = 80
-# Key: Q | q
+"""Key: P | p."""
 comptime KEY_Q = 81
-# Key: R | r
+"""Key: Q | q."""
 comptime KEY_R = 82
-# Key: S | s
+"""Key: R | r."""
 comptime KEY_S = 83
-# Key: T | t
+"""Key: S | s."""
 comptime KEY_T = 84
-# Key: U | u
+"""Key: T | t."""
 comptime KEY_U = 85
-# Key: V | v
+"""Key: U | u."""
 comptime KEY_V = 86
-# Key: W | w
+"""Key: V | v."""
 comptime KEY_W = 87
-# Key: X | x
+"""Key: W | w."""
 comptime KEY_X = 88
-# Key: Y | y
+"""Key: X | x."""
 comptime KEY_Y = 89
-# Key: Z | z
+"""Key: Y | y."""
 comptime KEY_Z = 90
-# Key: [
+"""Key: Z | z."""
 comptime KEY_LEFT_BRACKET = 91
-# Key: '\'
+"""Key: [."""
 comptime KEY_BACKSLASH = 92
-# Key: ]
+"""Key: '\\\\'."""
 comptime KEY_RIGHT_BRACKET = 93
-# Key: `
+"""Key: ]."""
 comptime KEY_GRAVE = 96
-# Key: Space
+"""Key: `."""
 comptime KEY_SPACE = 32
-# Key: Esc
+"""Key: Space."""
 comptime KEY_ESCAPE = 256
-# Key: Enter
+"""Key: Esc."""
 comptime KEY_ENTER = 257
-# Key: Tab
+"""Key: Enter."""
 comptime KEY_TAB = 258
-# Key: Backspace
+"""Key: Tab."""
 comptime KEY_BACKSPACE = 259
-# Key: Ins
+"""Key: Backspace."""
 comptime KEY_INSERT = 260
-# Key: Del
+"""Key: Ins."""
 comptime KEY_DELETE = 261
-# Key: Cursor right
+"""Key: Del."""
 comptime KEY_RIGHT = 262
-# Key: Cursor left
+"""Key: Cursor right."""
 comptime KEY_LEFT = 263
-# Key: Cursor down
+"""Key: Cursor left."""
 comptime KEY_DOWN = 264
-# Key: Cursor up
+"""Key: Cursor down."""
 comptime KEY_UP = 265
-# Key: Page up
+"""Key: Cursor up."""
 comptime KEY_PAGE_UP = 266
-# Key: Page down
+"""Key: Page up."""
 comptime KEY_PAGE_DOWN = 267
-# Key: Home
+"""Key: Page down."""
 comptime KEY_HOME = 268
-# Key: End
+"""Key: Home."""
 comptime KEY_END = 269
-# Key: Caps lock
+"""Key: End."""
 comptime KEY_CAPS_LOCK = 280
-# Key: Scroll down
+"""Key: Caps lock."""
 comptime KEY_SCROLL_LOCK = 281
-# Key: Num lock
+"""Key: Scroll down."""
 comptime KEY_NUM_LOCK = 282
-# Key: Print screen
+"""Key: Num lock."""
 comptime KEY_PRINT_SCREEN = 283
-# Key: Pause
+"""Key: Print screen."""
 comptime KEY_PAUSE = 284
-# Key: F1
+"""Key: Pause."""
 comptime KEY_F1 = 290
-# Key: F2
+"""Key: F1."""
 comptime KEY_F2 = 291
-# Key: F3
+"""Key: F2."""
 comptime KEY_F3 = 292
-# Key: F4
+"""Key: F3."""
 comptime KEY_F4 = 293
-# Key: F5
+"""Key: F4."""
 comptime KEY_F5 = 294
-# Key: F6
+"""Key: F5."""
 comptime KEY_F6 = 295
-# Key: F7
+"""Key: F6."""
 comptime KEY_F7 = 296
-# Key: F8
+"""Key: F7."""
 comptime KEY_F8 = 297
-# Key: F9
+"""Key: F8."""
 comptime KEY_F9 = 298
-# Key: F10
+"""Key: F9."""
 comptime KEY_F10 = 299
-# Key: F11
+"""Key: F10."""
 comptime KEY_F11 = 300
-# Key: F12
+"""Key: F11."""
 comptime KEY_F12 = 301
-# Key: Shift left
+"""Key: F12."""
 comptime KEY_LEFT_SHIFT = 340
-# Key: Control left
+"""Key: Shift left."""
 comptime KEY_LEFT_CONTROL = 341
-# Key: Alt left
+"""Key: Control left."""
 comptime KEY_LEFT_ALT = 342
-# Key: Super left
+"""Key: Alt left."""
 comptime KEY_LEFT_SUPER = 343
-# Key: Shift right
+"""Key: Super left."""
 comptime KEY_RIGHT_SHIFT = 344
-# Key: Control right
+"""Key: Shift right."""
 comptime KEY_RIGHT_CONTROL = 345
-# Key: Alt right
+"""Key: Control right."""
 comptime KEY_RIGHT_ALT = 346
-# Key: Super right
+"""Key: Alt right."""
 comptime KEY_RIGHT_SUPER = 347
-# Key: KB menu
+"""Key: Super right."""
 comptime KEY_KB_MENU = 348
-# Key: Keypad 0
+"""Key: KB menu."""
 comptime KEY_KP_0 = 320
-# Key: Keypad 1
+"""Key: Keypad 0."""
 comptime KEY_KP_1 = 321
-# Key: Keypad 2
+"""Key: Keypad 1."""
 comptime KEY_KP_2 = 322
-# Key: Keypad 3
+"""Key: Keypad 2."""
 comptime KEY_KP_3 = 323
-# Key: Keypad 4
+"""Key: Keypad 3."""
 comptime KEY_KP_4 = 324
-# Key: Keypad 5
+"""Key: Keypad 4."""
 comptime KEY_KP_5 = 325
-# Key: Keypad 6
+"""Key: Keypad 5."""
 comptime KEY_KP_6 = 326
-# Key: Keypad 7
+"""Key: Keypad 6."""
 comptime KEY_KP_7 = 327
-# Key: Keypad 8
+"""Key: Keypad 7."""
 comptime KEY_KP_8 = 328
-# Key: Keypad 9
+"""Key: Keypad 8."""
 comptime KEY_KP_9 = 329
-# Key: Keypad .
+"""Key: Keypad 9."""
 comptime KEY_KP_DECIMAL = 330
-# Key: Keypad /
+"""Key: Keypad ."""
 comptime KEY_KP_DIVIDE = 331
-# Key: Keypad *
+"""Key: Keypad /."""
 comptime KEY_KP_MULTIPLY = 332
-# Key: Keypad -
+"""Key: Keypad *."""
 comptime KEY_KP_SUBTRACT = 333
-# Key: Keypad +
+"""Key: Keypad -."""
 comptime KEY_KP_ADD = 334
-# Key: Keypad Enter
+"""Key: Keypad +."""
 comptime KEY_KP_ENTER = 335
-# Key: Keypad =
+"""Key: Keypad Enter."""
 comptime KEY_KP_EQUAL = 336
-# Key: Android back button
+"""Key: Keypad =."""
 comptime KEY_BACK = 4
-# Key: Android menu button
+"""Key: Android back button."""
 comptime KEY_MENU = 5
-# Key: Android volume up button
+"""Key: Android menu button."""
 comptime KEY_VOLUME_UP = 24
-# Key: Android volume down button
+"""Key: Android volume up button."""
 comptime KEY_VOLUME_DOWN = 25
+"""Key: Android volume down button."""
 
-# Mouse buttons
 comptime MouseButton = c_int
-# Mouse button left
+"""Mouse buttons."""
 comptime MOUSE_BUTTON_LEFT = 0
-# Mouse button right
+"""Mouse button left."""
 comptime MOUSE_BUTTON_RIGHT = 1
-# Mouse button middle (pressed wheel)
+"""Mouse button right."""
 comptime MOUSE_BUTTON_MIDDLE = 2
-# Mouse button side (advanced mouse device)
+"""Mouse button middle (pressed wheel)."""
 comptime MOUSE_BUTTON_SIDE = 3
-# Mouse button extra (advanced mouse device)
+"""Mouse button side (advanced mouse device)."""
 comptime MOUSE_BUTTON_EXTRA = 4
-# Mouse button forward (advanced mouse device)
+"""Mouse button extra (advanced mouse device)."""
 comptime MOUSE_BUTTON_FORWARD = 5
-# Mouse button back (advanced mouse device)
+"""Mouse button forward (advanced mouse device)."""
 comptime MOUSE_BUTTON_BACK = 6
+"""Mouse button back (advanced mouse device)."""
 
-# Mouse cursor
 comptime MouseCursor = c_int
-# Default pointer shape
+"""Mouse cursor."""
 comptime MOUSE_CURSOR_DEFAULT = 0
-# Arrow shape
+"""Default pointer shape."""
 comptime MOUSE_CURSOR_ARROW = 1
-# Text writing cursor shape
+"""Arrow shape."""
 comptime MOUSE_CURSOR_IBEAM = 2
-# Cross shape
+"""Text writing cursor shape."""
 comptime MOUSE_CURSOR_CROSSHAIR = 3
-# Pointing hand cursor
+"""Cross shape."""
 comptime MOUSE_CURSOR_POINTING_HAND = 4
-# Horizontal resize/move arrow shape
+"""Pointing hand cursor."""
 comptime MOUSE_CURSOR_RESIZE_EW = 5
-# Vertical resize/move arrow shape
+"""Horizontal resize/move arrow shape."""
 comptime MOUSE_CURSOR_RESIZE_NS = 6
-# Top-left to bottom-right diagonal resize/move arrow shape
+"""Vertical resize/move arrow shape."""
 comptime MOUSE_CURSOR_RESIZE_NWSE = 7
-# The top-right to bottom-left diagonal resize/move arrow shape
+"""Top-left to bottom-right diagonal resize/move arrow shape."""
 comptime MOUSE_CURSOR_RESIZE_NESW = 8
-# The omnidirectional resize/move cursor shape
+"""The top-right to bottom-left diagonal resize/move arrow shape."""
 comptime MOUSE_CURSOR_RESIZE_ALL = 9
-# The operation-not-allowed shape
+"""The omnidirectional resize/move cursor shape."""
 comptime MOUSE_CURSOR_NOT_ALLOWED = 10
+"""The operation-not-allowed shape."""
 
-# Gamepad buttons
 comptime GamepadButton = c_int
-# Unknown button, for error checking
+"""Gamepad buttons."""
 comptime GAMEPAD_BUTTON_UNKNOWN = 0
-# Gamepad left DPAD up button
+"""Unknown button, for error checking."""
 comptime GAMEPAD_BUTTON_LEFT_FACE_UP = 1
-# Gamepad left DPAD right button
+"""Gamepad left DPAD up button."""
 comptime GAMEPAD_BUTTON_LEFT_FACE_RIGHT = 2
-# Gamepad left DPAD down button
+"""Gamepad left DPAD right button."""
 comptime GAMEPAD_BUTTON_LEFT_FACE_DOWN = 3
-# Gamepad left DPAD left button
+"""Gamepad left DPAD down button."""
 comptime GAMEPAD_BUTTON_LEFT_FACE_LEFT = 4
-# Gamepad right button up (i.e. PS3: Triangle, Xbox: Y)
+"""Gamepad left DPAD left button."""
 comptime GAMEPAD_BUTTON_RIGHT_FACE_UP = 5
-# Gamepad right button right (i.e. PS3: Circle, Xbox: B)
+"""Gamepad right button up (i.e. PS3: Triangle, Xbox: Y)."""
 comptime GAMEPAD_BUTTON_RIGHT_FACE_RIGHT = 6
-# Gamepad right button down (i.e. PS3: Cross, Xbox: A)
+"""Gamepad right button right (i.e. PS3: Circle, Xbox: B)."""
 comptime GAMEPAD_BUTTON_RIGHT_FACE_DOWN = 7
-# Gamepad right button left (i.e. PS3: Square, Xbox: X)
+"""Gamepad right button down (i.e. PS3: Cross, Xbox: A)."""
 comptime GAMEPAD_BUTTON_RIGHT_FACE_LEFT = 8
-# Gamepad top/back trigger left (first), it could be a trailing button
+"""Gamepad right button left (i.e. PS3: Square, Xbox: X)."""
 comptime GAMEPAD_BUTTON_LEFT_TRIGGER_1 = 9
-# Gamepad top/back trigger left (second), it could be a trailing button
+"""Gamepad top/back trigger left (first), it could be a trailing button."""
 comptime GAMEPAD_BUTTON_LEFT_TRIGGER_2 = 10
-# Gamepad top/back trigger right (first), it could be a trailing button
+"""Gamepad top/back trigger left (second), it could be a trailing button."""
 comptime GAMEPAD_BUTTON_RIGHT_TRIGGER_1 = 11
-# Gamepad top/back trigger right (second), it could be a trailing button
+"""Gamepad top/back trigger right (first), it could be a trailing button."""
 comptime GAMEPAD_BUTTON_RIGHT_TRIGGER_2 = 12
-# Gamepad center buttons, left one (i.e. PS3: Select)
+"""Gamepad top/back trigger right (second), it could be a trailing button."""
 comptime GAMEPAD_BUTTON_MIDDLE_LEFT = 13
-# Gamepad center buttons, middle one (i.e. PS3: PS, Xbox: XBOX)
+"""Gamepad center buttons, left one (i.e. PS3: Select)."""
 comptime GAMEPAD_BUTTON_MIDDLE = 14
-# Gamepad center buttons, right one (i.e. PS3: Start)
+"""Gamepad center buttons, middle one (i.e. PS3: PS, Xbox: XBOX)."""
 comptime GAMEPAD_BUTTON_MIDDLE_RIGHT = 15
-# Gamepad joystick pressed button left
+"""Gamepad center buttons, right one (i.e. PS3: Start)."""
 comptime GAMEPAD_BUTTON_LEFT_THUMB = 16
-# Gamepad joystick pressed button right
+"""Gamepad joystick pressed button left."""
 comptime GAMEPAD_BUTTON_RIGHT_THUMB = 17
+"""Gamepad joystick pressed button right."""
 
-# Gamepad axes
 comptime GamepadAxis = c_int
-# Gamepad left stick X axis
+"""Gamepad axes."""
 comptime GAMEPAD_AXIS_LEFT_X = 0
-# Gamepad left stick Y axis
+"""Gamepad left stick X axis."""
 comptime GAMEPAD_AXIS_LEFT_Y = 1
-# Gamepad right stick X axis
+"""Gamepad left stick Y axis."""
 comptime GAMEPAD_AXIS_RIGHT_X = 2
-# Gamepad right stick Y axis
+"""Gamepad right stick X axis."""
 comptime GAMEPAD_AXIS_RIGHT_Y = 3
-# Gamepad back trigger left, pressure level: [1..-1]
+"""Gamepad right stick Y axis."""
 comptime GAMEPAD_AXIS_LEFT_TRIGGER = 4
-# Gamepad back trigger right, pressure level: [1..-1]
+"""Gamepad back trigger left, pressure level: [1..-1]."""
 comptime GAMEPAD_AXIS_RIGHT_TRIGGER = 5
+"""Gamepad back trigger right, pressure level: [1..-1]."""
 
-# Material map index
 comptime MaterialMapIndex = c_int
-# Albedo material (same as: MATERIAL_MAP_DIFFUSE)
+"""Material map index."""
 comptime MATERIAL_MAP_ALBEDO = 0
-# Metalness material (same as: MATERIAL_MAP_SPECULAR)
+"""Albedo material (same as: MATERIAL_MAP_DIFFUSE)."""
 comptime MATERIAL_MAP_METALNESS = 1
-# Normal material
+"""Metalness material (same as: MATERIAL_MAP_SPECULAR)."""
 comptime MATERIAL_MAP_NORMAL = 2
-# Roughness material
+"""Normal material."""
 comptime MATERIAL_MAP_ROUGHNESS = 3
-# Ambient occlusion material
+"""Roughness material."""
 comptime MATERIAL_MAP_OCCLUSION = 4
-# Emission material
+"""Ambient occlusion material."""
 comptime MATERIAL_MAP_EMISSION = 5
-# Heightmap material
+"""Emission material."""
 comptime MATERIAL_MAP_HEIGHT = 6
-# Cubemap material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
+"""Heightmap material."""
 comptime MATERIAL_MAP_CUBEMAP = 7
-# Irradiance material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
+"""Cubemap material (NOTE: Uses GL_TEXTURE_CUBE_MAP)."""
 comptime MATERIAL_MAP_IRRADIANCE = 8
-# Prefilter material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
+"""Irradiance material (NOTE: Uses GL_TEXTURE_CUBE_MAP)."""
 comptime MATERIAL_MAP_PREFILTER = 9
-# Brdf material
+"""Prefilter material (NOTE: Uses GL_TEXTURE_CUBE_MAP)."""
 comptime MATERIAL_MAP_BRDF = 10
+"""Brdf material."""
 
-# Shader location index
 comptime ShaderLocationIndex = c_int
-# Shader location: vertex attribute: position
+"""Shader location index."""
 comptime SHADER_LOC_VERTEX_POSITION = 0
-# Shader location: vertex attribute: texcoord01
+"""Shader location: vertex attribute: position."""
 comptime SHADER_LOC_VERTEX_TEXCOORD01 = 1
-# Shader location: vertex attribute: texcoord02
+"""Shader location: vertex attribute: texcoord01."""
 comptime SHADER_LOC_VERTEX_TEXCOORD02 = 2
-# Shader location: vertex attribute: normal
+"""Shader location: vertex attribute: texcoord02."""
 comptime SHADER_LOC_VERTEX_NORMAL = 3
-# Shader location: vertex attribute: tangent
+"""Shader location: vertex attribute: normal."""
 comptime SHADER_LOC_VERTEX_TANGENT = 4
-# Shader location: vertex attribute: color
+"""Shader location: vertex attribute: tangent."""
 comptime SHADER_LOC_VERTEX_COLOR = 5
-# Shader location: matrix uniform: model-view-projection
+"""Shader location: vertex attribute: color."""
 comptime SHADER_LOC_MATRIX_MVP = 6
-# Shader location: matrix uniform: view (camera transform)
+"""Shader location: matrix uniform: model-view-projection."""
 comptime SHADER_LOC_MATRIX_VIEW = 7
-# Shader location: matrix uniform: projection
+"""Shader location: matrix uniform: view (camera transform)."""
 comptime SHADER_LOC_MATRIX_PROJECTION = 8
-# Shader location: matrix uniform: model (transform)
+"""Shader location: matrix uniform: projection."""
 comptime SHADER_LOC_MATRIX_MODEL = 9
-# Shader location: matrix uniform: normal
+"""Shader location: matrix uniform: model (transform)."""
 comptime SHADER_LOC_MATRIX_NORMAL = 10
-# Shader location: vector uniform: view
+"""Shader location: matrix uniform: normal."""
 comptime SHADER_LOC_VECTOR_VIEW = 11
-# Shader location: vector uniform: diffuse color
+"""Shader location: vector uniform: view."""
 comptime SHADER_LOC_COLOR_DIFFUSE = 12
-# Shader location: vector uniform: specular color
+"""Shader location: vector uniform: diffuse color."""
 comptime SHADER_LOC_COLOR_SPECULAR = 13
-# Shader location: vector uniform: ambient color
+"""Shader location: vector uniform: specular color."""
 comptime SHADER_LOC_COLOR_AMBIENT = 14
-# Shader location: sampler2d texture: albedo (same as: SHADER_LOC_MAP_DIFFUSE)
+"""Shader location: vector uniform: ambient color."""
 comptime SHADER_LOC_MAP_ALBEDO = 15
-# Shader location: sampler2d texture: metalness (same as: SHADER_LOC_MAP_SPECULAR)
+"""Shader location: sampler2d texture: albedo (same as: SHADER_LOC_MAP_DIFFUSE)."""
 comptime SHADER_LOC_MAP_METALNESS = 16
-# Shader location: sampler2d texture: normal
+"""Shader location: sampler2d texture: metalness (same as: SHADER_LOC_MAP_SPECULAR)."""
 comptime SHADER_LOC_MAP_NORMAL = 17
-# Shader location: sampler2d texture: roughness
+"""Shader location: sampler2d texture: normal."""
 comptime SHADER_LOC_MAP_ROUGHNESS = 18
-# Shader location: sampler2d texture: occlusion
+"""Shader location: sampler2d texture: roughness."""
 comptime SHADER_LOC_MAP_OCCLUSION = 19
-# Shader location: sampler2d texture: emission
+"""Shader location: sampler2d texture: occlusion."""
 comptime SHADER_LOC_MAP_EMISSION = 20
-# Shader location: sampler2d texture: heightmap
+"""Shader location: sampler2d texture: emission."""
 comptime SHADER_LOC_MAP_HEIGHT = 21
-# Shader location: samplerCube texture: cubemap
+"""Shader location: sampler2d texture: heightmap."""
 comptime SHADER_LOC_MAP_CUBEMAP = 22
-# Shader location: samplerCube texture: irradiance
+"""Shader location: samplerCube texture: cubemap."""
 comptime SHADER_LOC_MAP_IRRADIANCE = 23
-# Shader location: samplerCube texture: prefilter
+"""Shader location: samplerCube texture: irradiance."""
 comptime SHADER_LOC_MAP_PREFILTER = 24
-# Shader location: sampler2d texture: brdf
+"""Shader location: samplerCube texture: prefilter."""
 comptime SHADER_LOC_MAP_BRDF = 25
-# Shader location: vertex attribute: bone indices
+"""Shader location: sampler2d texture: brdf."""
 comptime SHADER_LOC_VERTEX_BONEIDS = 26
-# Shader location: vertex attribute: bone weights
+"""Shader location: vertex attribute: bone indices."""
 comptime SHADER_LOC_VERTEX_BONEWEIGHTS = 27
-# Shader location: matrix attribute: bone transforms (animation)
+"""Shader location: vertex attribute: bone weights."""
 comptime SHADER_LOC_MATRIX_BONETRANSFORMS = 28
-# Shader location: vertex attribute: instance transforms
+"""Shader location: matrix attribute: bone transforms (animation)."""
 comptime SHADER_LOC_VERTEX_INSTANCETRANSFORM = 29
+"""Shader location: vertex attribute: instance transforms."""
 
-# Shader uniform data type
 comptime ShaderUniformDataType = c_int
-# Shader uniform type: float
+"""Shader uniform data type."""
 comptime SHADER_UNIFORM_FLOAT = 0
-# Shader uniform type: vec2 (2 float)
+"""Shader uniform type: float."""
 comptime SHADER_UNIFORM_VEC2 = 1
-# Shader uniform type: vec3 (3 float)
+"""Shader uniform type: vec2 (2 float)."""
 comptime SHADER_UNIFORM_VEC3 = 2
-# Shader uniform type: vec4 (4 float)
+"""Shader uniform type: vec3 (3 float)."""
 comptime SHADER_UNIFORM_VEC4 = 3
-# Shader uniform type: int
+"""Shader uniform type: vec4 (4 float)."""
 comptime SHADER_UNIFORM_INT = 4
-# Shader uniform type: ivec2 (2 int)
+"""Shader uniform type: int."""
 comptime SHADER_UNIFORM_IVEC2 = 5
-# Shader uniform type: ivec3 (3 int)
+"""Shader uniform type: ivec2 (2 int)."""
 comptime SHADER_UNIFORM_IVEC3 = 6
-# Shader uniform type: ivec4 (4 int)
+"""Shader uniform type: ivec3 (3 int)."""
 comptime SHADER_UNIFORM_IVEC4 = 7
-# Shader uniform type: unsigned int
+"""Shader uniform type: ivec4 (4 int)."""
 comptime SHADER_UNIFORM_UINT = 8
-# Shader uniform type: uivec2 (2 unsigned int)
+"""Shader uniform type: unsigned int."""
 comptime SHADER_UNIFORM_UIVEC2 = 9
-# Shader uniform type: uivec3 (3 unsigned int)
+"""Shader uniform type: uivec2 (2 unsigned int)."""
 comptime SHADER_UNIFORM_UIVEC3 = 10
-# Shader uniform type: uivec4 (4 unsigned int)
+"""Shader uniform type: uivec3 (3 unsigned int)."""
 comptime SHADER_UNIFORM_UIVEC4 = 11
-# Shader uniform type: sampler2d
+"""Shader uniform type: uivec4 (4 unsigned int)."""
 comptime SHADER_UNIFORM_SAMPLER2D = 12
+"""Shader uniform type: sampler2d."""
 
-# Shader attribute data types
 comptime ShaderAttributeDataType = c_int
-# Shader attribute type: float
+"""Shader attribute data types."""
 comptime SHADER_ATTRIB_FLOAT = 0
-# Shader attribute type: vec2 (2 float)
+"""Shader attribute type: float."""
 comptime SHADER_ATTRIB_VEC2 = 1
-# Shader attribute type: vec3 (3 float)
+"""Shader attribute type: vec2 (2 float)."""
 comptime SHADER_ATTRIB_VEC3 = 2
-# Shader attribute type: vec4 (4 float)
+"""Shader attribute type: vec3 (3 float)."""
 comptime SHADER_ATTRIB_VEC4 = 3
+"""Shader attribute type: vec4 (4 float)."""
 
-# Pixel formats
 comptime PixelFormat = c_int
-# 8 bit per pixel (no alpha)
+"""Pixel formats."""
 comptime PIXELFORMAT_UNCOMPRESSED_GRAYSCALE = 1
-# 8*2 bpp (2 channels)
+"""8 bit per pixel (no alpha)."""
 comptime PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA = 2
-# 16 bpp
+"""8*2 bpp (2 channels)."""
 comptime PIXELFORMAT_UNCOMPRESSED_R5G6B5 = 3
-# 24 bpp
+"""16 bpp."""
 comptime PIXELFORMAT_UNCOMPRESSED_R8G8B8 = 4
-# 16 bpp (1 bit alpha)
+"""24 bpp."""
 comptime PIXELFORMAT_UNCOMPRESSED_R5G5B5A1 = 5
-# 16 bpp (4 bit alpha)
+"""16 bpp (1 bit alpha)."""
 comptime PIXELFORMAT_UNCOMPRESSED_R4G4B4A4 = 6
-# 32 bpp
+"""16 bpp (4 bit alpha)."""
 comptime PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 = 7
-# 32 bpp (1 channel - float)
+"""32 bpp."""
 comptime PIXELFORMAT_UNCOMPRESSED_R32 = 8
-# 32*3 bpp (3 channels - float)
+"""32 bpp (1 channel - float)."""
 comptime PIXELFORMAT_UNCOMPRESSED_R32G32B32 = 9
-# 32*4 bpp (4 channels - float)
+"""32*3 bpp (3 channels - float)."""
 comptime PIXELFORMAT_UNCOMPRESSED_R32G32B32A32 = 10
-# 16 bpp (1 channel - half float)
+"""32*4 bpp (4 channels - float)."""
 comptime PIXELFORMAT_UNCOMPRESSED_R16 = 11
-# 16*3 bpp (3 channels - half float)
+"""16 bpp (1 channel - half float)."""
 comptime PIXELFORMAT_UNCOMPRESSED_R16G16B16 = 12
-# 16*4 bpp (4 channels - half float)
+"""16*3 bpp (3 channels - half float)."""
 comptime PIXELFORMAT_UNCOMPRESSED_R16G16B16A16 = 13
-# 4 bpp (no alpha)
+"""16*4 bpp (4 channels - half float)."""
 comptime PIXELFORMAT_COMPRESSED_DXT1_RGB = 14
-# 4 bpp (1 bit alpha)
+"""4 bpp (no alpha)."""
 comptime PIXELFORMAT_COMPRESSED_DXT1_RGBA = 15
-# 8 bpp
+"""4 bpp (1 bit alpha)."""
 comptime PIXELFORMAT_COMPRESSED_DXT3_RGBA = 16
-# 8 bpp
+"""8 bpp."""
 comptime PIXELFORMAT_COMPRESSED_DXT5_RGBA = 17
-# 4 bpp
+"""8 bpp."""
 comptime PIXELFORMAT_COMPRESSED_ETC1_RGB = 18
-# 4 bpp
+"""4 bpp."""
 comptime PIXELFORMAT_COMPRESSED_ETC2_RGB = 19
-# 8 bpp
+"""4 bpp."""
 comptime PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA = 20
-# 4 bpp
+"""8 bpp."""
 comptime PIXELFORMAT_COMPRESSED_PVRT_RGB = 21
-# 4 bpp
+"""4 bpp."""
 comptime PIXELFORMAT_COMPRESSED_PVRT_RGBA = 22
-# 8 bpp
+"""4 bpp."""
 comptime PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA = 23
-# 2 bpp
+"""8 bpp."""
 comptime PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA = 24
+"""2 bpp."""
 
-# Texture parameters: filter mode
 comptime TextureFilter = c_int
-# No filter, pixel approximation
+"""Texture parameters: filter mode."""
 comptime TEXTURE_FILTER_POINT = 0
-# Linear filtering
+"""No filter, pixel approximation."""
 comptime TEXTURE_FILTER_BILINEAR = 1
-# Trilinear filtering (linear with mipmaps)
+"""Linear filtering."""
 comptime TEXTURE_FILTER_TRILINEAR = 2
-# Anisotropic filtering 4x
+"""Trilinear filtering (linear with mipmaps)."""
 comptime TEXTURE_FILTER_ANISOTROPIC_4X = 3
-# Anisotropic filtering 8x
+"""Anisotropic filtering 4x."""
 comptime TEXTURE_FILTER_ANISOTROPIC_8X = 4
-# Anisotropic filtering 16x
+"""Anisotropic filtering 8x."""
 comptime TEXTURE_FILTER_ANISOTROPIC_16X = 5
+"""Anisotropic filtering 16x."""
 
-# Texture parameters: wrap mode
 comptime TextureWrap = c_int
-# Repeats texture in tiled mode
+"""Texture parameters: wrap mode."""
 comptime TEXTURE_WRAP_REPEAT = 0
-# Clamps texture to edge pixel in tiled mode
+"""Repeats texture in tiled mode."""
 comptime TEXTURE_WRAP_CLAMP = 1
-# Mirrors and repeats the texture in tiled mode
+"""Clamps texture to edge pixel in tiled mode."""
 comptime TEXTURE_WRAP_MIRROR_REPEAT = 2
-# Mirrors and clamps to border the texture in tiled mode
+"""Mirrors and repeats the texture in tiled mode."""
 comptime TEXTURE_WRAP_MIRROR_CLAMP = 3
+"""Mirrors and clamps to border the texture in tiled mode."""
 
-# Cubemap layouts
 comptime CubemapLayout = c_int
-# Automatically detect layout type
+"""Cubemap layouts."""
 comptime CUBEMAP_LAYOUT_AUTO_DETECT = 0
-# Layout is defined by a vertical line with faces
+"""Automatically detect layout type."""
 comptime CUBEMAP_LAYOUT_LINE_VERTICAL = 1
-# Layout is defined by a horizontal line with faces
+"""Layout is defined by a vertical line with faces."""
 comptime CUBEMAP_LAYOUT_LINE_HORIZONTAL = 2
-# Layout is defined by a 3x4 cross with cubemap faces
+"""Layout is defined by a horizontal line with faces."""
 comptime CUBEMAP_LAYOUT_CROSS_THREE_BY_FOUR = 3
-# Layout is defined by a 4x3 cross with cubemap faces
+"""Layout is defined by a 3x4 cross with cubemap faces."""
 comptime CUBEMAP_LAYOUT_CROSS_FOUR_BY_THREE = 4
+"""Layout is defined by a 4x3 cross with cubemap faces."""
 
-# Font type, defines generation method
 comptime FontType = c_int
-# Default font generation, anti-aliased
+"""Font type, defines generation method."""
 comptime FONT_DEFAULT = 0
-# Bitmap font generation, no anti-aliasing
+"""Default font generation, anti-aliased."""
 comptime FONT_BITMAP = 1
-# SDF font generation, requires external shader
+"""Bitmap font generation, no anti-aliasing."""
 comptime FONT_SDF = 2
+"""SDF font generation, requires external shader."""
 
-# Color blending modes (pre-defined)
 comptime BlendMode = c_int
-# Blend textures considering alpha (default)
+"""Color blending modes (pre-defined)."""
 comptime BLEND_ALPHA = 0
-# Blend textures adding colors
+"""Blend textures considering alpha (default)."""
 comptime BLEND_ADDITIVE = 1
-# Blend textures multiplying colors
+"""Blend textures adding colors."""
 comptime BLEND_MULTIPLIED = 2
-# Blend textures adding colors (alternative)
+"""Blend textures multiplying colors."""
 comptime BLEND_ADD_COLORS = 3
-# Blend textures subtracting colors (alternative)
+"""Blend textures adding colors (alternative)."""
 comptime BLEND_SUBTRACT_COLORS = 4
-# Blend premultiplied textures considering alpha
+"""Blend textures subtracting colors (alternative)."""
 comptime BLEND_ALPHA_PREMULTIPLY = 5
-# Blend textures using custom src/dst factors (use rlSetBlendFactors())
+"""Blend premultiplied textures considering alpha."""
 comptime BLEND_CUSTOM = 6
-# Blend textures using custom rgb/alpha separate src/dst factors (use rlSetBlendFactorsSeparate())
+"""Blend textures using custom src/dst factors (use rlSetBlendFactors())."""
 comptime BLEND_CUSTOM_SEPARATE = 7
+"""Blend textures using custom rgb/alpha separate src/dst factors (use rlSetBlendFactorsSeparate())."""
 
-# Gesture
 comptime Gesture = c_int
-# No gesture
+"""Gesture."""
 comptime GESTURE_NONE = 0
-# Tap gesture
+"""No gesture."""
 comptime GESTURE_TAP = 1
-# Double tap gesture
+"""Tap gesture."""
 comptime GESTURE_DOUBLETAP = 2
-# Hold gesture
+"""Double tap gesture."""
 comptime GESTURE_HOLD = 4
-# Drag gesture
+"""Hold gesture."""
 comptime GESTURE_DRAG = 8
-# Swipe right gesture
+"""Drag gesture."""
 comptime GESTURE_SWIPE_RIGHT = 16
-# Swipe left gesture
+"""Swipe right gesture."""
 comptime GESTURE_SWIPE_LEFT = 32
-# Swipe up gesture
+"""Swipe left gesture."""
 comptime GESTURE_SWIPE_UP = 64
-# Swipe down gesture
+"""Swipe up gesture."""
 comptime GESTURE_SWIPE_DOWN = 128
-# Pinch in gesture
+"""Swipe down gesture."""
 comptime GESTURE_PINCH_IN = 256
-# Pinch out gesture
+"""Pinch in gesture."""
 comptime GESTURE_PINCH_OUT = 512
+"""Pinch out gesture."""
 
-# Camera system modes
 comptime CameraMode = c_int
-# Camera custom, controlled by user (UpdateCamera() does nothing)
+"""Camera system modes."""
 comptime CAMERA_CUSTOM = 0
-# Camera free mode
+"""Camera custom, controlled by user (UpdateCamera() does nothing)."""
 comptime CAMERA_FREE = 1
-# Camera orbital, around target, zoom supported
+"""Camera free mode."""
 comptime CAMERA_ORBITAL = 2
-# Camera first person
+"""Camera orbital, around target, zoom supported."""
 comptime CAMERA_FIRST_PERSON = 3
-# Camera third person
+"""Camera first person."""
 comptime CAMERA_THIRD_PERSON = 4
+"""Camera third person."""
 
-# Camera projection
 comptime CameraProjection = c_int
-# Perspective projection
+"""Camera projection."""
 comptime CAMERA_PERSPECTIVE = 0
-# Orthographic projection
+"""Perspective projection."""
 comptime CAMERA_ORTHOGRAPHIC = 1
+"""Orthographic projection."""
 
-# N-patch layout
 comptime NPatchLayout = c_int
-# Npatch layout: 3x3 tiles
+"""N-patch layout."""
 comptime NPATCH_NINE_PATCH = 0
-# Npatch layout: 1x3 tiles
+"""Npatch layout: 3x3 tiles."""
 comptime NPATCH_THREE_PATCH_VERTICAL = 1
-# Npatch layout: 3x1 tiles
+"""Npatch layout: 1x3 tiles."""
 comptime NPATCH_THREE_PATCH_HORIZONTAL = 2
+"""Npatch layout: 3x1 tiles."""
 
-# Logging: Redirect trace log messages
 comptime TraceLogCallback = def(logLevel: c_int, text: Pointer[c_char, ImmUntrackedOrigin], args: Pointer[NoneType, MutUntrackedOrigin]) -> NoneType
+"""Logging: Redirect trace log messages."""
 
-# FileIO: Load binary data
 comptime LoadFileDataCallback = def(fileName: Pointer[c_char, ImmUntrackedOrigin], dataSize: Pointer[c_int, MutUntrackedOrigin]) -> Pointer[c_uchar, MutUntrackedOrigin]
+"""FileIO: Load binary data."""
 
-# FileIO: Save binary data
 comptime SaveFileDataCallback = def(fileName: Pointer[c_char, ImmUntrackedOrigin], data: Pointer[NoneType, MutUntrackedOrigin], dataSize: c_int) -> Bool
+"""FileIO: Save binary data."""
 
-# FileIO: Load text data
 comptime LoadFileTextCallback = def(fileName: Pointer[c_char, ImmUntrackedOrigin]) -> Pointer[c_char, MutUntrackedOrigin]
+"""FileIO: Load text data."""
 
-# FileIO: Save text data
 comptime SaveFileTextCallback = def(fileName: Pointer[c_char, ImmUntrackedOrigin], text: Pointer[c_char, ImmUntrackedOrigin]) -> Bool
+"""FileIO: Save text data."""
 
 comptime AudioCallback = def(bufferData: Pointer[NoneType, MutUntrackedOrigin], frames: c_uint) -> NoneType
+"""C callback signature for `AudioCallback`."""
 
 comptime RAYLIB_VERSION_MAJOR = 6
+"""Numeric value for `RAYLIB_VERSION_MAJOR`."""
 comptime RAYLIB_VERSION_MINOR = 0
+"""Numeric value for `RAYLIB_VERSION_MINOR`."""
 comptime RAYLIB_VERSION_PATCH = 0
+"""Numeric value for `RAYLIB_VERSION_PATCH`."""
 comptime PI = 3.14159265358979323846
+"""Numeric value for `PI`."""
 comptime DEG2RAD = (PI/180.0)
+"""Numeric value for `DEG2RAD`."""
 comptime RAD2DEG = (180.0/PI)
+"""Numeric value for `RAD2DEG`."""

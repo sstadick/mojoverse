@@ -2,6 +2,12 @@
 # raymath
 # Source: src/raymath.h
 
+"""Low-level FFI calls for raymath.
+
+Prefer `mojo_raylib.raymath_safe` unless exact C-layout values and pointer
+semantics are required.
+"""
+
 from .types import *
 from std.ffi import CStringSlice, c_char, c_uchar, c_short, c_ushort, c_int, c_uint, c_long, c_ulong, c_float, c_double, external_call
 from std.memory import stack_allocation
@@ -9,664 +15,1955 @@ from std.collections import InlineArray
 
 
 comptime TraceLogCallbackSimple = def(log_level: c_int, text: Pointer[c_char, ImmUntrackedOrigin]) -> NoneType
+"""Simplified C callback signature for formatted raylib log messages."""
 
 def Clamp(value: c_float, min: c_float, max: c_float) -> c_float:
+    """Clamp float value.
+
+    Args:
+        value: The value.
+        min: The lower bound.
+        max: The upper bound.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Clamp", c_float](value, min, max)
 
 def Lerp(start: c_float, end: c_float, amount: c_float) -> c_float:
+    """Calculate linear interpolation between two floats.
+
+    Args:
+        start: The start.
+        end: The end.
+        amount: The amount.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Lerp", c_float](start, end, amount)
 
 def Normalize(value: c_float, start: c_float, end: c_float) -> c_float:
+    """Normalize input value within input range.
+
+    Args:
+        value: The value.
+        start: The start.
+        end: The end.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Normalize", c_float](value, start, end)
 
 def Remap(value: c_float, inputStart: c_float, inputEnd: c_float, outputStart: c_float, outputEnd: c_float) -> c_float:
+    """Remap input value within input range to output range.
+
+    Args:
+        value: The value.
+        inputStart: The input start.
+        inputEnd: The input end.
+        outputStart: The output start.
+        outputEnd: The output end.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Remap", c_float](value, inputStart, inputEnd, outputStart, outputEnd)
 
 def Wrap(value: c_float, min: c_float, max: c_float) -> c_float:
+    """Wrap input value from min to max.
+
+    Args:
+        value: The value.
+        min: The lower bound.
+        max: The upper bound.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Wrap", c_float](value, min, max)
 
 def FloatEquals(x: c_float, y: c_float) -> c_int:
+    """Check whether two given floats are almost equal.
+
+    Args:
+        x: The first floating-point value.
+        y: The second floating-point value.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_FloatEquals", c_int](x, y)
 
 def Vector2Zero() -> Vector2:
+    """Vector with components value 0.0f.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2Zero", NoneType](__out)
     return __out[]
 
 def Vector2One() -> Vector2:
+    """Vector with components value 1.0f.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2One", NoneType](__out)
     return __out[]
 
 def Vector2Add(v1: Vector2, v2: Vector2) -> Vector2:
+    """Add two vectors (v1 + v2).
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2Add", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector2AddValue(v: Vector2, add: c_float) -> Vector2:
+    """Add vector and float value.
+
+    Args:
+        v: The input vector.
+        add: The add.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2AddValue", NoneType](Pointer(to=v), add, __out)
     return __out[]
 
 def Vector2Subtract(v1: Vector2, v2: Vector2) -> Vector2:
+    """Subtract two vectors (v1 - v2).
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2Subtract", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector2SubtractValue(v: Vector2, sub: c_float) -> Vector2:
+    """Subtract vector by float value.
+
+    Args:
+        v: The input vector.
+        sub: The sub.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2SubtractValue", NoneType](Pointer(to=v), sub, __out)
     return __out[]
 
 def Vector2Length(v: Vector2) -> c_float:
+    """Calculate vector length.
+
+    Args:
+        v: The input vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector2Length", c_float](Pointer(to=v))
 
 def Vector2LengthSqr(v: Vector2) -> c_float:
+    """Calculate vector square length.
+
+    Args:
+        v: The input vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector2LengthSqr", c_float](Pointer(to=v))
 
 def Vector2DotProduct(v1: Vector2, v2: Vector2) -> c_float:
+    """Calculate two vectors dot product.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector2DotProduct", c_float](Pointer(to=v1), Pointer(to=v2))
 
 def Vector2CrossProduct(v1: Vector2, v2: Vector2) -> c_float:
+    """Calculate two vectors cross product.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector2CrossProduct", c_float](Pointer(to=v1), Pointer(to=v2))
 
 def Vector2Distance(v1: Vector2, v2: Vector2) -> c_float:
+    """Calculate distance between two vectors.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector2Distance", c_float](Pointer(to=v1), Pointer(to=v2))
 
 def Vector2DistanceSqr(v1: Vector2, v2: Vector2) -> c_float:
+    """Calculate square distance between two vectors.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector2DistanceSqr", c_float](Pointer(to=v1), Pointer(to=v2))
 
 def Vector2Angle(v1: Vector2, v2: Vector2) -> c_float:
+    """Positive angles appear clockwise, and negative angles appear counterclockwise.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector2Angle", c_float](Pointer(to=v1), Pointer(to=v2))
 
 def Vector2LineAngle(start: Vector2, end: Vector2) -> c_float:
+    """Current implementation should be aligned with glm::angle.
+
+    Args:
+        start: The start.
+        end: The end.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector2LineAngle", c_float](Pointer(to=start), Pointer(to=end))
 
 def Vector2Scale(v: Vector2, scale: c_float) -> Vector2:
+    """Scale vector (multiply by value).
+
+    Args:
+        v: The input vector.
+        scale: The scale.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2Scale", NoneType](Pointer(to=v), scale, __out)
     return __out[]
 
 def Vector2Multiply(v1: Vector2, v2: Vector2) -> Vector2:
+    """Multiply vector by vector.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2Multiply", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector2Negate(v: Vector2) -> Vector2:
+    """Negate vector.
+
+    Args:
+        v: The input vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2Negate", NoneType](Pointer(to=v), __out)
     return __out[]
 
 def Vector2Divide(v1: Vector2, v2: Vector2) -> Vector2:
+    """Divide vector by vector.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2Divide", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector2Normalize(v: Vector2) -> Vector2:
+    """Normalize provided vector.
+
+    Args:
+        v: The input vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2Normalize", NoneType](Pointer(to=v), __out)
     return __out[]
 
 def Vector2Transform(v: Vector2, mat: Matrix) -> Vector2:
+    """Transforms a Vector2 by a given Matrix.
+
+    Args:
+        v: The input vector.
+        mat: The transformation matrix.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2Transform", NoneType](Pointer(to=v), Pointer(to=mat), __out)
     return __out[]
 
 def Vector2Lerp(v1: Vector2, v2: Vector2, amount: c_float) -> Vector2:
+    """Calculate linear interpolation between two vectors.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+        amount: The amount.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2Lerp", NoneType](Pointer(to=v1), Pointer(to=v2), amount, __out)
     return __out[]
 
 def Vector2Reflect(v: Vector2, normal: Vector2) -> Vector2:
+    """Calculate reflected vector to normal.
+
+    Args:
+        v: The input vector.
+        normal: The normal.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2Reflect", NoneType](Pointer(to=v), Pointer(to=normal), __out)
     return __out[]
 
 def Vector2Min(v1: Vector2, v2: Vector2) -> Vector2:
+    """Get min value for each pair of components.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2Min", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector2Max(v1: Vector2, v2: Vector2) -> Vector2:
+    """Get max value for each pair of components.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2Max", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector2Rotate(v: Vector2, angle: c_float) -> Vector2:
+    """Rotate vector by angle.
+
+    Args:
+        v: The input vector.
+        angle: The angle.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2Rotate", NoneType](Pointer(to=v), angle, __out)
     return __out[]
 
 def Vector2MoveTowards(v: Vector2, target: Vector2, maxDistance: c_float) -> Vector2:
+    """Move Vector towards target.
+
+    Args:
+        v: The input vector.
+        target: The target.
+        maxDistance: The max distance.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2MoveTowards", NoneType](Pointer(to=v), Pointer(to=target), maxDistance, __out)
     return __out[]
 
 def Vector2Invert(v: Vector2) -> Vector2:
+    """Invert the given vector.
+
+    Args:
+        v: The input vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2Invert", NoneType](Pointer(to=v), __out)
     return __out[]
 
 def Vector2Clamp(v: Vector2, min: Vector2, max: Vector2) -> Vector2:
+    """Min and max values specified by the given vectors.
+
+    Args:
+        v: The input vector.
+        min: The lower bound.
+        max: The upper bound.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2Clamp", NoneType](Pointer(to=v), Pointer(to=min), Pointer(to=max), __out)
     return __out[]
 
 def Vector2ClampValue(v: Vector2, min: c_float, max: c_float) -> Vector2:
+    """Clamp the magnitude of the vector between two min and max values.
+
+    Args:
+        v: The input vector.
+        min: The lower bound.
+        max: The upper bound.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2ClampValue", NoneType](Pointer(to=v), min, max, __out)
     return __out[]
 
 def Vector2Equals(p: Vector2, q: Vector2) -> c_int:
+    """Check whether two given vectors are almost equal.
+
+    Args:
+        p: The first vector.
+        q: The second vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector2Equals", c_int](Pointer(to=p), Pointer(to=q))
 
 def Vector2Refract(v: Vector2, n: Vector2, r: c_float) -> Vector2:
+    """To the refractive index of the medium on the other side of the surface.
+
+    Args:
+        v: The input vector.
+        n: The normal vector.
+        r: The r.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector2]()
     external_call["mojo_raymath_Vector2Refract", NoneType](Pointer(to=v), Pointer(to=n), r, __out)
     return __out[]
 
 def Vector3Zero() -> Vector3:
+    """Vector with components value 0.0f.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Zero", NoneType](__out)
     return __out[]
 
 def Vector3One() -> Vector3:
+    """Vector with components value 1.0f.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3One", NoneType](__out)
     return __out[]
 
 def Vector3Add(v1: Vector3, v2: Vector3) -> Vector3:
+    """Add two vectors.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Add", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector3AddValue(v: Vector3, add: c_float) -> Vector3:
+    """Add vector and float value.
+
+    Args:
+        v: The input vector.
+        add: The add.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3AddValue", NoneType](Pointer(to=v), add, __out)
     return __out[]
 
 def Vector3Subtract(v1: Vector3, v2: Vector3) -> Vector3:
+    """Subtract two vectors.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Subtract", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector3SubtractValue(v: Vector3, sub: c_float) -> Vector3:
+    """Subtract vector by float value.
+
+    Args:
+        v: The input vector.
+        sub: The sub.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3SubtractValue", NoneType](Pointer(to=v), sub, __out)
     return __out[]
 
 def Vector3Scale(v: Vector3, scalar: c_float) -> Vector3:
+    """Multiply vector by scalar.
+
+    Args:
+        v: The input vector.
+        scalar: The scalar.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Scale", NoneType](Pointer(to=v), scalar, __out)
     return __out[]
 
 def Vector3Multiply(v1: Vector3, v2: Vector3) -> Vector3:
+    """Multiply vector by vector.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Multiply", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector3CrossProduct(v1: Vector3, v2: Vector3) -> Vector3:
+    """Calculate two vectors cross product.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3CrossProduct", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector3Perpendicular(v: Vector3) -> Vector3:
+    """Calculate one vector perpendicular vector.
+
+    Args:
+        v: The input vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Perpendicular", NoneType](Pointer(to=v), __out)
     return __out[]
 
 def Vector3Length(v: Vector3) -> c_float:
+    """Calculate vector length.
+
+    Args:
+        v: The input vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector3Length", c_float](v)
 
 def Vector3LengthSqr(v: Vector3) -> c_float:
+    """Calculate vector square length.
+
+    Args:
+        v: The input vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector3LengthSqr", c_float](v)
 
 def Vector3DotProduct(v1: Vector3, v2: Vector3) -> c_float:
+    """Calculate two vectors dot product.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector3DotProduct", c_float](Pointer(to=v1), Pointer(to=v2))
 
 def Vector3Distance(v1: Vector3, v2: Vector3) -> c_float:
+    """Calculate distance between two vectors.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector3Distance", c_float](Pointer(to=v1), Pointer(to=v2))
 
 def Vector3DistanceSqr(v1: Vector3, v2: Vector3) -> c_float:
+    """Calculate square distance between two vectors.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector3DistanceSqr", c_float](Pointer(to=v1), Pointer(to=v2))
 
 def Vector3Angle(v1: Vector3, v2: Vector3) -> c_float:
+    """Calculate angle between two vectors.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector3Angle", c_float](Pointer(to=v1), Pointer(to=v2))
 
 def Vector3Negate(v: Vector3) -> Vector3:
+    """Negate provided vector (invert direction).
+
+    Args:
+        v: The input vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Negate", NoneType](Pointer(to=v), __out)
     return __out[]
 
 def Vector3Divide(v1: Vector3, v2: Vector3) -> Vector3:
+    """Divide vector by vector.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Divide", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector3Normalize(v: Vector3) -> Vector3:
+    """Normalize provided vector.
+
+    Args:
+        v: The input vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Normalize", NoneType](Pointer(to=v), __out)
     return __out[]
 
 def Vector3Project(v1: Vector3, v2: Vector3) -> Vector3:
+    """Calculate the projection of the vector v1 on to v2.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Project", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector3Reject(v1: Vector3, v2: Vector3) -> Vector3:
+    """Calculate the rejection of the vector v1 on to v2.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Reject", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector3OrthoNormalize(v1: Pointer[mut=True, Vector3, _], v2: Pointer[mut=True, Vector3, _]):
+    """Gram-Schmidt function implementation.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+    """
     external_call["mojo_raymath_Vector3OrthoNormalize", NoneType](v1, v2)
 
 def Vector3Transform(v: Vector3, mat: Matrix) -> Vector3:
+    """Transforms a Vector3 by a given Matrix.
+
+    Args:
+        v: The input vector.
+        mat: The transformation matrix.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Transform", NoneType](Pointer(to=v), Pointer(to=mat), __out)
     return __out[]
 
 def Vector3RotateByQuaternion(v: Vector3, q: Quaternion) -> Vector3:
+    """Transform a vector by quaternion rotation.
+
+    Args:
+        v: The input vector.
+        q: The quaternion.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3RotateByQuaternion", NoneType](Pointer(to=v), Pointer(to=q), __out)
     return __out[]
 
 def Vector3RotateByAxisAngle(v: Vector3, axis: Vector3, angle: c_float) -> Vector3:
+    """Rotates a vector around an axis.
+
+    Args:
+        v: The input vector.
+        axis: The axis.
+        angle: The angle.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3RotateByAxisAngle", NoneType](Pointer(to=v), Pointer(to=axis), angle, __out)
     return __out[]
 
 def Vector3MoveTowards(v: Vector3, target: Vector3, maxDistance: c_float) -> Vector3:
+    """Move Vector towards target.
+
+    Args:
+        v: The input vector.
+        target: The target.
+        maxDistance: The max distance.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3MoveTowards", NoneType](Pointer(to=v), Pointer(to=target), maxDistance, __out)
     return __out[]
 
 def Vector3Lerp(v1: Vector3, v2: Vector3, amount: c_float) -> Vector3:
+    """Calculate linear interpolation between two vectors.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+        amount: The amount.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Lerp", NoneType](Pointer(to=v1), Pointer(to=v2), amount, __out)
     return __out[]
 
 def Vector3CubicHermite(v1: Vector3, tangent1: Vector3, v2: Vector3, tangent2: Vector3, amount: c_float) -> Vector3:
+    """As described in the GLTF 2.0 specification: https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#interpolation-cubic.
+
+    Args:
+        v1: The first vector.
+        tangent1: The tangent1.
+        v2: The second vector.
+        tangent2: The tangent2.
+        amount: The amount.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3CubicHermite", NoneType](Pointer(to=v1), Pointer(to=tangent1), Pointer(to=v2), Pointer(to=tangent2), amount, __out)
     return __out[]
 
 def Vector3Reflect(v: Vector3, normal: Vector3) -> Vector3:
+    """Calculate reflected vector to normal.
+
+    Args:
+        v: The input vector.
+        normal: The normal.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Reflect", NoneType](Pointer(to=v), Pointer(to=normal), __out)
     return __out[]
 
 def Vector3Min(v1: Vector3, v2: Vector3) -> Vector3:
+    """Get min value for each pair of components.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Min", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector3Max(v1: Vector3, v2: Vector3) -> Vector3:
+    """Get max value for each pair of components.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Max", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector3Barycenter(p: Vector3, a: Vector3, b: Vector3, c: Vector3) -> Vector3:
+    """NOTE: Assumes P is on the plane of the triangle.
+
+    Args:
+        p: The first vector.
+        a: The a.
+        b: The b.
+        c: The c.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Barycenter", NoneType](Pointer(to=p), Pointer(to=a), Pointer(to=b), Pointer(to=c), __out)
     return __out[]
 
 def Vector3Unproject(source: Vector3, projection: Matrix, view: Matrix) -> Vector3:
+    """NOTE: Self-contained function, no other raymath functions are called.
+
+    Args:
+        source: The source.
+        projection: The projection.
+        view: The view.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Unproject", NoneType](Pointer(to=source), Pointer(to=projection), Pointer(to=view), __out)
     return __out[]
 
 def Vector3ToFloatV(v: Vector3) -> float3:
+    """Get Vector3 as float array.
+
+    Args:
+        v: The input vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, float3]()
     external_call["mojo_raymath_Vector3ToFloatV", NoneType](Pointer(to=v), __out)
     return __out[]
 
 def Vector3Invert(v: Vector3) -> Vector3:
+    """Invert the given vector.
+
+    Args:
+        v: The input vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Invert", NoneType](Pointer(to=v), __out)
     return __out[]
 
 def Vector3Clamp(v: Vector3, min: Vector3, max: Vector3) -> Vector3:
+    """Min and max values specified by the given vectors.
+
+    Args:
+        v: The input vector.
+        min: The lower bound.
+        max: The upper bound.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Clamp", NoneType](Pointer(to=v), Pointer(to=min), Pointer(to=max), __out)
     return __out[]
 
 def Vector3ClampValue(v: Vector3, min: c_float, max: c_float) -> Vector3:
+    """Clamp the magnitude of the vector between two values.
+
+    Args:
+        v: The input vector.
+        min: The lower bound.
+        max: The upper bound.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3ClampValue", NoneType](Pointer(to=v), min, max, __out)
     return __out[]
 
 def Vector3Equals(p: Vector3, q: Vector3) -> c_int:
+    """Check whether two given vectors are almost equal.
+
+    Args:
+        p: The first vector.
+        q: The second vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector3Equals", c_int](Pointer(to=p), Pointer(to=q))
 
 def Vector3Refract(v: Vector3, n: Vector3, r: c_float) -> Vector3:
+    """To the refractive index of the medium on the other side of the surface.
+
+    Args:
+        v: The input vector.
+        n: The normal vector.
+        r: The r.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_Vector3Refract", NoneType](Pointer(to=v), Pointer(to=n), r, __out)
     return __out[]
 
 def Vector4Zero() -> Vector4:
+    """Get vector zero.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector4]()
     external_call["mojo_raymath_Vector4Zero", NoneType](__out)
     return __out[]
 
 def Vector4One() -> Vector4:
+    """Get vector one.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector4]()
     external_call["mojo_raymath_Vector4One", NoneType](__out)
     return __out[]
 
 def Vector4Add(v1: Vector4, v2: Vector4) -> Vector4:
+    """Add two vectors.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector4]()
     external_call["mojo_raymath_Vector4Add", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector4AddValue(v: Vector4, add: c_float) -> Vector4:
+    """Add value to vector components.
+
+    Args:
+        v: The input vector.
+        add: The add.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector4]()
     external_call["mojo_raymath_Vector4AddValue", NoneType](Pointer(to=v), add, __out)
     return __out[]
 
 def Vector4Subtract(v1: Vector4, v2: Vector4) -> Vector4:
+    """Substract vectors.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector4]()
     external_call["mojo_raymath_Vector4Subtract", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector4SubtractValue(v: Vector4, add: c_float) -> Vector4:
+    """Substract value from vector components.
+
+    Args:
+        v: The input vector.
+        add: The add.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector4]()
     external_call["mojo_raymath_Vector4SubtractValue", NoneType](Pointer(to=v), add, __out)
     return __out[]
 
 def Vector4Length(v: Vector4) -> c_float:
+    """Vector length.
+
+    Args:
+        v: The input vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector4Length", c_float](Pointer(to=v))
 
 def Vector4LengthSqr(v: Vector4) -> c_float:
+    """Vector square length.
+
+    Args:
+        v: The input vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector4LengthSqr", c_float](Pointer(to=v))
 
 def Vector4DotProduct(v1: Vector4, v2: Vector4) -> c_float:
+    """Vectors dot product.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector4DotProduct", c_float](Pointer(to=v1), Pointer(to=v2))
 
 def Vector4Distance(v1: Vector4, v2: Vector4) -> c_float:
+    """Calculate distance between two vectors.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector4Distance", c_float](Pointer(to=v1), Pointer(to=v2))
 
 def Vector4DistanceSqr(v1: Vector4, v2: Vector4) -> c_float:
+    """Calculate square distance between two vectors.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector4DistanceSqr", c_float](Pointer(to=v1), Pointer(to=v2))
 
 def Vector4Scale(v: Vector4, scale: c_float) -> Vector4:
+    """Scale vector components by value (multiply).
+
+    Args:
+        v: The input vector.
+        scale: The scale.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector4]()
     external_call["mojo_raymath_Vector4Scale", NoneType](Pointer(to=v), scale, __out)
     return __out[]
 
 def Vector4Multiply(v1: Vector4, v2: Vector4) -> Vector4:
+    """Multiply vector by vector.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector4]()
     external_call["mojo_raymath_Vector4Multiply", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector4Negate(v: Vector4) -> Vector4:
+    """Negate vector.
+
+    Args:
+        v: The input vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector4]()
     external_call["mojo_raymath_Vector4Negate", NoneType](Pointer(to=v), __out)
     return __out[]
 
 def Vector4Divide(v1: Vector4, v2: Vector4) -> Vector4:
+    """Divide vector by vector.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector4]()
     external_call["mojo_raymath_Vector4Divide", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector4Normalize(v: Vector4) -> Vector4:
+    """Normalize provided vector.
+
+    Args:
+        v: The input vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector4]()
     external_call["mojo_raymath_Vector4Normalize", NoneType](Pointer(to=v), __out)
     return __out[]
 
 def Vector4Min(v1: Vector4, v2: Vector4) -> Vector4:
+    """Get min value for each pair of components.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector4]()
     external_call["mojo_raymath_Vector4Min", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector4Max(v1: Vector4, v2: Vector4) -> Vector4:
+    """Get max value for each pair of components.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector4]()
     external_call["mojo_raymath_Vector4Max", NoneType](Pointer(to=v1), Pointer(to=v2), __out)
     return __out[]
 
 def Vector4Lerp(v1: Vector4, v2: Vector4, amount: c_float) -> Vector4:
+    """Calculate linear interpolation between two vectors.
+
+    Args:
+        v1: The first vector.
+        v2: The second vector.
+        amount: The amount.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector4]()
     external_call["mojo_raymath_Vector4Lerp", NoneType](Pointer(to=v1), Pointer(to=v2), amount, __out)
     return __out[]
 
 def Vector4MoveTowards(v: Vector4, target: Vector4, maxDistance: c_float) -> Vector4:
+    """Move Vector towards target.
+
+    Args:
+        v: The input vector.
+        target: The target.
+        maxDistance: The max distance.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector4]()
     external_call["mojo_raymath_Vector4MoveTowards", NoneType](Pointer(to=v), Pointer(to=target), maxDistance, __out)
     return __out[]
 
 def Vector4Invert(v: Vector4) -> Vector4:
+    """Invert the given vector.
+
+    Args:
+        v: The input vector.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector4]()
     external_call["mojo_raymath_Vector4Invert", NoneType](Pointer(to=v), __out)
     return __out[]
 
 def Vector4Equals(p: Vector4, q: Vector4) -> c_int:
+    """Check whether two given vectors are almost equal.
+
+    Args:
+        p: The first vector.
+        q: The second vector.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_Vector4Equals", c_int](Pointer(to=p), Pointer(to=q))
 
 def MatrixDeterminant(mat: Matrix) -> c_float:
+    """Compute matrix determinant.
+
+    Args:
+        mat: The transformation matrix.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_MatrixDeterminant", c_float](Pointer(to=mat))
 
 def MatrixTrace(mat: Matrix) -> c_float:
+    """Get the trace of the matrix (sum of the values along the diagonal).
+
+    Args:
+        mat: The transformation matrix.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_MatrixTrace", c_float](Pointer(to=mat))
 
 def MatrixTranspose(mat: Matrix) -> Matrix:
+    """Transposes provided matrix.
+
+    Args:
+        mat: The transformation matrix.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixTranspose", NoneType](Pointer(to=mat), __out)
     return __out[]
 
 def MatrixInvert(mat: Matrix) -> Matrix:
+    """Invert provided matrix.
+
+    Args:
+        mat: The transformation matrix.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixInvert", NoneType](Pointer(to=mat), __out)
     return __out[]
 
 def MatrixIdentity() -> Matrix:
+    """Get identity matrix.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixIdentity", NoneType](__out)
     return __out[]
 
 def MatrixAdd(left: Matrix, right: Matrix) -> Matrix:
+    """Add two matrices.
+
+    Args:
+        left: The left.
+        right: The right.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixAdd", NoneType](Pointer(to=left), Pointer(to=right), __out)
     return __out[]
 
 def MatrixSubtract(left: Matrix, right: Matrix) -> Matrix:
+    """Subtract two matrices (left - right).
+
+    Args:
+        left: The left.
+        right: The right.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixSubtract", NoneType](Pointer(to=left), Pointer(to=right), __out)
     return __out[]
 
 def MatrixMultiply(left: Matrix, right: Matrix) -> Matrix:
+    """NOTE: When multiplying matrices... the order matters!
+
+    Args:
+        left: The left.
+        right: The right.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixMultiply", NoneType](Pointer(to=left), Pointer(to=right), __out)
     return __out[]
 
 def MatrixMultiplyValue(left: Matrix, value: c_float) -> Matrix:
+    """Multiply matrix components by value.
+
+    Args:
+        left: The left.
+        value: The value.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixMultiplyValue", NoneType](Pointer(to=left), value, __out)
     return __out[]
 
 def MatrixTranslate(x: c_float, y: c_float, z: c_float) -> Matrix:
+    """Get translation matrix.
+
+    Args:
+        x: The x-coordinate or component.
+        y: The y-coordinate or component.
+        z: The z-coordinate or component.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixTranslate", NoneType](x, y, z, __out)
     return __out[]
 
 def MatrixRotate(axis: Vector3, angle: c_float) -> Matrix:
+    """NOTE: Angle should be provided in radians.
+
+    Args:
+        axis: The axis.
+        angle: The angle.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixRotate", NoneType](Pointer(to=axis), angle, __out)
     return __out[]
 
 def MatrixRotateX(angle: c_float) -> Matrix:
+    """NOTE: Angle must be provided in radians.
+
+    Args:
+        angle: The angle.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixRotateX", NoneType](angle, __out)
     return __out[]
 
 def MatrixRotateY(angle: c_float) -> Matrix:
+    """NOTE: Angle must be provided in radians.
+
+    Args:
+        angle: The angle.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixRotateY", NoneType](angle, __out)
     return __out[]
 
 def MatrixRotateZ(angle: c_float) -> Matrix:
+    """NOTE: Angle must be provided in radians.
+
+    Args:
+        angle: The angle.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixRotateZ", NoneType](angle, __out)
     return __out[]
 
 def MatrixRotateXYZ(angle: Vector3) -> Matrix:
+    """NOTE: Angle must be provided in radians.
+
+    Args:
+        angle: The angle.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixRotateXYZ", NoneType](Pointer(to=angle), __out)
     return __out[]
 
 def MatrixRotateZYX(angle: Vector3) -> Matrix:
+    """NOTE: Angle must be provided in radians.
+
+    Args:
+        angle: The angle.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixRotateZYX", NoneType](Pointer(to=angle), __out)
     return __out[]
 
 def MatrixScale(x: c_float, y: c_float, z: c_float) -> Matrix:
+    """Get scaling matrix.
+
+    Args:
+        x: The x-coordinate or component.
+        y: The y-coordinate or component.
+        z: The z-coordinate or component.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixScale", NoneType](x, y, z, __out)
     return __out[]
 
 def MatrixFrustum(left: c_double, right: c_double, bottom: c_double, top: c_double, nearPlane: c_double, farPlane: c_double) -> Matrix:
+    """Get perspective projection matrix.
+
+    Args:
+        left: The left.
+        right: The right.
+        bottom: The bottom.
+        top: The top.
+        nearPlane: The near plane.
+        farPlane: The far plane.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixFrustum", NoneType](left, right, bottom, top, nearPlane, farPlane, __out)
     return __out[]
 
 def MatrixPerspective(fovY: c_double, aspect: c_double, nearPlane: c_double, farPlane: c_double) -> Matrix:
+    """NOTE: Fovy angle must be provided in radians.
+
+    Args:
+        fovY: The fov y.
+        aspect: The aspect.
+        nearPlane: The near plane.
+        farPlane: The far plane.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixPerspective", NoneType](fovY, aspect, nearPlane, farPlane, __out)
     return __out[]
 
 def MatrixOrtho(left: c_double, right: c_double, bottom: c_double, top: c_double, nearPlane: c_double, farPlane: c_double) -> Matrix:
+    """Get orthographic projection matrix.
+
+    Args:
+        left: The left.
+        right: The right.
+        bottom: The bottom.
+        top: The top.
+        nearPlane: The near plane.
+        farPlane: The far plane.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixOrtho", NoneType](left, right, bottom, top, nearPlane, farPlane, __out)
     return __out[]
 
 def MatrixLookAt(eye: Vector3, target: Vector3, up: Vector3) -> Matrix:
+    """Get camera look-at matrix (view matrix).
+
+    Args:
+        eye: The eye.
+        target: The target.
+        up: The up.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixLookAt", NoneType](Pointer(to=eye), Pointer(to=target), Pointer(to=up), __out)
     return __out[]
 
 def MatrixToFloatV(mat: Matrix) -> float16:
+    """Get float array of matrix data.
+
+    Args:
+        mat: The transformation matrix.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, float16]()
     external_call["mojo_raymath_MatrixToFloatV", NoneType](Pointer(to=mat), __out)
     return __out[]
 
 def QuaternionAdd(q1: Quaternion, q2: Quaternion) -> Quaternion:
+    """Add two quaternions.
+
+    Args:
+        q1: The q1.
+        q2: The q2.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionAdd", NoneType](Pointer(to=q1), Pointer(to=q2), __out)
     return __out[]
 
 def QuaternionAddValue(q: Quaternion, add: c_float) -> Quaternion:
+    """Add quaternion and float value.
+
+    Args:
+        q: The quaternion.
+        add: The add.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionAddValue", NoneType](Pointer(to=q), add, __out)
     return __out[]
 
 def QuaternionSubtract(q1: Quaternion, q2: Quaternion) -> Quaternion:
+    """Subtract two quaternions.
+
+    Args:
+        q1: The q1.
+        q2: The q2.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionSubtract", NoneType](Pointer(to=q1), Pointer(to=q2), __out)
     return __out[]
 
 def QuaternionSubtractValue(q: Quaternion, sub: c_float) -> Quaternion:
+    """Subtract quaternion and float value.
+
+    Args:
+        q: The quaternion.
+        sub: The sub.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionSubtractValue", NoneType](Pointer(to=q), sub, __out)
     return __out[]
 
 def QuaternionIdentity() -> Quaternion:
+    """Get identity quaternion.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionIdentity", NoneType](__out)
     return __out[]
 
 def QuaternionLength(q: Quaternion) -> c_float:
+    """Computes the length of a quaternion.
+
+    Args:
+        q: The quaternion.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_QuaternionLength", c_float](Pointer(to=q))
 
 def QuaternionNormalize(q: Quaternion) -> Quaternion:
+    """Normalize provided quaternion.
+
+    Args:
+        q: The quaternion.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionNormalize", NoneType](Pointer(to=q), __out)
     return __out[]
 
 def QuaternionInvert(q: Quaternion) -> Quaternion:
+    """Invert provided quaternion.
+
+    Args:
+        q: The quaternion.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionInvert", NoneType](Pointer(to=q), __out)
     return __out[]
 
 def QuaternionMultiply(q1: Quaternion, q2: Quaternion) -> Quaternion:
+    """Calculate two quaternion multiplication.
+
+    Args:
+        q1: The q1.
+        q2: The q2.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionMultiply", NoneType](Pointer(to=q1), Pointer(to=q2), __out)
     return __out[]
 
 def QuaternionScale(q: Quaternion, mul: c_float) -> Quaternion:
+    """Scale quaternion by float value.
+
+    Args:
+        q: The quaternion.
+        mul: The mul.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionScale", NoneType](Pointer(to=q), mul, __out)
     return __out[]
 
 def QuaternionDivide(q1: Quaternion, q2: Quaternion) -> Quaternion:
+    """Divide two quaternions.
+
+    Args:
+        q1: The q1.
+        q2: The q2.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionDivide", NoneType](Pointer(to=q1), Pointer(to=q2), __out)
     return __out[]
 
 def QuaternionLerp(q1: Quaternion, q2: Quaternion, amount: c_float) -> Quaternion:
+    """Calculate linear interpolation between two quaternions.
+
+    Args:
+        q1: The q1.
+        q2: The q2.
+        amount: The amount.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionLerp", NoneType](Pointer(to=q1), Pointer(to=q2), amount, __out)
     return __out[]
 
 def QuaternionNlerp(q1: Quaternion, q2: Quaternion, amount: c_float) -> Quaternion:
+    """Calculate slerp-optimized interpolation between two quaternions.
+
+    Args:
+        q1: The q1.
+        q2: The q2.
+        amount: The amount.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionNlerp", NoneType](Pointer(to=q1), Pointer(to=q2), amount, __out)
     return __out[]
 
 def QuaternionSlerp(q1: Quaternion, q2: Quaternion, amount: c_float) -> Quaternion:
+    """Calculates spherical linear interpolation between two quaternions.
+
+    Args:
+        q1: The q1.
+        q2: The q2.
+        amount: The amount.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionSlerp", NoneType](Pointer(to=q1), Pointer(to=q2), amount, __out)
     return __out[]
 
 def QuaternionCubicHermiteSpline(q1: Quaternion, outTangent1: Quaternion, q2: Quaternion, inTangent2: Quaternion, t: c_float) -> Quaternion:
+    """As described in the GLTF 2.0 specification: https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#interpolation-cubic.
+
+    Args:
+        q1: The q1.
+        outTangent1: The out tangent1.
+        q2: The q2.
+        inTangent2: The in tangent2.
+        t: The t.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionCubicHermiteSpline", NoneType](Pointer(to=q1), Pointer(to=outTangent1), Pointer(to=q2), Pointer(to=inTangent2), t, __out)
     return __out[]
 
 def QuaternionFromVector3ToVector3(from_: Vector3, to: Vector3) -> Quaternion:
+    """Calculate quaternion based on the rotation from one vector to another.
+
+    Args:
+        from_: The from.
+        to: The to.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionFromVector3ToVector3", NoneType](Pointer(to=from_), Pointer(to=to), __out)
     return __out[]
 
 def QuaternionFromMatrix(mat: Matrix) -> Quaternion:
+    """Get a quaternion for a given rotation matrix.
+
+    Args:
+        mat: The transformation matrix.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionFromMatrix", NoneType](Pointer(to=mat), __out)
     return __out[]
 
 def QuaternionToMatrix(q: Quaternion) -> Matrix:
+    """Get a matrix for a given quaternion.
+
+    Args:
+        q: The quaternion.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_QuaternionToMatrix", NoneType](Pointer(to=q), __out)
     return __out[]
 
 def QuaternionFromAxisAngle(axis: Vector3, angle: c_float) -> Quaternion:
+    """NOTE: Angle must be provided in radians.
+
+    Args:
+        axis: The axis.
+        angle: The angle.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionFromAxisAngle", NoneType](Pointer(to=axis), angle, __out)
     return __out[]
 
 def QuaternionToAxisAngle(q: Quaternion, outAxis: Pointer[mut=True, Vector3, _], outAngle: Pointer[mut=True, c_float, _]):
+    """Get the rotation angle and axis for a given quaternion.
+
+    Args:
+        q: The quaternion.
+        outAxis: The out axis.
+        outAngle: The out angle.
+    """
     external_call["mojo_raymath_QuaternionToAxisAngle", NoneType](Pointer(to=q), outAxis, outAngle)
 
 def QuaternionFromEuler(pitch: c_float, yaw: c_float, roll: c_float) -> Quaternion:
+    """NOTE: Rotation order is ZYX.
+
+    Args:
+        pitch: The pitch.
+        yaw: The yaw.
+        roll: The roll.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionFromEuler", NoneType](pitch, yaw, roll, __out)
     return __out[]
 
 def QuaternionToEuler(q: Quaternion) -> Vector3:
+    """NOTE: Angles are returned in a Vector3 struct in radians.
+
+    Args:
+        q: The quaternion.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Vector3]()
     external_call["mojo_raymath_QuaternionToEuler", NoneType](Pointer(to=q), __out)
     return __out[]
 
 def QuaternionTransform(q: Quaternion, mat: Matrix) -> Quaternion:
+    """Transform a quaternion given a transformation matrix.
+
+    Args:
+        q: The quaternion.
+        mat: The transformation matrix.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Quaternion]()
     external_call["mojo_raymath_QuaternionTransform", NoneType](Pointer(to=q), Pointer(to=mat), __out)
     return __out[]
 
 def QuaternionEquals(p: Quaternion, q: Quaternion) -> c_int:
+    """Check whether two given quaternions are almost equal.
+
+    Args:
+        p: The p.
+        q: The quaternion.
+
+    Returns:
+        The computed result.
+    """
     return external_call["mojo_raymath_QuaternionEquals", c_int](Pointer(to=p), Pointer(to=q))
 
 def MatrixCompose(translation: Vector3, rotation: Quaternion, scale: Vector3) -> Matrix:
+    """TODO: This function is not following raymath conventions defined in header: NOT self-contained.
+
+    Args:
+        translation: The translation.
+        rotation: The rotation.
+        scale: The scale.
+
+    Returns:
+        The computed result.
+    """
     var __out = stack_allocation[1, Matrix]()
     external_call["mojo_raymath_MatrixCompose", NoneType](Pointer(to=translation), Pointer(to=rotation), Pointer(to=scale), __out)
     return __out[]
 
 def MatrixDecompose(mat: Matrix, translation: Pointer[mut=True, Vector3, _], rotation: Pointer[mut=True, Quaternion, _], scale: Pointer[mut=True, Vector3, _]):
+    """TODO: This function is not following raymath conventions defined in header: NOT self-contained.
+
+    Args:
+        mat: The transformation matrix.
+        translation: The translation.
+        rotation: The rotation.
+        scale: The scale.
+    """
     external_call["mojo_raymath_MatrixDecompose", NoneType](Pointer(to=mat), translation, rotation, scale)
 

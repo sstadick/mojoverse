@@ -29,6 +29,12 @@ mojo-compiler = "=1.0.0"
 mojo-compiler = "=1.0.0"
 mojo-raylib-shim = { path = "./shim" }
 
+[tasks.docs]
+cmd = "mkdir -p build/docs && mojo doc -o build/docs/mojo_raylib.json mojo_raylib"
+
+[tasks.doc-check]
+cmd = "mojo doc --diagnose-missing-doc-strings -Werror -o /dev/null mojo_raylib"
+
 # Codegen / dev workflow tasks live in a separate `codegen` feature so they
 # don't pull in the mojo_raylib package (which they help generate).
 [feature.codegen.dependencies]
