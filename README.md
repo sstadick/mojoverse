@@ -1,6 +1,8 @@
 # Mojoverse
 
-Mojo libraries, bins, and development tools in one repository. This checkout uses **Mojo 1.2.0** and **Pixi 0.80+**. `main` follows stable; `nightly` tracks the published nightly compiler across the whole workspace.
+Mojo libraries, bins, and development tools in one repository. This checkout uses **Mojo 1.3.0.dev2026111705** and **Pixi 0.80+**. `main` follows stable; `nightly` tracks the published nightly compiler across the whole workspace.
+
+**Nightly is experimental:** an optimized ExtraMojo iterator test currently crashes. See [the compatibility note and reproducer](docs/nightly.md); use `main` for the stable compiler lane.
 
 [Library documentation and API references](https://sstadick.github.io/mojoverse/)
 
@@ -10,13 +12,13 @@ Add a Git dependency with its package subdirectory to your `pixi.toml`. Replace 
 
 ```toml
 [workspace]
-channels = ["https://conda.modular.com/max", "conda-forge"]
+channels = ["https://conda.modular.com/max-nightly", "conda-forge"]
 platforms = ["linux-64", "linux-aarch64", "osx-arm64"]
 preview = ["pixi-build"]
 requires-pixi = ">=0.80"
 
 [dependencies]
-mojo = "=1.2.0"
+mojo = "=1.3.0.dev2026111705"
 mojo-io = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojo-io" }
 ```
 

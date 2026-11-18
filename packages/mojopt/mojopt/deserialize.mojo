@@ -420,9 +420,10 @@ def _default_deserialize[
         var attached: Optional[String] = None
         if candidate_ident.startswith("--"):
             var equals = candidate_ident.find("=")
-            if equals >= 0:
-                attached = String(candidate_ident[byte = equals + 1 :])
-                var name = String(candidate_ident[byte=:equals])
+            if equals:
+                var offset = equals.value()
+                attached = String(candidate_ident[byte = offset + 1 :])
+                var name = String(candidate_ident[byte=:offset])
                 candidate_ident = name^
 
         if candidate_ident.lower() == "--help" or candidate_ident.lower() == "-h":
@@ -908,6 +909,7 @@ __extension Tuple(MojOptDeserializable):
     @staticmethod
     def from_opts[options: ParseOptions, //](mut p: Parser[options], out s: Self) raises MojOptErr:
         comptime assert Self.Ts.all_conforms_to[Deinitable]()
+        comptime assert Self.Ts.all_conforms_to[Movable]()
         comptime assert (
             options.parsing_mode != ParseOptions.ParsingOptions
         ), "Cannot use fixed-size container as an option"

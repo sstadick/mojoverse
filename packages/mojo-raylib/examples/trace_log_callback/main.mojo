@@ -12,7 +12,7 @@
 # this callback uses.
 
 from raylib import set_trace_log_callback, init_audio_device, close_audio_device
-from std.ffi import c_int, c_char, CStringSlice
+from std.ffi import c_int, c_char, CStringSpan
 
 # raylib TraceLogLevel values.
 comptime LOG_WARNING = 4
@@ -21,7 +21,7 @@ comptime LOG_ERROR = 5
 
 # raylib (via the shim) calls this for every log message. Must be `abi("C")`.
 def on_trace_log(level: c_int, text: Pointer[c_char, ImmUntrackedOrigin]) abi("C"):
-    var message = String(CStringSlice(unsafe_from_ptr=text))
+    var message = String(CStringSpan(unsafe_from_ptr=text))
     var label: String
     if level == LOG_WARNING:
         label = "WARN"

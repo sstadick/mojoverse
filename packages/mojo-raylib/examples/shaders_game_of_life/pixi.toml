@@ -1,5 +1,5 @@
 [workspace]
-channels = ["https://conda.modular.com/max", "https://prefix.dev/conda-forge"]
+channels = ["https://conda.modular.com/max-nightly", "https://prefix.dev/conda-forge"]
 name = "shaders-game-of-life"
 platforms = ["osx-arm64", "linux-64"]
 version = "0.1.0"

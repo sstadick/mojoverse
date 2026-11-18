@@ -1,6 +1,6 @@
 [workspace]
 authors = ["KiviCode <kivicode@yandex.com>"]
-channels = ["https://conda.modular.com/max", "https://prefix.dev/conda-forge"]
+channels = ["https://conda.modular.com/max-nightly", "https://prefix.dev/conda-forge"]
 name = "mojo-raylib"
 platforms = ["osx-arm64", "linux-64"]
 version = "0.1.0"
@@ -23,14 +23,14 @@ name = "raylib"
 path = "raylib"
 
 [package.host-dependencies]
-mojo-compiler = "=1.2.0"
+mojo-compiler = "=1.3.0.dev2026111705"
 mojo-raylib-shim = { path = "./shim" }
 
 [package.build-dependencies]
-mojo-compiler = "=1.2.0"
+mojo-compiler = "=1.3.0.dev2026111705"
 
 [package.run-dependencies]
-mojo-compiler = "=1.2.0"
+mojo-compiler = "=1.3.0.dev2026111705"
 mojo-raylib-shim = { path = "./shim" }
 
 [tasks.docs]
@@ -73,5 +73,5 @@ codegen = { features = ["codegen"], no-default-feature = true }
 [dependencies]
 # Default env consumes the package itself, so `pixi run mojo ...` from the root
 # sees raylib (and transitively the shim).
-mojo = "=1.2.0"
+mojo = "=1.3.0.dev2026111705"
 mojo_raylib = { path = "." }

@@ -98,8 +98,8 @@ struct Bam(Movable):
             index_path = path + ".csi"
         if not _exists(index_path):
             var dot = path.rfind(".")
-            if dot >= 0:
-                index_path = String(from_utf8=path.as_bytes()[0:dot]) + ".bai"
+            if dot:
+                index_path = String(from_utf8=path.as_bytes()[0:dot.value()]) + ".bai"
         if index_path == path or not _exists(index_path):
             raise Error("cannot find BAM index")
         var indexed = Input(index_path)

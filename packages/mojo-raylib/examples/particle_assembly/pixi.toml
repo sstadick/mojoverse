@@ -1,6 +1,6 @@
 [workspace]
 channels = [
-    "https://conda.modular.com/max",
+    "https://conda.modular.com/max-nightly",
     "https://prefix.dev/conda-forge",
 ]
 name = "particle-assembly"
@@ -9,7 +9,7 @@ version = "0.1.0"
 preview = ["pixi-build"]
 
 [dependencies]
-max = "=26.7.0"
+max = "=26.8.0.dev2026111705"
 mojo_raylib = { path = "../.." }
 
 [tasks.run]
