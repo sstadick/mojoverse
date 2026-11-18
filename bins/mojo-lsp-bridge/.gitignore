@@ -1,0 +1,9 @@
+grammars/
+target/
+extension.wasm
+__pycache__/
+vscode/node_modules/
+vscode/dist/
+vscode/.vscode-test/
+vscode/*.vsix
+vscode/LICENSE

@@ -1,0 +1,117 @@
+name: Check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1,wasm32-wasip2
+
+      - name: Check native target
+        run: cargo check --locked
+
+      - name: Check Rust formatting and project discovery
+        run: |
+          cargo fmt --check
+          cargo test --locked --lib
+
+      - name: Check Zed extension target
+        run: cargo check --locked --target wasm32-wasip1
+
+      - name: Build current Zed extension target
+        run: cargo build --locked --release --target wasm32-wasip2
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Test language server bridge
+        run: python3 -m unittest discover -s tests -v
+
+      - name: Check snippets
+        run: bash scripts/check-snippets.sh
+
+      - name: Check indent query
+        run: bash scripts/check-indents.sh
+
+      - name: Check highlight query order
+        run: bash scripts/check-highlight-order.sh
+
+      - name: Check runnables
+        run: bash scripts/check-runnables.sh
+
+  vscode:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: vscode/package-lock.json
+
+      - name: Test compiler discovery and package VSIX
+        working-directory: vscode
+        run: |
+          npm ci
+          npm test
+          npm run package
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
+        with:
+          pixi-version: v0.80.0
+          run-install: false
+          cache: false
+
+      - name: Create a nightly Mojo project
+        run: |
+          pixi init "$RUNNER_TEMP/mojo-project" -c https://conda.modular.com/max-nightly/ -c conda-forge
+          pixi add --manifest-path "$RUNNER_TEMP/mojo-project/pixi.toml" mojo
+
+      - name: Test VS Code against nightly with automatic stdlib download
+        working-directory: vscode
+        env:
+          MOJO_LSP_SERVER: ${{ runner.temp }}/mojo-project/.pixi/envs/default/bin/mojo-lsp-server
+        run: xvfb-run -a npm run test:integration
+
+  zero-config:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
+        with:
+          pixi-version: v0.80.0
+          run-install: false
+          cache: false
+
+      - name: Create a fresh stable Mojo project
+        run: |
+          pixi init "$RUNNER_TEMP/mojo-project" -c https://conda.modular.com/max/ -c conda-forge
+          pixi add --manifest-path "$RUNNER_TEMP/mojo-project/pixi.toml" 'mojo==1.0.0'
+
+      - name: Test cold source download and warm restart without activation or Zed settings
+        env:
+          MOJO_LSP_SERVER: ${{ runner.temp }}/mojo-project/.pixi/envs/default/bin/mojo-lsp-server
+          PYTHONPATH: tests
+        run: python3 -m unittest test_bridge.ZeroConfigurationIntegrationTests -v
