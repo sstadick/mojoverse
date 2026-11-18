@@ -1,9 +1,11 @@
 # Mojo Seqair
 
-Experimental native Mojo **BAM** reader used by Mojo Perbase. This is not an
-official Seqair release or a complete port of its public API. BAM/BGZF parsing,
+Native Mojo **BAM** reader. This is not an official Seqair release or a
+complete port of its public API. BAM/BGZF parsing,
 BAI/CSI lookup, auxiliary validation and CG long-CIGAR resolution are Mojo;
 libdeflate 1.26 handles DEFLATE/CRC32 through direct static FFI calls.
+
+[API reference](https://sstadick.github.io/mojoverse/mojo-seqair/mojo_seqair/_index.html)
 
 ## Query reads
 
@@ -51,9 +53,9 @@ def main() raises:
 
 `Buffer` is the library's libc-owned scratch buffer. Views expire on growth,
 move or destruction; append sources must not alias it. `Input` and the pointer
-overload of `decode_sequence` remain advanced APIs. The latter requires
+overload of `decode_sequence` are advanced APIs. The latter requires
 non-overlapping buffers of at least ceil(n/2) source and n destination bytes.
-Neither adds bounds checks to Perbase's validated hot loops.
+The caller must validate these ranges before decoding.
 
 ## Build and documentation
 
@@ -64,14 +66,13 @@ needed after package installation. Use [Mojoverse dependency setup](https://gith
 with `subdirectory = "packages/mojo-seqair"`; internal dependencies stay at the
 same Git revision through relative paths.
 
-Stable Mojo 1.2.0 is pinned. `pixi run t` tests named BAM queries, record views,
-buffer reuse and SIMD/scalar sequence decoding. `pixi run docs` builds the API
-reference and executes marked README examples. The BAM example needs your own
-file; the test suite exercises it against an independent miniature fixture.
+Stable Mojo 1.2.0 is pinned. `pixi run t` runs the tests. `pixi run docs` builds
+the API reference and executes marked README examples. The BAM example needs
+your own indexed file.
 `pixi build` creates the Mojo package with `pixi-build-mojo`.
 The codec package uses Clang 18.1.8 on Linux and Apple Clang on macOS, with
 `-O3 -march=native`; builds are host-specific, not portable binary artifacts.
-Linux x86-64 and Apple Silicon macOS have native installed-consumer checks.
-Linux AArch64 is a declared source target, not yet native-tested. x86 retains
-the SIMD decoder; ARM uses the existing scalar fallback. CRAM/CRAI and SAM text
-are unsupported. The application supplies counting/pileup algorithms.
+Supported platforms are Linux x86-64/AArch64 and Apple Silicon macOS 15+.
+x86 uses a SIMD sequence decoder; ARM uses a scalar decoder.
+CRAM/CRAI and SAM text are unsupported. The library reads records; it does not
+compute pileups.

@@ -56,6 +56,7 @@ mojoverse-tools = { path = ".", editable = true }
 [feature.docs.tasks]
 test-docs = "python -m unittest discover -s tests -p test_docs.py -v"
 docs = "mojoverse-docs"
+docs-site = "python scripts/build_docs.py"
 
 [feature.lsp.dependencies]
 python = "3.12.*"

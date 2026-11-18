@@ -1,5 +1,28 @@
 # Executable package documentation
 
+## Build the complete site
+
+From the repository root:
+
+```sh
+pixi run --locked -e docs docs-site
+python3 -m http.server 8767 --directory target/docs
+```
+
+Open `http://localhost:8767/` to browse the documentation hub, package usage
+guides, and Modo API references. The builder invokes each package's `docs`
+task, runs its executable examples, and assembles the results in `target/docs`.
+Failed builds leave the previous complete site intact. Package sites include
+the original `mojo doc` JSON.
+
+Seven packages have generated HTML references. The hub also links to
+ExtraMojo's existing documentation and the mojopt/Raylib usage guides; those
+are not presented as newly generated API references. To add a generated site,
+give the package a `docs` task producing `target/docs`, add it to `PACKAGES`
+in `scripts/build_docs.py`, and link it from `docs/index.md`.
+
+## Build one package
+
 Run the tools from the Mojoverse root. The `docs` environment installs the Python documentation tools and Modo's bundled executable. It supports Linux x86-64 and macOS (with Rosetta), not Linux AArch64; this restriction does not apply to the Mojo libraries or bins:
 
 ```sh
@@ -49,4 +72,17 @@ The build requires at least one doctest and runs every extracted program with as
 
 The tools pin Modo 0.11.13 and override its callable signature, struct signature, and doctest templates for current Mojo. Do not remove these overrides without checking rendered signatures and executing the examples on stable and nightly. The stock templates still use `fn` and emit `fn def` for current compiler JSON.
 
-CI should build/test docs on pull requests, archive the generated site, and publish only the stable main build to GitHub Pages. A nightly build should validate compatibility without replacing stable docs. Publishing requires the repository's Pages setup and authorization; generating HTML does not deploy it.
+## Publish with GitHub Pages
+
+The `Documentation` workflow builds and archives the complete site on pull
+requests and pushes to `main` or `nightly`. Only successful builds of `main`
+can deploy, and only when Pages is configured to use GitHub Actions. Until
+then, the workflow saves the documentation artifact and skips deployment.
+Pull requests and nightly builds never replace the stable site. A manual
+workflow run on `main` can rebuild it too.
+
+For initial setup, a repository administrator must enable **Settings → Pages →
+Build and deployment → Source: GitHub Actions**. The deployment job uses the
+`github-pages` environment and narrowly scoped `pages: write` / `id-token: write`
+permissions. The site address is `https://sstadick.github.io/mojoverse/`.
+Local builds do not enable Pages or publish anything.

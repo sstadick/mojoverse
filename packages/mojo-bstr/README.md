@@ -3,6 +3,8 @@
 Arbitrary byte strings for Mojo 1.2.0. The distribution is `mojo-bstr`; import
 `mojo_bstr`. NUL and malformed UTF-8 are ordinary input bytes.
 
+[API reference](https://sstadick.github.io/mojoverse/mojo-bstr/mojo_bstr/_index.html)
+
 ## Use
 
 ```mojo {doctest="bytes" global=true}
@@ -115,17 +117,6 @@ pixi run doc-examples # Execute marked README examples
 pixi run docs         # API site, using this monorepo's root tools
 pixi run bench-verify # Untimed benchmark protocol checks
 ```
-
-Differential tests cover every one-/two-byte input, Unicode boundaries, invalid
-sequences, escape failures, and deterministic randomized binary/text inputs.
-Additional search tests check unaligned/vector-tail spans and 3,000 random or
-periodic short/long searches against an independent scalar implementation.
-
-## Performance scope
-
-**No performance parity is claimed.** Common-host comparisons with Rust and
-Goose show workload-dependent gaps. See
-[`bench/README.md`](bench/README.md) for reproducible comparisons and gaps.
 
 ## Attribution
 

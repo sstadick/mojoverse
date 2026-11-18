@@ -2,6 +2,8 @@
 
 Mojo libraries, bins, and development tools in one repository. This checkout uses **Mojo 1.2.0** and **Pixi 0.80+**. `main` follows stable; `nightly` tracks the published nightly compiler across the whole workspace.
 
+[Library documentation and API references](https://sstadick.github.io/mojoverse/)
+
 ## Use a dependency
 
 Add a Git dependency with its package subdirectory to your `pixi.toml`. Replace `<full-commit>` with a Mojoverse commit and use that same revision for every Mojoverse dependency:
@@ -22,7 +24,7 @@ Run `pixi install`, then import `mojo_io` normally—no source `-I` paths. Its `
 
 ## Libraries
 
-| Package / docs | Import | Purpose |
+| Package | Import | Purpose |
 | --- | --- | --- |
 | [ExtraMojo](packages/extramojo) | `extramojo` | Collections, strings, I/O and other utilities |
 | [mojopt](packages/mojopt) | `mojopt` | Command-line parsing |

@@ -1,8 +1,10 @@
 # mojo-bio
 
-Generic in-place integer radix sorting for Seth's Mojoverse, built with
+Generic in-place integer radix sorting, built with
 **Mojo 1.2.0**. Package name: `mojo-bio`; import: `mojo_bio`.
 Interval data structures belong to the separate **mojo-lapper** package.
+
+[API reference](https://sstadick.github.io/mojoverse/mojo-bio/mojo_bio/_index.html)
 
 ## Sort integers
 
@@ -73,9 +75,8 @@ pixi publish --path . --target-dir build
 
 `pixi-build-mojo` puts `mojo_bio.mojoc` in `lib/mojo` and includes LICENSE.
 The artifact pins `mojo-compiler ==1.2.0`; compiled Mojo modules are tied to
-their compiler version. Linux x86-64, Linux ARM64, and macOS ARM64 are declared;
-only Linux x86-64 has been executed locally. The command above writes a local
-archive, not a remote publication.
+their compiler version. Supported platforms are Linux x86-64, Linux ARM64,
+and macOS ARM64. The command above writes a local archive, not a remote publication.
 
 For a sibling source checkout, a consumer can use:
 
@@ -91,17 +92,8 @@ mojo-bio = { path = "../mojoverse/packages/mojo-bio" }
 ```
 
 Then run `pixi run mojo run main.mojo`. No `-I` source path is needed.
-No public package index release is claimed. The clean-consumer check instead
-installs a built local `.conda` by URL and runs the full test suite and example
-outside this checkout, without source include paths.
 
-Tests compare every output value against Mojo's independent comparison sort,
-exercise explicit extrema for all eight types, duplicates, both sides of the
-cutoff, common upper bytes, random/sorted/reverse/equal inputs, owned keyed
-payload identity, insertion stability, and subspan isolation.
-
-See [bench/RADIX_SORT.md](bench/RADIX_SORT.md) for measurements and reproducible
-commands, and [NOTICE.md](NOTICE.md) for source attribution and licensing.
+See [NOTICE.md](NOTICE.md) for source attribution and licensing.
 Documentation uses this monorepo's root tools. For pinned Git dependencies,
 see [Mojoverse dependency setup](https://github.com/sstadick/mojoverse#use-a-dependency).
 It checks examples with this package's locked compiler before building

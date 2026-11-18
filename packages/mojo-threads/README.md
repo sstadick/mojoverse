@@ -4,6 +4,8 @@ Native threads for Mojo 1.2.0 on Linux and macOS. Move an input into a thread,
 then join to get its result or error. No C callbacks or pointer casts are
 needed for ordinary owned jobs.
 
+[API reference](https://sstadick.github.io/mojoverse/mojo-threads/mojo_threads/_index.html)
+
 ## Run a job
 
 ```mojo {doctest="owned-job" global=true}
@@ -36,15 +38,14 @@ pool. Batch small items into one job rather than spawning per item.
 
 ## Persistent pipelines
 
-`Worker` is the lower-level API used by Perbase. It keeps the same explicit
-monitor, stable-context and shutdown contracts so pipelines can choose their
-own queues, backpressure and scheduling without extra job allocations.
+`Worker` provides a thread and synchronization primitives for persistent
+pipelines. The caller owns the shared context, queues, backpressure, and
+shutdown protocol.
 
 `Worker` owns a joinable pthread, mutex and condition variable in one stable
 native allocation. `available_parallelism()` respects Linux CPU affinity;
 on macOS it uses the online processor count. Threads inherit the platform's
-normal scheduling policy. There is no raw-clone implementation, copied TLS,
-architecture-specific assembly, spin loop, queue or process-wide signal handler.
+normal scheduling policy.
 
 ## Build and test
 
@@ -64,11 +65,6 @@ requires Xcode command-line tools. Native code uses Clang 18.1.8 on Linux and
 Apple Clang on macOS, with `-O3 -march=native`. Built archives are host-tuned;
 do not distribute them as universal CPU-compatible binaries. Intel macOS and
 Windows are not Mojo 1.2 targets.
-
-Native and isolated installed-consumer tests pass on Linux x86-64 and Apple
-Silicon macOS. Linux AArch64 is declared but has not been native-tested.
-The build backends are pinned as well as the compiler: floating backend versions
-produced different dependency metadata between an old cache and a fresh machine.
 
 Consumers import `spawn`, `Thread`, `Worker` and `available_parallelism` from `mojo_threads` and
 link `-Xlinker -L$CONDA_PREFIX/lib -Xlinker -lmojo_threads_native -Xlinker -lpthread`.
@@ -95,7 +91,3 @@ silently blocking forever. Start/join/destruction belong to one controlling
 thread; lock/wait/notification may be used by the participating threads.
 Unexpected pthread synchronization errors abort. This unsafe interface does
 not prove callback lifetimes or absence of data races.
-
-Tests exercise persistent request/reply handoffs, concurrent Mojo allocation,
-restart after join, repeated join, and rejection of a duplicate start. Perbase
-additionally exercises bounded ordered output and compression-ring reuse.

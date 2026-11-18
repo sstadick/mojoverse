@@ -1,0 +1,65 @@
+name: Documentation
+on:
+  push:
+    branches: [main, nightly]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  CC: clang
+  CXX: clang++
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pages: read
+    outputs:
+      pages-enabled: ${{ steps.pages.outputs.enabled }}
+    env:
+      PIXI_CACHE_DIR: ${{ github.workspace }}/.pixi/cache
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e
+        with:
+          pixi-version: v0.80.0
+          run-install: false
+          cache: false
+      - run: pixi run --locked -e docs docs-site
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: target/docs
+      - name: Check whether Pages uses GitHub Actions
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api "repos/$GITHUB_REPOSITORY/pages" > "$RUNNER_TEMP/pages.json"; then
+            jq -r '"enabled=" + (.build_type == "workflow" | tostring)' "$RUNNER_TEMP/pages.json" >> "$GITHUB_OUTPUT"
+          elif jq -e '.status == "404"' "$RUNNER_TEMP/pages.json" > /dev/null; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Pages is not enabled; the documentation artifact is available without deployment."
+          else
+            exit 1
+          fi
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && needs.build.outputs.pages-enabled == 'true'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Publish stable documentation
+        id: deployment
+        uses: actions/deploy-pages@v4

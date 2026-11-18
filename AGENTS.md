@@ -1,6 +1,7 @@
 # Mojoverse
 
 - Libraries live in `packages/`; executables and editor integrations live in `bins/`. Keep the landing README focused on dependency usage and links. Build and maintenance instructions belong in `docs/`.
+- Package READMEs and API docs describe current usage, contracts, and requirements. Keep consumer-application details, implementation history, and local validation diaries in root maintenance docs or Git history, not package documentation. Preserve source attribution and license notices.
 - Pixi is the build orchestrator. Internal dependencies use relative paths to this checkout; external consumers pin one Mojoverse Git revision and a package subdirectory. Do not add a second build graph.
 - The root `pixi.toml` owns the compiler/MAX versions. All packages, including Raylib, use the same compiler lane: stable on `main`, published nightly on `nightly`. Use `scripts/toolchain.py update` to change pins and locks together; `check-workspace` rejects compiler/channel drift and detached internal dependencies.
 - Load Modular's `mojo-syntax` skill before writing Mojo, plus its interop or GPU skill when applicable. Existing ExtraMojo APIs remain available; extraction into smaller packages does not authorize breaking them.

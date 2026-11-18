@@ -10,6 +10,6 @@ if not (tools / "pixi.toml").is_file():
 subprocess.run(
     ["pixi", "run", "--locked", "-e", "docs", "--manifest-path", str(tools / "pixi.toml"),
      "docs", str(root), "mojo_io", "--site", "--readme", "README.md",
-     "--include", "LICENSE", "--include", "bench/README.md"],
+     "--include", "LICENSE"],
     check=True,
 )
