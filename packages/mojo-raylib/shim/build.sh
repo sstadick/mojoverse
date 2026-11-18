@@ -7,12 +7,16 @@ if [ ! -f vendor/raylib/src/raylib.h ]; then
   exit 1
 fi
 
-export CC=clang
+export CC=clang CXX=clang++
+if [ "$(uname -s)" = Darwin ]; then
+  # Match the other native packages: Conda Clang's LTO driver cannot link with Xcode.
+  export CC=/usr/bin/clang CXX=/usr/bin/clang++
+fi
 cmake -S vendor/raylib -B build-raylib \
   ${CMAKE_ARGS:-} \
   -G Ninja \
-  -DCMAKE_C_COMPILER=clang \
-  -DCMAKE_CXX_COMPILER=clang++ \
+  -DCMAKE_C_COMPILER="$CC" \
+  -DCMAKE_CXX_COMPILER="$CXX" \
   -DCMAKE_PREFIX_PATH="$PREFIX" \
   -DCMAKE_C_FLAGS_RELEASE="-O3 -march=native -DNDEBUG" \
   -DCMAKE_CXX_FLAGS_RELEASE="-O3 -march=native -DNDEBUG" \
@@ -29,14 +33,14 @@ cmake --install build-raylib --prefix "$PREFIX"
 
 case "$(uname -s)" in
   Darwin)
-    clang -O3 -march=native -dynamiclib -fPIC \
+    "$CC" -O3 -march=native -dynamiclib -fPIC \
       -I vendor/raylib/src native/mojo_raylib_shim.c \
       -L"$PREFIX/lib" -lraylib \
       -Wl,-install_name,@rpath/libmojo_raylib_shim.dylib \
       -o "$PREFIX/lib/libmojo_raylib_shim.dylib"
     ;;
   Linux)
-    clang -O3 -march=native -shared -fPIC \
+    "$CC" -O3 -march=native -shared -fPIC \
       -I vendor/raylib/src native/mojo_raylib_shim.c \
       -L"$PREFIX/lib" -lraylib \
       -Wl,-rpath,'$ORIGIN' \
