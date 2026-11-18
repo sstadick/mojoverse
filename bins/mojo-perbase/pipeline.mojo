@@ -7,9 +7,9 @@ Worker failures terminate this CLI with nonzero status; partial output is invali
 
 from std.ffi import external_call
 from std.memory import unsafe_memcpy
-from mojo_threads import Worker
-from mojo_seqair.bam import Bam, Region
-from mojo_seqair.buffer import Buffer, BytePtr
+from threads import Worker
+from bio.bam import Bam, Region
+from bio.buffer import Buffer, BytePtr
 from options import Options
 from count import Counter
 from text import literal

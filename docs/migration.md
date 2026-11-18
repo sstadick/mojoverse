@@ -1,6 +1,6 @@
 # Migration and history
 
-Mojoverse imports the existing projects without squashing their Git history. The original commits remain ancestors; use `git log --all -- <old-path>` when inspecting history before a subtree import. Existing import names and package names are retained. Libraries live under `packages/`, executables/editor integrations under `bins/`, and binding-generation tooling under `tools/`.
+Mojoverse imports the existing projects without squashing their Git history. The original commits remain ancestors; use `git log --all -- <old-path>` when inspecting history before a subtree import. The initial import retained package and import names; subsequent changes are listed below. Libraries live under `packages/`, executables/editor integrations under `bins/`, and binding-generation tooling under `tools/`.
 
 | Destination | Imported source revision |
 | --- | --- |
@@ -25,6 +25,46 @@ Internal dependencies now use relative paths within this repository. External co
 
 The migration itself does not archive or delete the old GitHub repositories, publish conda releases, replace existing ExtraMojo APIs, or claim new performance measurements. Original local checkouts remain under `mojo-projects` as recovery copies. New coordinated development belongs here.
 
+## Bio readers and standalone radix sorting
+
+The generic sorter now lives in `packages/mojo-radix-sort`, imported as
+`radix_sort`. Replace `from mojo_bio import radix_sort, insert_sort` with
+`from radix_sort import radix_sort, insert_sort` and change the Pixi
+dependency/subdirectory to `mojo-radix-sort`. Lapper depends only on this sorter,
+not the bio readers or their compression libraries.
+
+The former `mojo-seqair` package is now part of `packages/mojo-bio`. Change the
+dependency to `mojo-bio` and `mojo_seqair` imports to `bio`; `bam`, `bgzf`,
+and `buffer` keep their APIs. There is no legacy namespace shim. Consumers pinned
+to older Git revisions retain the old packages and imports.
+
+`mojo-bio` also includes the FASTX reader and its read-only gzip support from
+BioRadOpenSource/ish revision `304233bc80b14c18f6f1497d17116d2328d2474f`, adapted
+to the workspace compiler. No other ish code was imported, and ish itself is
+unchanged. FASTX fields use standard `List[UInt8]` rather than ish's private
+ByteString. The reader's Apache-2.0 and kseq MIT notices remain with the code;
+BAM/BGZF and the standalone sorter retain their MIT terms.
+
+## Unprefixed library imports
+
+The `mojo-*` libraries keep their Pixi dependency names and package directories,
+but their import namespaces no longer include `mojo_`:
+
+| Pixi dependency | Import |
+| --- | --- |
+| `mojo-bio` | `bio` |
+| `mojo-bstr` | `bstr` |
+| `mojo-io` | `io` |
+| `mojo-libdeflate` | `libdeflate` |
+| `mojo-radix-sort` | `radix_sort` |
+| `mojo_raylib` | `raylib` |
+| `mojo-threads` | `threads` |
+| `mojo-lapper` | `lapper` (unchanged) |
+
+Update root imports and qualified module paths, for example `from bio import Bam`
+and `from bio.bam import Region`. The old prefixed namespaces are not re-exported.
+`extramojo`, `mojopt`, executable names, and native linker symbols are unchanged.
+
 ## Standalone repositories to revisit later
 
 Keep these active while trying the monorepo. After checking downstream consumers, releases and outstanding work, they are candidates for archiving—not repositories already archived by this migration:
@@ -32,7 +72,7 @@ Keep these active while trying the monorepo. After checking downstream consumers
 | Standalone repository | Monorepo destination |
 | --- | --- |
 | [sstadick/mojopt](https://github.com/sstadick/mojopt) | [packages/mojopt](../packages/mojopt) |
-| [sstadick/mojo-bio](https://github.com/sstadick/mojo-bio) | [packages/mojo-bio](../packages/mojo-bio) |
+| [sstadick/mojo-bio](https://github.com/sstadick/mojo-bio) | [packages/mojo-radix-sort](../packages/mojo-radix-sort) (original sorter) |
 | [sstadick/mojo-lapper](https://github.com/sstadick/mojo-lapper) | [packages/mojo-lapper](../packages/mojo-lapper) |
 | [sstadick/mojo-bstr](https://github.com/sstadick/mojo-bstr) | [packages/mojo-bstr](../packages/mojo-bstr) |
 | [sstadick/mojo-io](https://github.com/sstadick/mojo-io) | [packages/mojo-io](../packages/mojo-io) |

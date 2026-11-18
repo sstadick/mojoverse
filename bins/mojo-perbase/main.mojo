@@ -1,5 +1,5 @@
 from std.ffi import external_call
-from mojo_seqair.bam import Bam
+from bio.bam import Bam
 from options import options
 from regions import make_jobs
 from pipeline import run, fatal

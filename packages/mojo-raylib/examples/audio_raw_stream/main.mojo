@@ -9,7 +9,7 @@ underneath.
 from std.math import sin
 from std.memory import stack_allocation
 
-from mojo_raylib import (
+from raylib import (
     Color, Vector2,
     KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_UP,
     PI,

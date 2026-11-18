@@ -20,7 +20,7 @@ mojo = "=1.2.0"
 mojo-io = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojo-io" }
 ```
 
-Run `pixi install`, then import `mojo_io` normally—no source `-I` paths. Its `mojo-bstr` dependency comes from **the same commit**, through an internal relative path. For local development, use `{ path = "../mojoverse/packages/mojo-io" }` instead. Native packages document their linker flags and platform requirements.
+Run `pixi install`, then import `io` normally—no source `-I` paths. Its `mojo-bstr` dependency comes from **the same commit**, through an internal relative path. For local development, use `{ path = "../mojoverse/packages/mojo-io" }` instead. Native packages document their linker flags and platform requirements.
 
 ## Libraries
 
@@ -28,14 +28,14 @@ Run `pixi install`, then import `mojo_io` normally—no source `-I` paths. Its `
 | --- | --- | --- |
 | [ExtraMojo](packages/extramojo) | `extramojo` | Collections, strings, I/O and other utilities |
 | [mojopt](packages/mojopt) | `mojopt` | Command-line parsing |
-| [mojo-bstr](packages/mojo-bstr) | `mojo_bstr` | Byte strings, SIMD search and UTF-8 utilities |
-| [mojo-io](packages/mojo-io) | `mojo_io` | Binary-safe buffered I/O |
-| [mojo-bio](packages/mojo-bio) | `mojo_bio` | Generic integer-key radix sorting |
+| [mojo-bstr](packages/mojo-bstr) | `bstr` | Byte strings, SIMD search and UTF-8 utilities |
+| [mojo-io](packages/mojo-io) | `io` | Binary-safe buffered I/O |
+| [mojo-bio](packages/mojo-bio) | `bio` | Indexed BAM/BGZF and streaming FASTA/FASTQ readers |
+| [mojo-radix-sort](packages/mojo-radix-sort) | `radix_sort` | Generic integer-key radix sorting |
 | [mojo-lapper](packages/mojo-lapper) | `lapper` | Interval data structures |
-| [mojo-libdeflate](packages/mojo-libdeflate) | `mojo_libdeflate` | Inlined libdeflate bindings and native codec |
-| [mojo-threads](packages/mojo-threads) | `mojo_threads` | Joinable pthread workers and synchronization |
-| [mojo-seqair](packages/mojo-seqair) | `mojo_seqair` | Indexed BAM/BGZF reader; not an official Seqair release |
-| [mojo-raylib](packages/mojo-raylib) | `mojo_raylib` | Raylib graphics, audio and math bindings |
+| [mojo-libdeflate](packages/mojo-libdeflate) | `libdeflate` | Inlined libdeflate bindings and native codec |
+| [mojo-threads](packages/mojo-threads) | `threads` | Joinable pthread workers and synchronization |
+| [mojo-raylib](packages/mojo-raylib) | `raylib` | Raylib graphics, audio and math bindings |
 
 ## Bins and tools
 

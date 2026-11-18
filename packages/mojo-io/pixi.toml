@@ -17,8 +17,8 @@ description = "Binary-safe buffered I/O for Mojo"
 backend = { name = "pixi-build-mojo", version = "=0.2.9.20261117.1659.e14419f", channels = ["https://prefix.dev/pixi-build-backends", "conda-forge"] }
 
 [package.build.config.pkg]
-name = "mojo_io"
-path = "mojo_io"
+name = "io"
+path = "io"
 
 [package.host-dependencies]
 mojo-compiler = "=1.2.0"
@@ -40,7 +40,7 @@ mojo-io = { path = "." }
 
 [tasks]
 t = "python scripts/test.py"
-format = "mojo format --line-length 100 mojo_io tests bench"
+format = "mojo format --line-length 100 io tests bench"
 docs = "python scripts/docs.py"
 consumer = "python scripts/consumer.py"
 bench = "python bench/compare.py"

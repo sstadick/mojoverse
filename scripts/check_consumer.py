@@ -39,7 +39,7 @@ def main():
                  f'platforms = ["{target}"]', 'preview = ["pixi-build"]',
                  '[dependencies]', 'mojo = ' + json.dumps(config["dependencies"]["mojo"]),
                  'python = "3.12.*"']
-        for name in ("mojo-io", "mojo-seqair", "mojo-threads", "mojo-perbase"):
+        for name in ("mojo-io", "mojo-bio", "mojo-radix-sort", "mojo-threads", "mojo-perbase"):
             directory = "bins" if name == "mojo-perbase" else "packages"
             lines.append(f'{name} = {{ git = {json.dumps(args.repository)}, rev = "{args.rev}", '
                          f'subdirectory = "{directory}/{name}" }}')
@@ -47,11 +47,14 @@ def main():
         env["PIXI_CACHE_DIR"] = str(work / "cache")
         pixi = ["pixi", "run", "--manifest-path", str(consumer / "pixi.toml")]
         prefix = consumer / ".pixi/envs/default"
-        tests = [("mojo-io", "test_buffered", []), ("mojo-seqair", "test_sequence", ["deflate"]),
+        tests = [("mojo-io", "test_buffered", []), ("mojo-bio", "test_sequence", ["deflate"]),
+                 ("mojo-bio", "test_fastx", ["z"]),
+                 ("mojo-radix-sort", "test_radix_sort", []),
                  ("mojo-libdeflate", "test_codec", ["deflate"]),
                  ("mojo-threads", "test_worker", ["mojo_threads_native", "pthread"])]
         for name, test, libraries in tests:
-            shutil.copyfile(source / f"packages/{name}/tests/{test}.mojo", consumer / f"{test}.mojo")
+            test_dir = "test" if name == "mojo-radix-sort" else "tests"
+            shutil.copyfile(source / f"packages/{name}/{test_dir}/{test}.mojo", consumer / f"{test}.mojo")
             link = ["-Xlinker", f"-L{prefix}/lib"] if libraries else []
             for library in libraries:
                 link += ["-Xlinker", f"-l{library}"]

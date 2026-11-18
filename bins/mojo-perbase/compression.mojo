@@ -5,9 +5,9 @@ the destructor stops and joins it before releasing any shared allocation.
 """
 
 from std.memory import unsafe_memcpy
-from mojo_threads import Worker
-from mojo_libdeflate import alloc_compressor, free_compressor, deflate_compress, crc32
-from mojo_seqair.buffer import Buffer
+from threads import Worker
+from libdeflate import alloc_compressor, free_compressor, deflate_compress, crc32
+from bio.buffer import Buffer
 
 
 def compress(codec: Int, data: Buffer, mut packed: Buffer) -> Bool:

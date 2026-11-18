@@ -32,6 +32,6 @@ check = "mojo run main.mojo"
         env.pop(name, None)
     subprocess.run(["pixi", "run", "--manifest-path", str(consumer / "pixi.toml"), "check"],
                    cwd=consumer, env=env, check=True)
-    installed = list((consumer / ".pixi/envs/default/lib/mojo").glob("mojo_bstr.*"))
+    installed = list((consumer / ".pixi/envs/default/lib/mojo").glob("bstr.*"))
     assert installed, "built module missing from consumer prefix"
     print("Clean consumer installed", installed[0].name, "and passed the executable example")

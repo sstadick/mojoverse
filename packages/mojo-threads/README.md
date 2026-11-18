@@ -4,12 +4,12 @@ Native threads for Mojo 1.2.0 on Linux and macOS. Move an input into a thread,
 then join to get its result or error. No C callbacks or pointer casts are
 needed for ordinary owned jobs.
 
-[API reference](https://sstadick.github.io/mojoverse/mojo-threads/mojo_threads/_index.html)
+[API reference](https://sstadick.github.io/mojoverse/mojo-threads/threads/_index.html)
 
 ## Run a job
 
 ```mojo {doctest="owned-job" global=true}
-from mojo_threads import spawn
+from threads import spawn
 from std.testing import assert_equal
 
 def total(var values: List[Int]) raises -> Int:
@@ -42,7 +42,7 @@ Use a struct to name a job's inputs. Start both jobs before joining either;
 joining immediately after every spawn would serialize the work.
 
 ```mojo {doctest="parallel-jobs" global=true}
-from mojo_threads import spawn
+from threads import spawn
 from std.testing import assert_equal
 
 @fieldwise_init
@@ -69,7 +69,7 @@ Catch the error from `join()` on the calling thread. Dropping the handle waits
 for completion but discards the error, so join when the outcome matters.
 
 ```mojo {doctest="worker-error" global=true}
-from mojo_threads import spawn
+from threads import spawn
 from std.testing import assert_equal, assert_true
 
 def quotient(var inputs: Tuple[Int, Int]) raises -> Int:
@@ -118,7 +118,7 @@ Apple Clang on macOS, with `-O3 -march=native`. Built archives are host-tuned;
 do not distribute them as universal CPU-compatible binaries. Intel macOS and
 Windows are not Mojo 1.2 targets.
 
-Consumers import `spawn`, `Thread`, `Worker` and `available_parallelism` from `mojo_threads` and
+Consumers import `spawn`, `Thread`, `Worker` and `available_parallelism` from `threads` and
 link `-Xlinker -L$CONDA_PREFIX/lib -Xlinker -lmojo_threads_native -Xlinker -lpthread`.
 The `mojo-threads-native` runtime dependency installs the static archive.
 Use `mojo build`, not JIT execution, for static native dependencies.

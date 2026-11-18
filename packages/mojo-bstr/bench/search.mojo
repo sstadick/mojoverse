@@ -2,7 +2,7 @@
 from std.benchmark import black_box
 from std.sys import argv
 from std.time import perf_counter_ns
-from mojo_bstr import finder, finder_reverse
+from bstr import finder, finder_reverse
 from operations import operation
 
 

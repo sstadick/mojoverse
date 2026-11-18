@@ -17,8 +17,8 @@ license-file = "LICENSE"
 backend = { name = "pixi-build-mojo", version = "=0.2.9.20261117.1659.e14419f", channels = ["https://prefix.dev/pixi-build-backends", "https://prefix.dev/conda-forge"] }
 
 [package.build.config.pkg]
-name = "mojo_bstr"
-path = "mojo_bstr"
+name = "bstr"
+path = "bstr"
 
 [package.host-dependencies]
 mojo-compiler = "=1.2.0"
@@ -36,7 +36,7 @@ python = ">=3.11,<4"
 [tasks]
 t = "python scripts/test.py"
 test = { depends-on = ["t"] }
-format = "mojo format --line-length 100 mojo_bstr tests examples bench"
+format = "mojo format --line-length 100 bstr tests examples bench"
 examples = "mojo run -I . examples/bytes.mojo"
 consumer = "python scripts/consumer.py"
 differential = "python tests/differential.py"

@@ -1716,7 +1716,7 @@ static void ExportCodeBundle(const char *rootDir)
 static void ExportMojoTypes(const char *rootDir)
 {
     char fileName[1024] = {0};
-    JoinPath(rootDir, "mojo_raylib/raw/types.mojo", fileName, sizeof(fileName));
+    JoinPath(rootDir, "raylib/raw/types.mojo", fileName, sizeof(fileName));
 
     FILE *outFile = fopen(fileName, "wt");
     if (outFile == NULL)
@@ -1724,7 +1724,7 @@ static void ExportMojoTypes(const char *rootDir)
 
     WriteGeneratedHeader(outFile, "Low-level raylib/raymath type declarations", inFileName);
     fprintf(outFile, "\"\"\"Low-level C-layout types used by the generated raylib bindings.\n\n");
-    fprintf(outFile, "Prefer the value types exported from `mojo_raylib` in application code.\n");
+    fprintf(outFile, "Prefer the value types exported from `raylib` in application code.\n");
     fprintf(outFile, "These declarations mirror raylib's ABI and may contain untracked pointers.\n\"\"\"\n\n");
     WriteMojoCommonImports(outFile);
     fprintf(outFile, "\n");
@@ -1915,7 +1915,7 @@ static void ExportMojoTypes(const char *rootDir)
 static void ExportMojoPublicTypes(const char *rootDir)
 {
     char fileName[1024] = {0};
-    JoinPath(rootDir, "mojo_raylib/types.mojo", fileName, sizeof(fileName));
+    JoinPath(rootDir, "raylib/types.mojo", fileName, sizeof(fileName));
 
     FILE *outFile = fopen(fileName, "wt");
     if (outFile == NULL)
@@ -1925,7 +1925,7 @@ static void ExportMojoPublicTypes(const char *rootDir)
     fprintf(outFile, "\"\"\"Mojo-native value types for raylib and raymath.\n\n");
     fprintf(outFile, "Each type preserves the corresponding C layout while exposing Mojo scalar\n");
     fprintf(outFile, "fields and conversion helpers for the low-level FFI representation.\n\"\"\"\n\n");
-    fprintf(outFile, "import mojo_raylib.raw.types as raw_types\n");
+    fprintf(outFile, "import raylib.raw.types as raw_types\n");
     fprintf(outFile, "from std.ffi import c_char, c_uchar, c_short, c_ushort, c_int, c_uint, c_long, c_ulong, c_float, c_double\n");
     fprintf(outFile, "\n");
 
@@ -2269,7 +2269,7 @@ static void ExportMojoRawModule(const char *rootDir, const char *moduleName, con
 {
     char leaf[256] = {0};
     char fileName[1024] = {0};
-    snprintf(leaf, sizeof(leaf), "mojo_raylib/raw/%s.mojo", moduleName);
+    snprintf(leaf, sizeof(leaf), "raylib/raw/%s.mojo", moduleName);
     JoinPath(rootDir, leaf, fileName, sizeof(fileName));
 
     FILE *outFile = fopen(fileName, "wt");
@@ -2280,13 +2280,13 @@ static void ExportMojoRawModule(const char *rootDir, const char *moduleName, con
     if (IsRaymathApi())
     {
         fprintf(outFile, "\"\"\"Low-level FFI calls for raymath.\n\n");
-        fprintf(outFile, "Prefer `mojo_raylib.raymath_safe` unless exact C-layout values and pointer\n");
+        fprintf(outFile, "Prefer `raylib.raymath_safe` unless exact C-layout values and pointer\n");
         fprintf(outFile, "semantics are required.\n\"\"\"\n\n");
     }
     else
     {
         fprintf(outFile, "\"\"\"Low-level FFI calls for raylib.\n\n");
-        fprintf(outFile, "Prefer the snake-case functions exported from `mojo_raylib` in application\n");
+        fprintf(outFile, "Prefer the snake-case functions exported from `raylib` in application\n");
         fprintf(outFile, "code. Callers of this module are responsible for C pointer validity and\n");
         fprintf(outFile, "resource lifetimes.\n\"\"\"\n\n");
     }
@@ -2411,7 +2411,7 @@ static void ExportMojoRawModule(const char *rootDir, const char *moduleName, con
 static void ExportMojoRawInit(const char *rootDir)
 {
     char fileName[1024] = {0};
-    JoinPath(rootDir, "mojo_raylib/raw/__init__.mojo", fileName, sizeof(fileName));
+    JoinPath(rootDir, "raylib/raw/__init__.mojo", fileName, sizeof(fileName));
 
     FILE *outFile = fopen(fileName, "wt");
     if (outFile == NULL)
@@ -2419,7 +2419,7 @@ static void ExportMojoRawInit(const char *rootDir)
 
     WriteGeneratedHeader(outFile, "Raw package exports", inFileName);
     fprintf(outFile, "\"\"\"Raw C-layout types and FFI entry points for raylib and raymath.\n\n");
-    fprintf(outFile, "Use the top-level `mojo_raylib` package for the ergonomic, snake-case API.\n\"\"\"\n\n");
+    fprintf(outFile, "Use the top-level `raylib` package for the ergonomic, snake-case API.\n\"\"\"\n\n");
     fprintf(outFile, "from .types import *\n");
     fprintf(outFile, "from .raylib import *\n");
     fprintf(outFile, "from .raymath import *\n");
@@ -2429,7 +2429,7 @@ static void ExportMojoRawInit(const char *rootDir)
 static void ExportMojoSafe(const char *rootDir)
 {
     char fileName[1024] = {0};
-    JoinPath(rootDir, "mojo_raylib/safe.mojo", fileName, sizeof(fileName));
+    JoinPath(rootDir, "raylib/safe.mojo", fileName, sizeof(fileName));
 
     FILE *outFile = fopen(fileName, "wt");
     if (outFile == NULL)
@@ -2440,9 +2440,9 @@ static void ExportMojoSafe(const char *rootDir)
     fprintf(outFile, "Functions use snake-case names, Mojo value types, `Span` for counted buffers,\n");
     fprintf(outFile, "and owning return wrappers where raylib allocates memory for the caller.\n\"\"\"\n\n");
     fprintf(outFile, "from .types import *\n");
-    fprintf(outFile, "import mojo_raylib.types as public_types\n");
-    fprintf(outFile, "import mojo_raylib.raw.types as raw_types\n");
-    fprintf(outFile, "import mojo_raylib.raw.raylib as raw\n");
+    fprintf(outFile, "import raylib.types as public_types\n");
+    fprintf(outFile, "import raylib.raw.types as raw_types\n");
+    fprintf(outFile, "import raylib.raw.raylib as raw\n");
     fprintf(outFile, "from std.ffi import CStringSpan, c_char, c_uchar, c_int, c_uint, c_float\n");
     fprintf(outFile, "from std.collections import Span\n\n");
 
@@ -2676,7 +2676,7 @@ static void ExportMojoSafe(const char *rootDir)
 static void ExportMojoRaymathSafe(const char *rootDir)
 {
     char fileName[1024] = {0};
-    JoinPath(rootDir, "mojo_raylib/raymath_safe.mojo", fileName, sizeof(fileName));
+    JoinPath(rootDir, "raylib/raymath_safe.mojo", fileName, sizeof(fileName));
 
     FILE *outFile = fopen(fileName, "wt");
     if (outFile == NULL)
@@ -2684,12 +2684,12 @@ static void ExportMojoRaymathSafe(const char *rootDir)
 
     WriteGeneratedHeader(outFile, "Generated Mojo-native wrappers for raymath", inFileName);
     fprintf(outFile, "\"\"\"Mojo-native wrappers for raymath vector, matrix, and quaternion operations.\n\n");
-    fprintf(outFile, "The wrappers accept the public `mojo_raylib` value types and convert to the\n");
+    fprintf(outFile, "The wrappers accept the public `raylib` value types and convert to the\n");
     fprintf(outFile, "C-layout FFI representation internally.\n\"\"\"\n\n");
     fprintf(outFile, "from .types import *\n");
-    fprintf(outFile, "import mojo_raylib.types as public_types\n");
-    fprintf(outFile, "import mojo_raylib.raw.types as raw_types\n");
-    fprintf(outFile, "import mojo_raylib.raw.raymath as raw\n");
+    fprintf(outFile, "import raylib.types as public_types\n");
+    fprintf(outFile, "import raylib.raw.types as raw_types\n");
+    fprintf(outFile, "import raylib.raw.raymath as raw\n");
     fprintf(outFile, "from std.ffi import c_int, c_uint, c_float\n");
     fprintf(outFile, "from std.collections import Span\n\n");
 
@@ -2790,7 +2790,7 @@ static void ExportMojoPackageInit(const char *rootDir)
         return;
 
     char fileName[1024] = {0};
-    JoinPath(rootDir, "mojo_raylib/__init__.mojo", fileName, sizeof(fileName));
+    JoinPath(rootDir, "raylib/__init__.mojo", fileName, sizeof(fileName));
 
     FILE *outFile = fopen(fileName, "wt");
     if (outFile == NULL)
@@ -2809,7 +2809,7 @@ static void ExportMojoPackageInit(const char *rootDir)
 
     // Re-export every comptime constant from .raw.types (enum names + values,
     // numeric #defines, callback typedefs) so users can write `KEY_RIGHT` etc.
-    // directly off `mojo_raylib`. Listed explicitly to avoid star-import
+    // directly off `raylib`. Listed explicitly to avoid star-import
     // shadowing the public structs.
     fprintf(outFile, "from .raw.types import (\n");
     bool first = true;
@@ -2983,9 +2983,9 @@ static void EnsureCodegenDirectories(const char *rootDir)
     char path[1024] = {0};
 
     EnsureDirectory(rootDir);
-    JoinPath(rootDir, "mojo_raylib", path, sizeof(path));
+    JoinPath(rootDir, "raylib", path, sizeof(path));
     EnsureDirectory(path);
-    JoinPath(rootDir, "mojo_raylib/raw", path, sizeof(path));
+    JoinPath(rootDir, "raylib/raw", path, sizeof(path));
     EnsureDirectory(path);
     JoinPath(rootDir, "native", path, sizeof(path));
     EnsureDirectory(path);

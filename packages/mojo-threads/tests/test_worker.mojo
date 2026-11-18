@@ -1,7 +1,7 @@
 from std.testing import assert_equal, assert_true, assert_raises, TestSuite
 from std.tempfile import TemporaryDirectory
 from std.pathlib import Path
-from mojo_threads import Worker, available_parallelism, spawn
+from threads import Worker, available_parallelism, spawn
 
 
 def summarize(var values: List[Int]) raises -> String:

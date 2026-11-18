@@ -3,7 +3,7 @@ set -euo pipefail
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
-pixi build --path ../mojo-bio --output-dir "$tmp/packages"
+pixi build --path ../mojo-radix-sort --output-dir "$tmp/packages"
 pixi build --path . --output-dir "$tmp/packages"
 # Isolate extraction before the consumer installs same-version local archives.
 export PIXI_CACHE_DIR="$tmp/consumer-cache"

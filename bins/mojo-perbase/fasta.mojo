@@ -1,9 +1,9 @@
 """Indexed plain/BGZF FASTA windows; each counting worker owns its decoder."""
 
 from std.ffi import external_call
-from mojo_seqair.bgzf import Input
-from mojo_seqair.buffer import Buffer, BytePtr
-from mojo_seqair.bam import Region
+from bio.bgzf import Input
+from bio.buffer import Buffer, BytePtr
+from bio.bam import Region
 from regions import read_text
 from options import number
 

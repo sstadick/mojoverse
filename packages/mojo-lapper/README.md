@@ -70,7 +70,7 @@ bounded scalar tail. Results remain ordered by start, then stop.
 an independent copy of the ends. Its `count` visits matches without collecting
 them, so use `BITSLapper` instead when only counts are needed.
 
-Construction uses `mojo-bio`'s integer radix sort, preserving start/stop ordering
+Construction uses `mojo-radix-sort`'s integer radix sort, preserving start/stop ordering
 and payload associations; already-ordered intervals skip sorting. Ordering among
 intervals with identical start and stop coordinates is unspecified.
 `Lapper[owns_data=False](starts, stops, vals, length, max_len)` borrows prebuilt

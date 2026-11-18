@@ -47,8 +47,9 @@ def main():
     root = Path(__file__).resolve().parents[1]
     packages = root.parents[1] / "packages"
     sources = [*root.glob("*.mojo"), root / "native/perbase.c", root / "pixi.toml"]
-    for name in ("mojo-seqair", "mojo-libdeflate", "mojo-threads", "mojopt"):
-        sources.extend((packages / name / name.replace("-", "_")).rglob("*.mojo"))
+    sources.extend((packages / "mojo-bio/src/bio").rglob("*.mojo"))
+    for name in ("mojo-libdeflate", "mojo-threads", "mojopt"):
+        sources.extend((packages / name / name.removeprefix("mojo-")).rglob("*.mojo"))
     report = {
         "method": "Serial rotating/reversed order; warm cache; regular TSV; close, not fsync; SHA256 outside timing.",
         "input": str(bam), "input_sha256": digest(bam), "input_bytes": bam.stat().st_size,

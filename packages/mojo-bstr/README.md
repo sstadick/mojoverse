@@ -1,15 +1,15 @@
 # mojo-bstr
 
 Arbitrary byte strings for Mojo 1.2.0. The distribution is `mojo-bstr`; import
-`mojo_bstr`. NUL and malformed UTF-8 are ordinary input bytes.
+`bstr`. NUL and malformed UTF-8 are ordinary input bytes.
 
-[API reference](https://sstadick.github.io/mojoverse/mojo-bstr/mojo_bstr/_index.html)
+[API reference](https://sstadick.github.io/mojoverse/mojo-bstr/bstr/_index.html)
 
 ## Use
 
 ```mojo {doctest="bytes" global=true}
 from std.testing import assert_equal, assert_true
-from mojo_bstr import memchr, lines, trim, to_str_lossy
+from bstr import memchr, lines, trim, to_str_lossy
 
 def main() raises:
     var data: List[UInt8] = [32, 97, 0, 255, 13, 10, 98]
@@ -42,7 +42,7 @@ A `Finder` prepares one needle and borrows its bytes. The records may change
 between calls, but the needle must stay alive and unchanged.
 
 ```mojo {doctest="prepared-search" global=true}
-from mojo_bstr import finder
+from bstr import finder
 from std.testing import assert_equal
 
 def main() raises:
@@ -59,7 +59,7 @@ Each part is a borrowed span, not a new string. Copy a part with `List(part)`
 only when it must outlive the original bytes.
 
 ```mojo {doctest="binary-fields" global=true}
-from mojo_bstr import split_str
+from bstr import split_str
 from std.testing import assert_equal
 
 def main() raises:

@@ -4,7 +4,7 @@ Experimental, native Mojo port of Perbase's indexed **BAM** workloads. This is
 an independent project following Mojoverse's package conventions, not a wrapper
 around the C, Rust or Goose executable. It is not the official Perbase release.
 
-The BAM decoder is in [`mojo-seqair`](../../packages/mojo-seqair). Counting, mate selection,
+The BAM decoder is in [`mojo-bio`](../../packages/mojo-bio). Counting, mate selection,
 sparse depth traversal, interval/reference parsing, formatting and scheduling
 are Mojo. `mojo-libdeflate` packages the unchanged libdeflate 1.26 codec and
 inlined bindings. `mojo-threads` supplies reusable pthread workers/monitors;

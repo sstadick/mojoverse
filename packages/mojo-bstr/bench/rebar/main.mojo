@@ -3,7 +3,7 @@ from std.benchmark import black_box
 from std.sys import argv
 from std.time import perf_counter_ns
 from std.math import max
-from mojo_bstr import *
+from bstr import *
 
 
 @fieldwise_init

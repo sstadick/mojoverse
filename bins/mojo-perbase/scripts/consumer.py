@@ -23,9 +23,9 @@ def main():
     for name in ("MOJO_PATH", "MOJO_INCLUDE_PATH", "MODULAR_MOJO_IMPORT_PATH",
                  "PIXI_PROJECT_MANIFEST", "PIXI_WORKSPACE_MANIFEST", "CONDA_PREFIX"):
         env.pop(name, None)
-    packages = [siblings / "mojo-libdeflate/native", siblings / "mojo-threads/native",
+    packages = [siblings / "mojo-bstr", siblings / "mojo-libdeflate/native", siblings / "mojo-threads/native",
                 siblings / "mojo-libdeflate", siblings / "mojo-threads",
-                siblings / "mojo-seqair", siblings / "mojopt", root / "native", root]
+                siblings / "mojo-bio", siblings / "mojopt", root / "native", root]
     with tempfile.TemporaryDirectory(prefix="perbase-consumer-") as tmp:
         consumer = Path(tmp)
         artifacts = consumer / "artifacts"
@@ -62,7 +62,8 @@ def main():
                 "avx512bitalg", "avx512vpopcntdq", "avx512fp16", "avx512bf16"))]
         tests = [(siblings / "mojo-threads/tests/test_worker.mojo", ["-lmojo_threads_native", "-lpthread"]),
                  (siblings / "mojo-libdeflate/tests/test_codec.mojo", ["-ldeflate"]),
-                 (siblings / "mojo-seqair/tests/test_sequence.mojo", ["-ldeflate"])]
+                 (siblings / "mojo-bio/tests/test_sequence.mojo", ["-ldeflate"]),
+                 (siblings / "mojo-bio/tests/test_fastx.mojo", ["-lz"])]
         for source, libraries in tests:
             shutil.copyfile(source, consumer / source.name)
             binary = consumer / source.stem

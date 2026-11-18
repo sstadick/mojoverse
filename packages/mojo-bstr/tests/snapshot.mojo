@@ -1,6 +1,6 @@
 """The goostr Rust/bstr oracle protocol; Python is used only for test input."""
 from std.python import Python
-from mojo_bstr import *
+from bstr import *
 
 
 def hex_bytes(mut output: String, s: Span[UInt8, _]):

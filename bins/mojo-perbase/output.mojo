@@ -2,9 +2,9 @@
 
 from std.ffi import external_call
 from std.memory import unsafe_memcpy
-from mojo_libdeflate import alloc_compressor, free_compressor
-from mojo_threads import available_parallelism
-from mojo_seqair.buffer import Buffer
+from libdeflate import alloc_compressor, free_compressor
+from threads import available_parallelism
+from bio.buffer import Buffer
 from options import Options
 from compression import compress, CompressionJob, compression_worker
 

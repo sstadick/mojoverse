@@ -8,7 +8,7 @@ Conway step per frame. Controls:
   Down  — faster (fewer frames per step)
 """
 
-from mojo_raylib import (
+from raylib import (
     Color, Image, Rectangle, RenderTexture2D, Vector2,
     KEY_DOWN, KEY_R, KEY_SPACE, KEY_UP,
     SHADER_UNIFORM_VEC2,

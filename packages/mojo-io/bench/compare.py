@@ -55,7 +55,7 @@ def main():
         "options": vars(args) | {"goose_io": str(goose_io), "output": str(args.output)},
         "source_sha256": {
             str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()
-            for directory in (ROOT / "mojo_io", ROOT / "bench")
+            for directory in (ROOT / "io", ROOT / "bench")
             for path in sorted(directory.glob("*")) if path.is_file()
         },
         "results": [],
@@ -65,7 +65,7 @@ def main():
         source = (ROOT / "bench/io.goose").read_text().replace("GOOSE_IO", str(goose_io)).replace("BSTR_DEP", dep).replace("SIMD_DEP", simd)
         (work / "io.goose").write_text(source)
         commands = {
-            "mojo": ["mojo", "build", "-O3", "-I", str(ROOT), str(ROOT / "bench/io.mojo"), "-o", str(work / "mojo")],
+            "mojo": ["mojo", "build", "-O3", "-I", str(ROOT), str(ROOT / "bench/buffered_io.mojo"), "-o", str(work / "mojo")],
             "goose": [args.goose, "build", str(work / "io.goose"), "--cc", args.cc, "--standalone", "-O2", "-o", str(work / "goose")],
         }
         report["build_commands"] = commands

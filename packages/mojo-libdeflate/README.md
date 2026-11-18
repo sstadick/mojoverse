@@ -3,7 +3,7 @@
 Mojo 1.2.0 bindings to libdeflate **1.26**, linked statically to the native
 codec. Compression and decompression write directly into caller-owned buffers.
 
-[API reference](https://sstadick.github.io/mojoverse/mojo-libdeflate/mojo_libdeflate/_index.html)
+[API reference](https://sstadick.github.io/mojoverse/mojo-libdeflate/libdeflate/_index.html)
 
 Start with `Compressor`, `Decompressor` and byte spans. Handles are freed
 automatically, buffers are caller-owned, and codec instances can be reused.
@@ -13,7 +13,7 @@ incremental CRC32. It does not implement BGZF framing or every libdeflate API.
 ## Compress and decompress
 
 ```mojo {doctest="gzip" global=true}
-from mojo_libdeflate import Compressor, Decompressor, crc32
+from libdeflate import Compressor, Decompressor, crc32
 from std.testing import assert_equal
 
 def main() raises:
@@ -40,7 +40,7 @@ the same codec; give each worker its own instance.
 
 `compress_deflate` emits raw DEFLATE rather than a complete gzip member.
 For direct FFI and status-code handling, use the pointer functions in
-`mojo_libdeflate.codec`, also exported at the package root.
+`libdeflate.codec`, also exported at the package root.
 
 ## Decode concatenated gzip members
 
@@ -49,7 +49,7 @@ consume its initialized prefix before decoding the next member. This example
 creates two members so it can run without an external fixture.
 
 ```mojo {doctest="gzip-members" global=true}
-from mojo_libdeflate import Compressor, Decompressor
+from libdeflate import Compressor, Decompressor
 from std.testing import assert_equal
 
 def main() raises:
@@ -78,7 +78,7 @@ Start at zero and feed the previous result into the next call. The input does
 not have to be text.
 
 ```mojo {doctest="crc-parts" global=true}
-from mojo_libdeflate import crc32
+from libdeflate import crc32
 from std.testing import assert_equal
 
 def main() raises:
@@ -97,7 +97,7 @@ pixi run t
 pixi run docs
 ```
 
-Import from `mojo_libdeflate`. Link consumers with
+Import from `libdeflate`. Link consumers with
 `-Xlinker -L$CONDA_PREFIX/lib -Xlinker -ldeflate` using `mojo build`.
 For Git consumers use [Mojoverse dependency setup](https://github.com/sstadick/mojoverse#use-a-dependency)
 with `subdirectory = "packages/mojo-libdeflate"`.

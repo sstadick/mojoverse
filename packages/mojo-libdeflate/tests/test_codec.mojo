@@ -1,5 +1,5 @@
 from std.testing import assert_equal, assert_true, assert_raises, TestSuite
-from mojo_libdeflate import (
+from libdeflate import (
     Compressor,
     Decompressor,
     alloc_compressor,

@@ -1,9 +1,9 @@
 # mojo-io
 
 Binary-safe buffered file I/O for Mojo 1.2.0.
-Package: `mojo-io`; import: `mojo_io`. Requires **mojo-bstr**.
+Package: `mojo-io`; import: `io`. Requires **mojo-bstr**.
 
-[API reference](https://sstadick.github.io/mojoverse/mojo-io/mojo_io/_index.html)
+[API reference](https://sstadick.github.io/mojoverse/mojo-io/io/_index.html)
 
 Install using the [Mojoverse Git/subdirectory dependency](https://github.com/sstadick/mojoverse#use-a-dependency).
 Its bstr dependency resolves from the same checkout and commit.
@@ -14,7 +14,7 @@ Its bstr dependency resolves from the same checkout and commit.
 from std.pathlib import Path
 from std.tempfile import TemporaryDirectory
 from std.testing import assert_equal
-from mojo_io import BufferedReader, BufferedWriter
+from io import BufferedReader, BufferedWriter
 
 def main() raises:
     var directory = TemporaryDirectory()
@@ -41,7 +41,7 @@ you need to retain its lines; use `BufferedReader` to process larger files
 one borrowed line at a time. Empty lines and end-of-file are different.
 
 ```mojo {doctest="owned-lines" global=true}
-from mojo_io import read_lines
+from io import read_lines
 from std.pathlib import Path
 from std.tempfile import TemporaryDirectory
 from std.testing import assert_equal

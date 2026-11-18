@@ -1,6 +1,6 @@
 """Shared observable workloads for the bstr and rebar benchmark protocols."""
 from std.math import max
-from mojo_bstr import *
+from bstr import *
 
 
 def count_matches[

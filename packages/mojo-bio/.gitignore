@@ -1,6 +1,9 @@
+# pixi environments
 .pixi/
-build/
-*.mojopkg
+!.pixi/config.toml
+
+# hat
+target/
+
+# Mojo packages
 *.mojoc
-__pycache__/
-/target/docs/

@@ -3,7 +3,7 @@ c-perbase application algorithms by Seth Stadick. The Goose application
 reference is e84cc768234f3332237c609fe934178eaf46ebb6. C Perbase's optimized local
 source was also consulted; it is not linked into this application.
 
-The reader dependency mojo-seqair retains the Seth Stadick and Pascal Hertleif
+The BAM reader in mojo-bio retains the Seth Stadick and Pascal Hertleif
 MIT attribution for Goose Seqair/Seqair-derived algorithms. libdeflate 1.26 is
 vendored in mojo-libdeflate with its original COPYING file. No Goose-generated
 C or Rust code is linked. native/perbase.c is application-specific POSIX output

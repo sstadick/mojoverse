@@ -6,14 +6,14 @@ TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 GENERATED_FILES=(
-  mojo_raylib/__init__.mojo
-  mojo_raylib/types.mojo
-  mojo_raylib/safe.mojo
-  mojo_raylib/raymath_safe.mojo
-  mojo_raylib/raw/__init__.mojo
-  mojo_raylib/raw/types.mojo
-  mojo_raylib/raw/raylib.mojo
-  mojo_raylib/raw/raymath.mojo
+  raylib/__init__.mojo
+  raylib/types.mojo
+  raylib/safe.mojo
+  raylib/raymath_safe.mojo
+  raylib/raw/__init__.mojo
+  raylib/raw/types.mojo
+  raylib/raw/raylib.mojo
+  raylib/raw/raymath.mojo
   native/mojo_raylib_shim.c
 )
 

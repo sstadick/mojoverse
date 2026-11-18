@@ -1,7 +1,7 @@
 """Worker-local QNAME interning over bytes, with reusable group heads."""
 
 from std.ffi import external_call
-from mojo_seqair.buffer import Buffer, BytePtr
+from bio.buffer import Buffer, BytePtr
 
 
 @fieldwise_init

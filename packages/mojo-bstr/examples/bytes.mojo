@@ -1,5 +1,5 @@
 from std.testing import assert_equal, assert_true
-from mojo_bstr import memchr, lines, trim, to_str_lossy, replace
+from bstr import memchr, lines, trim, to_str_lossy, replace
 
 
 def main() raises:

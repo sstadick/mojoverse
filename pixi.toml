@@ -12,12 +12,12 @@ max-core = "=26.7.0"
 extramojo = { path = "packages/extramojo" }
 mojopt = { path = "packages/mojopt" }
 mojo-bio = { path = "packages/mojo-bio" }
+mojo-radix-sort = { path = "packages/mojo-radix-sort" }
 mojo-lapper = { path = "packages/mojo-lapper" }
 mojo-bstr = { path = "packages/mojo-bstr" }
 mojo-io = { path = "packages/mojo-io" }
 mojo-libdeflate = { path = "packages/mojo-libdeflate" }
 mojo-threads = { path = "packages/mojo-threads" }
-mojo-seqair = { path = "packages/mojo-seqair" }
 hat = { path = "bins/hat" }
 mojo-perbase = { path = "bins/mojo-perbase" }
 
@@ -38,6 +38,7 @@ mojo = "=1.2.0"
 max-core = "=26.7.0"
 mojo-libdeflate-native = { path = "packages/mojo-libdeflate/native" }
 mojo-threads-native = { path = "packages/mojo-threads/native" }
+zlib = ">=1.3.1,<2"
 
 [feature.source.tasks]
 test-packages = "python scripts/test_packages.py"

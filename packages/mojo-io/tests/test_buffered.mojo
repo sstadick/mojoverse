@@ -1,7 +1,7 @@
 from std.testing import assert_equal, assert_true, assert_false, assert_raises, TestSuite
 from std.tempfile import TemporaryDirectory
 from std.pathlib import Path
-from mojo_io import BufferedReader, BufferedWriter, read_lines
+from io import BufferedReader, BufferedWriter, read_lines
 
 
 def test_lines_bytes_and_delimiters() raises:

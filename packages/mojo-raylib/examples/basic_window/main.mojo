@@ -1,4 +1,4 @@
-from mojo_raylib import Color, begin_drawing, clear_background, close_window, draw_text, end_drawing, init_window, set_target_fps, window_should_close
+from raylib import Color, begin_drawing, clear_background, close_window, draw_text, end_drawing, init_window, set_target_fps, window_should_close
 
 
 def main():

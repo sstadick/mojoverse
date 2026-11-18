@@ -1,7 +1,7 @@
 from std.math import exp, log
 from std.collections import List
 
-from mojo_raylib import (
+from raylib import (
     Camera2D, Color, Rectangle, Vector2,
     FLAG_WINDOW_RESIZABLE,
     KEY_A, KEY_LEFT, KEY_R, KEY_RIGHT, KEY_S,

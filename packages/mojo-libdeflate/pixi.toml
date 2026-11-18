@@ -21,8 +21,8 @@ backend = { name = "pixi-build-mojo", version = "=0.2.9.20261117.1659.e14419f", 
     "https://prefix.dev/conda-forge",
 ] }
 [package.build.config.pkg]
-name = "mojo_libdeflate"
-path = "mojo_libdeflate"
+name = "libdeflate"
+path = "libdeflate"
 
 [package.host-dependencies]
 mojo-compiler = "=1.2.0"
@@ -37,7 +37,7 @@ mojo-libdeflate-native = { path = "native" }
 [tasks]
 # Library projects do not define a run task.
 t = "mkdir -p target && mojo build -O3 -I . -D ASSERT=all -Xlinker -L$CONDA_PREFIX/lib -Xlinker -ldeflate tests/test_codec.mojo -o target/test-codec && target/test-codec"
-docs = "pixi run --locked -e docs --manifest-path ../../pixi.toml docs packages/mojo-libdeflate mojo_libdeflate --site --readme README.md --link-library deflate"
+docs = "pixi run --locked -e docs --manifest-path ../../pixi.toml docs packages/mojo-libdeflate libdeflate --site --readme README.md --link-library deflate"
 format = "mojo format --line-length 100 ."
 
 [target.linux-64.tasks]

@@ -1,4 +1,4 @@
-from mojo_raylib import Color, Vector2, begin_drawing, clear_background, close_window, draw_circle, draw_circle_gradient, draw_circle_lines, draw_ellipse, draw_ellipse_lines, draw_line, draw_poly, draw_poly_lines, draw_poly_lines_ex, draw_rectangle, draw_rectangle_gradient_h, draw_rectangle_lines, draw_text, draw_triangle, draw_triangle_lines, end_drawing, init_window, set_target_fps, window_should_close
+from raylib import Color, Vector2, begin_drawing, clear_background, close_window, draw_circle, draw_circle_gradient, draw_circle_lines, draw_ellipse, draw_ellipse_lines, draw_line, draw_poly, draw_poly_lines, draw_poly_lines_ex, draw_rectangle, draw_rectangle_gradient_h, draw_rectangle_lines, draw_text, draw_triangle, draw_triangle_lines, end_drawing, init_window, set_target_fps, window_should_close
 
 
 def main():

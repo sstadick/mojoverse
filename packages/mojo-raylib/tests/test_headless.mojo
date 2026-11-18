@@ -1,6 +1,6 @@
 """Exercise installed scalar and struct-by-value C calls without a display."""
 
-from mojo_raylib import (
+from raylib import (
     Vector2, Rectangle, Color, vector2_add, vector2_length, matrix_identity,
     check_collision_recs, get_collision_rec, color_to_int,
 )

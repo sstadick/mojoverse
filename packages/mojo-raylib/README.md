@@ -49,16 +49,16 @@ signature help to see its documented arguments and return value. Public
 functions also expose snake-case parameter names in completion:
 
 ```mojo
-from mojo_raylib import init_window, window_should_close
+from raylib import init_window, window_should_close
 
 init_window(800, 450, "LSP-ready raylib")
 if window_should_close():
     pass
 ```
 
-In a project that consumes `mojo_raylib`, run `pixi install` and open that
+In a project that imports `raylib`, run `pixi install` and open that
 project's root (the directory containing its `pixi.toml`). The LSP resolves the
-installed `mojo_raylib.mojoc` package from that project's Pixi environment, so
+installed `raylib.mojoc` package from that project's Pixi environment, so
 no manual include path is required.
 
 If the extension does not find Mojo, run **Python: Select Interpreter** and
@@ -66,13 +66,13 @@ choose `.pixi/envs/default/bin/python`. As a final fallback, set
 `mojo.sdk.path` to the absolute path of `.pixi/envs/default`; the extension
 requires an absolute SDK path for this override.
 
-The ergonomic API is documented at the package root. The `mojo_raylib.raw`
+The ergonomic API is documented at the package root. The `raylib.raw`
 subpackage is also documented, but intentionally exposes C-layout types,
 untracked pointers, and manual resource-lifetime requirements.
 
 ```sh
 pixi run doc-check  # enforce complete, well-formed public docstrings
-pixi run docs       # write build/docs/mojo_raylib.json
+pixi run docs       # write build/docs/raylib.json
 ```
 
 ## Run an example
@@ -82,9 +82,9 @@ cd examples/basic_window
 pixi run run
 ```
 
-The first run builds raylib + the C shim (`mojo-raylib-shim`) and precompiles the Mojo package (`mojo_raylib`). Subsequent runs hit the build cache.
+The first run builds raylib + the C shim (`mojo-raylib-shim`) and precompiles the Mojo module (`raylib`). Subsequent runs hit the build cache.
 
-`mojo_raylib` uses Pixi's [`pixi-build-mojo`](https://pixi.prefix.dev/latest/build/backends/pixi-build-mojo/) backend, while the native shim uses `pixi-build-rattler-build`. Development, build, host and runtime use the same compiler as the rest of Mojoverse. Native builds use Clang `-O3 -march=native` and Pixi's build cache.
+The `mojo_raylib` distribution supplies the `raylib` import using Pixi's [`pixi-build-mojo`](https://pixi.prefix.dev/latest/build/backends/pixi-build-mojo/) backend, while the native shim uses `pixi-build-rattler-build`. Development, build, host and runtime use the same compiler as the rest of Mojoverse. Native builds use Clang `-O3 -march=native` and Pixi's build cache.
 
 ## Use it in your own project
 
@@ -103,11 +103,11 @@ mojo_raylib = { path = "../mojoverse/packages/mojo-raylib" }
 cmd = "mojo build main.mojo -Xlinker -L$CONDA_PREFIX/lib -Xlinker -lmojo_raylib_shim -Xlinker -lraylib -o .pixi/main && .pixi/main"
 ```
 
-The source dependency reads this repository's package metadata, invokes `pixi-build-mojo`, and installs the compiled `mojo_raylib.mojoc` package plus its native runtime dependencies into the consuming environment. Keep `preview = ["pixi-build"]` enabled in the consuming workspace; no copied build scripts or manual `MODULAR_HOME` setup are needed.
+The source dependency reads this repository's package metadata, invokes `pixi-build-mojo`, and installs the compiled `raylib.mojoc` package plus its native runtime dependencies into the consuming environment. Keep `preview = ["pixi-build"]` enabled in the consuming workspace; no copied build scripts or manual `MODULAR_HOME` setup are needed.
 
 ```mojo
-from mojo_raylib import Color, init_window, close_window, window_should_close
-from mojo_raylib import begin_drawing, end_drawing, clear_background, draw_text, set_target_fps
+from raylib import Color, init_window, close_window, window_should_close
+from raylib import begin_drawing, end_drawing, clear_background, draw_text, set_target_fps
 
 def main():
     init_window(800, 450, "hello")
@@ -125,7 +125,7 @@ def main():
 The Mojo bindings + C shim are emitted by a patched `rlparser` (`patch/rlparser.c`) reading raylib's headers.
 
 ```sh
-pixi run -e codegen generate      # regenerate mojo_raylib/ + native/mojo_raylib_shim.c
+pixi run -e codegen generate      # regenerate raylib/ + native/mojo_raylib_shim.c
 pixi run -e codegen regen-check   # CI: fail if regeneration would change anything
 pixi run doc-check                # fail on missing or malformed API documentation
 ```
@@ -140,7 +140,7 @@ help stay complete after every regeneration. Hand-written APIs follow Mojo's
 ```
 pixi.toml                workspace + mojo_raylib package (pixi-build-mojo backend)
 shim/                    mojo-raylib-shim package (pixi-build-rattler-build, builds raylib + the C shim)
-mojo_raylib/             generated safe API + raw FFI bindings
+raylib/                 generated safe API + raw FFI bindings
 native/mojo_raylib_shim.c   generated C shim
 patch/rlparser.c         patched raylib code-gen tool
 vendor/raylib/           git submodule, pinned by parent commit

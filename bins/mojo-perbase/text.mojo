@@ -1,6 +1,6 @@
 """Byte-oriented TSV formatting; no temporary strings in the column loop."""
 
-from mojo_seqair.buffer import Buffer, BytePtr
+from bio.buffer import Buffer, BytePtr
 from std.collections import Array
 from std.memory import unsafe_memcpy
 

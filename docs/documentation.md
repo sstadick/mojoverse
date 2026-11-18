@@ -28,7 +28,7 @@ in `scripts/build_docs.py`, and link it from `docs/index.md`.
 Run the tools from the Mojoverse root. The `docs` environment installs the Python documentation tools and Modo's bundled executable. It supports Linux x86-64 and macOS (with Rosetta), not Linux AArch64; this restriction does not apply to the Mojo libraries or bins:
 
 ```sh
-pixi run --locked -e docs docs packages/mojo-bstr mojo_bstr --site --readme README.md
+pixi run --locked -e docs docs packages/mojo-bstr bstr --site --readme README.md
 ```
 
 The output is `PACKAGE/target/docs`. A site also retains its generated Markdown
@@ -40,7 +40,7 @@ command intentionally uses `pixi run --locked`.
 The compiler itself emits JSON, not HTML. To inspect that directly:
 
 ```sh
-pixi run --locked mojo doc packages/mojo-threads/mojo_threads -o threads-api.json
+pixi run --locked mojo doc packages/mojo-threads/threads -o threads-api.json
 ```
 
 The site builder also preserves this JSON as `target/docs/IMPORT_NAME.json`.
@@ -48,7 +48,7 @@ For native libraries, use the package's `pixi run docs` task, which supplies its
 link dependencies. From the root, the equivalent thread-library command is:
 
 ```sh
-pixi run --locked -e docs docs packages/mojo-threads mojo_threads \
+pixi run --locked -e docs docs packages/mojo-threads threads \
   --site --readme README.md --link-library mojo_threads_native --link-library pthread
 ```
 

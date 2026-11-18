@@ -16,9 +16,12 @@ The root environment builds the nongraphical libraries, Hat and Perbase. The `gr
 
 The root `pixi.lock` covers the combined environments. Package workspaces retain manifests, tasks and lockfiles for scoped development and external consumers. `pixi run lock-all` refreshes all locks, and `pixi run check-locks` rejects stale ones. A package's own lockfile does not constrain an external consumer's environment. Compiler and internal-dependency consistency is enforced by `pixi run check-workspace`, not by asking maintainers to remember every pin.
 
-Pixi's build support is experimental. Previously built, same-version local artifacts can collide in the shared extracted-package cache. If migrating an old checkout produces a compiler-version mismatch, use a fresh cache for that checkout and reinstall:
+Pixi's build support is experimental. Previously built, same-version local artifacts can collide in the shared extracted-package cache, and incremental build prefixes can retain old module names after a rename. If migrating an old checkout produces a compiler-version mismatch or obsolete modules, clean the local build prefixes, use a fresh cache for that checkout and reinstall:
 
 ```sh
+for manifest in pixi.toml packages/mojo-*/pixi.toml bins/mojo-perbase/pixi.toml; do
+    pixi clean --build --manifest-path "$manifest"
+done
 export PIXI_CACHE_DIR="$PWD/.pixi/fresh-cache"
 pixi reinstall
 pixi run --locked test

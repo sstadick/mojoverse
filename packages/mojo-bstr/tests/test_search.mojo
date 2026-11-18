@@ -1,5 +1,5 @@
 from std.testing import assert_equal, assert_true, TestSuite
-from mojo_bstr import *
+from bstr import *
 
 
 def test_binary_search() raises:

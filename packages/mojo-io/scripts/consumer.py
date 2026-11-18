@@ -43,6 +43,6 @@ with tempfile.TemporaryDirectory(prefix="mojo-io-consumer-") as directory:
     env["PIXI_CACHE_DIR"] = str(work / "consumer-cache")
     subprocess.run(["pixi", "run", "--manifest-path", str(consumer / "pixi.toml"),
                     "mojo", "run", "-D", "ASSERT=all", "test.mojo"], cwd=consumer, env=env, check=True)
-    for module in ("mojo_bstr", "mojo_io"):
+    for module in ("bstr", "io"):
         assert (consumer / f".pixi/envs/default/lib/mojo/{module}.mojoc").is_file()
     print("Clean artifact-only consumer passed all I/O tests with installed bstr and I/O modules")

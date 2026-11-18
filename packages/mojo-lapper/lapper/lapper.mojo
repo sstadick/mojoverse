@@ -1,6 +1,6 @@
 from lapper.cpu.bsearch import lower_bound, upper_bound
 from lapper.cpu.block_index import BlockIndex, BLOCK_SIZE, overlap_mask
-from mojo_bio import radix_sort
+from radix_sort import radix_sort
 
 from max.gpu.host import DeviceContext, HostBuffer, DeviceBuffer
 from max.gpu import thread_idx, block_idx, block_dim, barrier

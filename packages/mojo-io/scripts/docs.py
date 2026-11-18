@@ -9,7 +9,7 @@ if not (tools / "pixi.toml").is_file():
     raise SystemExit("Set MOJOVERSE to the Mojoverse repository root.")
 subprocess.run(
     ["pixi", "run", "--locked", "-e", "docs", "--manifest-path", str(tools / "pixi.toml"),
-     "docs", str(root), "mojo_io", "--site", "--readme", "README.md",
+     "docs", str(root), "io", "--site", "--readme", "README.md",
      "--include", "LICENSE"],
     check=True,
 )

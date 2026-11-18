@@ -25,17 +25,17 @@ path = "lapper"
 [package.build-dependencies]
 mojo-compiler = "=1.2.0"
 max-core = "=26.7.0"
-mojo-bio = { path = "../mojo-bio" }
+mojo-radix-sort = { path = "../mojo-radix-sort" }
 
 [package.host-dependencies]
 mojo-compiler = "=1.2.0"
 max-core = "=26.7.0"
-mojo-bio = { path = "../mojo-bio" }
+mojo-radix-sort = { path = "../mojo-radix-sort" }
 
 [package.run-dependencies]
 mojo-compiler = "=1.2.0"
 max-core = "=26.7.0"
-mojo-bio = { path = "../mojo-bio" }
+mojo-radix-sort = { path = "../mojo-radix-sort" }
 
 [tasks]
 t = { cmd = "bash scripts/test.sh" }

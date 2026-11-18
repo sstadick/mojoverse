@@ -1,7 +1,7 @@
 # Custom trace-log callback — routing raylib's log output into Mojo.
 #
 # Demonstrates `set_trace_log_callback`, one of the callback-registration
-# helpers in `mojo_raylib.callbacks`. Passing a Mojo function to raylib as a C
+# helpers in `raylib.callbacks`. Passing a Mojo function to raylib as a C
 # callback relies on Mojo's `abi("C")` effect (it gives the function the C
 # calling convention so C can call back into it), and the callback is supplied
 # as a compile-time parameter — `set_trace_log_callback[on_trace_log]()` — which
@@ -11,7 +11,7 @@
 # callback; the native shim bridges that to the simple `(level, text)` form
 # this callback uses.
 
-from mojo_raylib import set_trace_log_callback, init_audio_device, close_audio_device
+from raylib import set_trace_log_callback, init_audio_device, close_audio_device
 from std.ffi import c_int, c_char, CStringSlice
 
 # raylib TraceLogLevel values.

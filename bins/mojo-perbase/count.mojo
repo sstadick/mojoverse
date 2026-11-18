@@ -7,8 +7,8 @@ The sink must consume bytes synchronously; it must not retain the passed view.
 from std.collections import Array
 from std.ffi import external_call
 from std.bit import count_trailing_zeros
-from mojo_seqair.bam import Bam, Reader, Record, Region, decode_sequence
-from mojo_seqair.buffer import Buffer, BytePtr, le32
+from bio.bam import Bam, Reader, Record, Region, decode_sequence
+from bio.buffer import Buffer, BytePtr, le32
 from options import Options
 from names import Names
 from text import literal, integer, quoted, base_counts, unsigned_integer_reserved

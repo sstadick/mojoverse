@@ -1,7 +1,7 @@
 """Streaming merge-adjacent with quoted TSV and unsigned 64-bit fields."""
 
-from mojo_seqair.bgzf import Input
-from mojo_seqair.buffer import Buffer
+from bio.bgzf import Input
+from bio.buffer import Buffer
 from options import Options
 from output import Output
 from text import literal, quoted, unsigned_integer

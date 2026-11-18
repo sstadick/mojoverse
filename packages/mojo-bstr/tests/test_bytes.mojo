@@ -1,5 +1,5 @@
 from std.testing import assert_equal, assert_true, assert_false, assert_raises, TestSuite
-from mojo_bstr import *
+from bstr import *
 
 
 def test_boundaries_and_ownership() raises:

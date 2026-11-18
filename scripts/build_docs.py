@@ -10,7 +10,7 @@ from mojoverse.site import build_site, navigation
 
 PACKAGES = (
     "mojo-bio", "mojo-bstr", "mojo-io", "mojo-lapper", "mojo-libdeflate",
-    "mojo-seqair", "mojo-threads",
+    "mojo-radix-sort", "mojo-threads",
 )
 
 

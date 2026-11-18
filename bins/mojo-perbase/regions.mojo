@@ -1,8 +1,8 @@
 """Deterministic interval selection and worker-sized fetch windows."""
 
-from mojo_seqair.bam import Bam, Region
-from mojo_seqair.bgzf import Input
-from mojo_seqair.buffer import Buffer, le32
+from bio.bam import Bam, Region
+from bio.bgzf import Input
+from bio.buffer import Buffer, le32
 from options import Options, number
 
 

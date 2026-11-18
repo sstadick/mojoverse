@@ -4,7 +4,7 @@ Loads a 6-frame spritesheet (scarfy.png), advances the sub-rectangle each
 tick, and draws the current frame. Use Left/Right to change playback speed.
 """
 
-from mojo_raylib import (
+from raylib import (
     Color, Rectangle, Vector2,
     KEY_LEFT, KEY_RIGHT,
     begin_drawing,

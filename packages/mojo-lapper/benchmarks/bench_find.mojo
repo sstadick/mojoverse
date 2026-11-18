@@ -1,7 +1,7 @@
 """Deterministic CPU find/visit workloads, with construction timed separately.
 
 Build in the root source environment with -O3 --march native and source
-includes for packages/mojo-lapper and packages/mojo-bio/src.
+includes for packages/mojo-lapper and packages/mojo-radix-sort/src.
 Run on an idle pinned core; repeat the executable for independent samples.
 No parsing or I/O is timed. Compare checksums across revisions; collecting
 and streaming consume the same payloads, and a linear scan checks sample queries.

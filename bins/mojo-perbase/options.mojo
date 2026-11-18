@@ -3,7 +3,7 @@
 from std.ffi import external_call
 from std.sys import argv
 from std.math import isfinite
-from mojo_threads import available_parallelism
+from threads import available_parallelism
 from mojopt.default import reflection_default
 from mojopt.deserialize import MojOptDeserializable, Opt
 from mojopt.error import DisplayHelp

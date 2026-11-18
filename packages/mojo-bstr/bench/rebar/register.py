@@ -75,7 +75,7 @@ args = {json.dumps([mode] + (["--verify"] if args.verify_only else []))}
     metadata = dict(memchr=MEMCHR, binary_sha256=binary_hash, verify_only=args.verify_only,
                     compiler=subprocess.check_output(["mojo", "--version"], text=True).strip(),
                     sources={str(path.relative_to(source)): hashlib.sha256(path.read_bytes()).hexdigest()
-                             for path in [*source.glob("mojo_bstr/*.mojo"), source / "bench/rebar/main.mojo"]},
+                             for path in [*source.glob("bstr/*.mojo"), source / "bench/rebar/main.mojo"]},
                     fixtures={str(path.relative_to(root)): hashlib.sha256(path.read_bytes()).hexdigest()
                               for folder in ["definitions", "haystacks"]
                               for path in sorted((root / folder).rglob("*")) if path.is_file()})

@@ -49,7 +49,7 @@ def main():
     output = root / "target" / ("installed-tests" if args.installed else "source-tests")
     output.mkdir(parents=True, exist_ok=True)
     # These tests exercise APIs requiring native link dependencies.
-    links = {"mojo-libdeflate": ["deflate"], "mojo-seqair": ["deflate"],
+    links = {"mojo-libdeflate": ["deflate"], "mojo-bio": ["deflate", "z"],
              "mojo-threads": ["mojo_threads_native", "pthread"]}
     count = 0
     for name, package in projects.items():

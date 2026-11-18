@@ -1,6 +1,6 @@
 from std.collections import List
 from std.math import sqrt
-from mojo_raylib import *
+from raylib import *
 from physics import ParticleSystem, EFFECT_R
 
 comptime SCREEN_W = 1000
