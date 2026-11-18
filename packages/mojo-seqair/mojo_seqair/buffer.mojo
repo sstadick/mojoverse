@@ -26,6 +26,22 @@ struct Buffer(Movable, Sized):
 
     Only bytes in `0 <= offset < length` are initialized. reserve does not change length.
     append sources must not alias this allocation, which growth can relocate.
+
+    ```mojo {doctest="buffer-reserve" global=true}
+    from mojo_seqair import Buffer
+    from std.testing import assert_equal
+
+    def main() raises:
+        var buffer = Buffer(8)
+        buffer.append("record".as_bytes())
+        var saved = List(buffer.as_bytes())
+        buffer.reserve(4096)
+        assert_equal(len(buffer), 6)
+        buffer.clear()
+        buffer.append("next".as_bytes())
+        assert_equal(String(from_utf8=buffer.as_bytes()), "next")
+        assert_equal(String(from_utf8=Span(saved)), "record")
+    ```
     """
 
     var data: BytePtr

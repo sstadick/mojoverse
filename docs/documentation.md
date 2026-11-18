@@ -11,7 +11,8 @@ python3 -m http.server 8767 --directory target/docs
 
 Open `http://localhost:8767/` to browse the documentation hub, package usage
 guides, and Modo API references. The builder invokes each package's `docs`
-task, runs its executable examples, and assembles the results in `target/docs`.
+task, runs its executable examples, and renders their Markdown together in
+`target/docs`, with one navigation tree and search index for all packages.
 Failed builds leave the previous complete site intact. Package sites include
 the original `mojo doc` JSON.
 
@@ -29,7 +30,11 @@ Run the tools from the Mojoverse root. The `docs` environment installs the Pytho
 pixi run --locked -e docs docs packages/mojo-bstr mojo_bstr --site --readme README.md
 ```
 
-The output is `PACKAGE/target/docs`. Without `--site`, it is plain Markdown. Add `--readme README.md` to render the README and test its marked examples too. The project must already have a current `pixi.lock`; the documentation command intentionally uses `pixi run --locked`.
+The output is `PACKAGE/target/docs`. A site also retains its generated Markdown
+under `target/docs/markdown` for the combined build. Without `--site`, the output
+is plain Markdown. Add `--readme README.md` to render the README and test its marked
+examples too. The project must already have a current `pixi.lock`; the documentation
+command intentionally uses `pixi run --locked`.
 
 The compiler itself emits JSON, not HTML. To inspect that directly:
 
@@ -71,6 +76,30 @@ For fragments, omit `global=true`: the tools wrap the body in `def main() raises
 The build requires at least one doctest and runs every extracted program with assertions enabled in a temporary directory. Exceptions and failed assertions fail the command before replacing the previous generated site. Examples that write files must use relative paths or temporary directories. Compilation alone is not an example test.
 
 The tools pin Modo 0.11.13 and override its callable signature, struct signature, and doctest templates for current Mojo. Do not remove these overrides without checking rendered signatures and executing the examples on stable and nightly. The stock templates still use `fn` and emit `fn def` for current compiler JSON.
+
+## Presentation and highlighting
+
+The complete pipeline lives in this repository:
+
+- `src/mojoverse/docs.py`: compiler JSON, Modo Markdown, and executable examples.
+- `src/mojoverse/site.py`: Zensical configuration and navigation.
+- `src/mojoverse/assets/`: shared CSS and the accessible code-wrap toggle.
+- `src/mojoverse/highlight.py`: Pygments' Mojo lexer plus current ownership and
+  compile-time keywords. Keep these aligned with compiler updates.
+- `scripts/build_docs.py`: the combined site, reusing each package's docs task.
+
+Highlighting is generated at build time; no CDN or browser-side language detection
+is required. Code wraps by default. The **Wrap** toggle changes only presentation;
+copying preserves the original text and indentation. The theme supplies the copy
+button, light/dark modes, mobile navigation, and search. Fonts are local system fonts.
+
+The layout follows the readable article/sidebar conventions of the official
+[Mojo docs](https://mojolang.org/docs/). Their Docusaurus frontend is maintained in
+Modular's internal `modular-fe` repository, as described in their
+[documentation README](https://github.com/modular/modular/blob/main/Mojo/docs/site/README.md).
+We use [Zensical](https://zensical.org/), the maintained successor to Material for
+MkDocs, with its classic theme rather than copying private theme code or branding.
+The builder uses its MkDocs-compatible YAML configuration and strict validation.
 
 ## Publish with GitHub Pages
 

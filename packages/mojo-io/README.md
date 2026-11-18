@@ -34,6 +34,30 @@ def main() raises:
     reader.close()
 ```
 
+## Keep lines after closing the file
+
+`read_lines` returns owned byte lists. Use it when the file fits in memory and
+you need to retain its lines; use `BufferedReader` to process larger files
+one borrowed line at a time. Empty lines and end-of-file are different.
+
+```mojo {doctest="owned-lines" global=true}
+from mojo_io import read_lines
+from std.pathlib import Path
+from std.tempfile import TemporaryDirectory
+from std.testing import assert_equal
+
+def main() raises:
+    var directory = TemporaryDirectory()
+    var path = String(Path(directory.name) / "names.txt")
+    with open(path, "w") as file:
+        file.write("alpha\r\n\nbeta")
+    var saved = read_lines(path, buf_size=3)
+    assert_equal(len(saved), 3)
+    assert_equal(String(from_utf8=Span(saved[0])), "alpha")
+    assert_equal(len(saved[1]), 0)
+    assert_equal(String(from_utf8=Span(saved[2])), "beta")
+```
+
 ## Contracts
 
 - `BufferedReader` and `BufferedWriter` take ownership of a `FileHandle`.

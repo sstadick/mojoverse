@@ -465,7 +465,21 @@ def rfind(s: Span[mut=False, UInt8, _], needle: Span[mut=False, UInt8, _]) -> In
 
 
 struct Finder[origin: ImmOrigin](ImplicitlyCopyable):
-    """Reusable forward searcher borrowing an immutable needle."""
+    """Reusable forward searcher borrowing an immutable needle.
+
+    Offsets count bytes, even in UTF-8 text. Keep the needle alive and unchanged.
+
+    ```mojo {doctest="finder-offsets" global=true}
+    from mojo_bstr import finder
+    from std.testing import assert_equal
+
+    def main() raises:
+        var needle = String("needle")
+        var search = finder(needle.as_bytes())
+        assert_equal(search.find("é:needle".as_bytes()), 3)
+        assert_equal(search.find("missing".as_bytes()), -1)
+    ```
+    """
 
     var _needle: Span[UInt8, Self.origin]
     var _two: _TwoWay

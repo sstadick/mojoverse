@@ -1,7 +1,9 @@
-"""Integration tests: real compiler, Modo, example execution, and MkDocs."""
+"""Integration tests: real compiler, Modo, example execution, and Zensical."""
 
+from html import unescape
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import tempfile
@@ -45,8 +47,9 @@ class DocumentationTests(unittest.TestCase):
     def test_render_and_execute_examples(self):
         (self.project / "README.md").write_text(
             "# Fixture\n\n[Notice](NOTICE.md)\n\nUsage:\n"
-            "    ```mojo\n    var values = List[Int](3, 7)\n"
+            "    ```mojo\n    comptime SCALE = 2\n    var values = [3, 7]\n"
             "    if values[0] == 3:\n        print(values[1])\n    ```\n"
+            f"\n[API](https://sstadick.github.io/mojoverse/{self.project.name}/probe/api/add.html)\n"
         )
         (self.project / "NOTICE.md").write_text("# Notice\n\nFixture attribution.\n")
         includes = ("--readme", "README.md", "--include", "NOTICE.md")
@@ -71,10 +74,21 @@ class DocumentationTests(unittest.TestCase):
         self.assertNotIn('doctest=', html)
         self.assertNotIn('```mojo', html)
         index = (self.output / "index.html").read_text()
-        self.assertIn("List[Int](3, 7)", index)
-        self.assertIn("    print(values[1])", index)
+        text = unescape(re.sub(r"<[^>]+>", "", index))
+        self.assertIn("var values = [3, 7]", text)
+        self.assertIn("    print(values[1])", text)
+        self.assertIn('<span class="k">comptime</span>', index)
+        self.assertIn('<span class="k">var</span>', index)
+        self.assertTrue((self.output / "markdown/probe/api/add.md").is_file())
+        self.assertIn('href="probe/api/add.html"', index)
         self.assertNotIn('href="3, 7"', index)
         self.assertNotIn("```mojo", index)
+
+        readme = self.project / "README.md"
+        readme.write_text(readme.read_text().replace("(NOTICE.md)", "(missing.md)"))
+        result = self.invoke("--site", *includes)
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertEqual((self.output / "index.html").read_text(), index)
 
     def test_native_linked_example(self):
         native = self.project / "docs_probe.c"

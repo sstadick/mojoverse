@@ -42,6 +42,51 @@ the same codec; give each worker its own instance.
 For direct FFI and status-code handling, use the pointer functions in
 `mojo_libdeflate.codec`, also exported at the package root.
 
+## Decode concatenated gzip members
+
+Advance by `consumed`, not by the output size. The output buffer is reused;
+consume its initialized prefix before decoding the next member. This example
+creates two members so it can run without an external fixture.
+
+```mojo {doctest="gzip-members" global=true}
+from mojo_libdeflate import Compressor, Decompressor
+from std.testing import assert_equal
+
+def main() raises:
+    var compressor = Compressor(level=2)
+    var packed = List[UInt8](length=compressor.gzip_bound(32), fill=0)
+    var stream = List[UInt8]()
+    for text in [String("alpha"), String("beta!")]:
+        var size = compressor.compress_gzip(text.as_bytes(), Span(packed))
+        stream.extend(Span(packed)[:size])
+
+    var decoder = Decompressor()
+    var output = List[UInt8](length=32, fill=0)
+    var decoded = String()
+    var offset = 0
+    while offset < len(stream):
+        var member = decoder.decompress_gzip(Span(stream)[offset:], Span(output))
+        decoded += String(from_utf8=Span(output)[:member.written])
+        offset += member.consumed
+    assert_equal(decoded, "alphabeta!")
+    assert_equal(offset, len(stream))
+```
+
+## Update a checksum incrementally
+
+Start at zero and feed the previous result into the next call. The input does
+not have to be text.
+
+```mojo {doctest="crc-parts" global=true}
+from mojo_libdeflate import crc32
+from std.testing import assert_equal
+
+def main() raises:
+    var checksum = crc32("1234".as_bytes())
+    checksum = crc32("56789".as_bytes(), checksum)
+    assert_equal(checksum, UInt32(0xCBF43926))
+```
+
 ## Build and test
 
 ```sh

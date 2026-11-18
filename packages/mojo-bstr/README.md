@@ -36,6 +36,42 @@ limitation, not a supported use. Make an owned copy when mutation or a longer
 lifetime is needed. `_into` functions append without clearing; their output
 must not alias an input view.
 
+## Reuse a searcher across records
+
+A `Finder` prepares one needle and borrows its bytes. The records may change
+between calls, but the needle must stay alive and unchanged.
+
+```mojo {doctest="prepared-search" global=true}
+from mojo_bstr import finder
+from std.testing import assert_equal
+
+def main() raises:
+    var needle = String("ERROR")
+    var search = finder(needle.as_bytes())
+    assert_equal(search.find("WARN: retry".as_bytes()), -1)
+    assert_equal(search.find("id=7 ERROR: timeout".as_bytes()), 5)
+    assert_equal(search.find("ERROR".as_bytes()), 0)
+```
+
+## Split binary fields without copying
+
+Each part is a borrowed span, not a new string. Copy a part with `List(part)`
+only when it must outlive the original bytes.
+
+```mojo {doctest="binary-fields" global=true}
+from mojo_bstr import split_str
+from std.testing import assert_equal
+
+def main() raises:
+    var record: List[UInt8] = [65, 0, 9, 255, 9, 90]
+    var fields = List[List[UInt8]]()
+    for part in split_str(Span(record), "\t".as_bytes()):
+        fields.append(List(part))
+    assert_equal(fields[0], [65, 0])
+    assert_equal(fields[1], [255])
+    assert_equal(fields[2], [90])
+```
+
 ## Install with Pixi
 
 For a checkout beside the consumer, add to its `pixi.toml`:

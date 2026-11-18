@@ -11,13 +11,13 @@ Pin the same Mojoverse revision for each dependency and use that revision's Mojo
 
 | Package | Purpose | Docs |
 | --- | --- | --- |
-| mojo-bstr | Byte strings, SIMD search, UTF-8 | [Usage](mojo-bstr/index.html) · [API](mojo-bstr/mojo_bstr/_index.html) |
-| mojo-io | Binary-safe buffered file I/O | [Usage](mojo-io/index.html) · [API](mojo-io/mojo_io/_index.html) |
-| mojo-bio | Integer-key radix sorting | [Usage](mojo-bio/index.html) · [API](mojo-bio/mojo_bio/_index.html) |
-| mojo-lapper | Interval overlap queries | [Usage](mojo-lapper/index.html) · [API](mojo-lapper/lapper/_index.html) |
-| mojo-libdeflate | DEFLATE/gzip codecs and CRC32 | [Usage](mojo-libdeflate/index.html) · [API](mojo-libdeflate/mojo_libdeflate/_index.html) |
-| mojo-threads | Owned thread jobs and synchronization | [Usage](mojo-threads/index.html) · [API](mojo-threads/mojo_threads/_index.html) |
-| mojo-seqair | Indexed BAM/BGZF reading | [Usage](mojo-seqair/index.html) · [API](mojo-seqair/mojo_seqair/_index.html) |
+| mojo-bstr | Byte strings, SIMD search, UTF-8 | [Usage](mojo-bstr/index.md) · [API](mojo-bstr/mojo_bstr/_index.md) |
+| mojo-io | Binary-safe buffered file I/O | [Usage](mojo-io/index.md) · [API](mojo-io/mojo_io/_index.md) |
+| mojo-bio | Integer-key radix sorting | [Usage](mojo-bio/index.md) · [API](mojo-bio/mojo_bio/_index.md) |
+| mojo-lapper | Interval overlap queries | [Usage](mojo-lapper/index.md) · [API](mojo-lapper/lapper/_index.md) |
+| mojo-libdeflate | DEFLATE/gzip codecs and CRC32 | [Usage](mojo-libdeflate/index.md) · [API](mojo-libdeflate/mojo_libdeflate/_index.md) |
+| mojo-threads | Owned thread jobs and synchronization | [Usage](mojo-threads/index.md) · [API](mojo-threads/mojo_threads/_index.md) |
+| mojo-seqair | Indexed BAM/BGZF reading | [Usage](mojo-seqair/index.md) · [API](mojo-seqair/mojo_seqair/_index.md) |
 
 ## Other package documentation
 

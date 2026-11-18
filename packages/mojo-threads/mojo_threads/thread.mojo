@@ -45,6 +45,22 @@ struct Thread[
     synchronization of anything it borrows. Mojo does not have a Send trait;
     moving a value containing pointers does not prove thread safety.
 
+    Start the jobs before waiting for their results:
+
+    ```mojo {doctest="thread-results" global=true}
+    from mojo_threads import spawn
+    from std.testing import assert_equal
+
+    def greet(var name: String) -> String:
+        return String("Hello, ", name)
+
+    def main() raises:
+        var first = spawn[greet](String("Ada"))
+        var second = spawn[greet](String("Grace"))
+        assert_equal(first.join(), "Hello, Ada")
+        assert_equal(second.join(), "Hello, Grace")
+    ```
+
     Parameters:
         T: Owned input type.
         R: Worker result type.

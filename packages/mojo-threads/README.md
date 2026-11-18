@@ -36,6 +36,58 @@ lifetimes and synchronization. The function is noncapturing; it receives its
 state through the input. This API starts one OS thread per call, not a task
 pool. Batch small items into one job rather than spawning per item.
 
+## Pass several inputs and run jobs together
+
+Use a struct to name a job's inputs. Start both jobs before joining either;
+joining immediately after every spawn would serialize the work.
+
+```mojo {doctest="parallel-jobs" global=true}
+from mojo_threads import spawn
+from std.testing import assert_equal
+
+@fieldwise_init
+struct ScaledSum(Movable):
+    var values: List[Int]
+    var scale: Int
+
+def calculate(var input: ScaledSum) -> Int:
+    var total = 0
+    for value in input.values:
+        total += value
+    return total * input.scale
+
+def main() raises:
+    var first = spawn[calculate](ScaledSum([2, 5], 3))
+    var second = spawn[calculate](ScaledSum([11, -1], 2))
+    assert_equal(first.join(), 21)
+    assert_equal(second.join(), 20)
+```
+
+## Handle a worker error
+
+Catch the error from `join()` on the calling thread. Dropping the handle waits
+for completion but discards the error, so join when the outcome matters.
+
+```mojo {doctest="worker-error" global=true}
+from mojo_threads import spawn
+from std.testing import assert_equal, assert_true
+
+def quotient(var inputs: Tuple[Int, Int]) raises -> Int:
+    if inputs[1] == 0:
+        raise Error("denominator must be nonzero")
+    return inputs[0] // inputs[1]
+
+def main() raises:
+    var job = spawn[quotient]((42, 0))
+    var handled = False
+    try:
+        _ = job.join()
+    except error:
+        assert_equal(String(error), "denominator must be nonzero")
+        handled = True
+    assert_true(handled)
+```
+
 ## Persistent pipelines
 
 `Worker` provides a thread and synchronization primitives for persistent

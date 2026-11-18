@@ -36,6 +36,32 @@ is the sequence length: `record.decode_bases(Span(destination))` writes ASCII
 bases into an existing buffer of at least that size and returns bytes written.
 The raw `Record` does not statically track its reader's lifetime.
 
+## Reuse a reader and retain decoded sequences
+
+This example also requires your own indexed `reads.bam` with `chr20` covering
+the query coordinates. Decode bases **inside** the loop, before
+the next `reader.next()` invalidates the record. Each result owns its bytes.
+
+```mojo
+from mojo_seqair import Bam, Reader
+
+def main() raises:
+    var bam = Bam("reads.bam")
+    var reader = Reader(bam.path)
+    var sequences = List[List[UInt8]]()
+    for begin in [10000000, 20000000]:
+        reader.fetch(bam, bam.region("chr20", begin, begin + 1000))
+        while reader.next():
+            var record = reader.record.value()
+            var bases = List[UInt8](length=record.nseq, fill=0)
+            _ = record.decode_bases(Span(bases))
+            sequences.append(bases^)
+    print(len(sequences))
+```
+
+Overlapping queries can return the same read more than once. The example
+collects records per query; it does not deduplicate them.
+
 ## Reuse a byte buffer
 
 ```mojo {doctest="buffer" global=true}
