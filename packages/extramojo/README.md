@@ -10,51 +10,18 @@ Also see any of the tests in the `test_*.mojo` files.
 
 ## Install / Usage
 
-This checkout targets **Mojo 1.2.0**. Use a source checkout or a published
-package built for the same compiler version.
-
-Add `https://repo.prefix.dev/modular-community` to your project channels:
-
-```
-# pixi.toml
-
-[workspace]
-channels = ["conda-forge", "https://conda.modular.com/max", "https://repo.prefix.dev/modular-community"]
-description = "Add a short description here"
-name = "my-mojo-project"
-platforms = ["osx-arm64"]
-version = "0.1.0"
-
-[tasks]
-
-[dependencies]
-mojo = "=1.2.0"
-```
-
-then run:
-
-```bash
-pixi add extramojo
-```
-
-To build and install a local checkout instead, use Pixi 0.80 or newer and add
-the following to your consumer's manifest (keeping the stable Modular and
-conda-forge channels above):
+Follow the [Mojoverse dependency setup](../../README.md#use-a-dependency) and
+use the compiler pinned by the same revision:
 
 ```toml
-[workspace]
-preview = ["pixi-build"]
-# ...channels and platforms...
-
 [dependencies]
-mojo = "=1.2.0"
-extramojo = { path = "../ExtraMojo" }
+extramojo = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/extramojo" }
 ```
 
 Run `pixi install`, then `pixi run mojo run my_example_file.mojo`. No source
 include path is needed: `pixi-build-mojo` installs the compiled library into
-the environment's `lib/mojo` directory. The package pins `mojo-compiler` to
-1.2.0 for build, host, and runtime compatibility. ExtraMojo remains self-contained;
+the environment's `lib/mojo` directory. For a local checkout use
+`{ path = "../mojoverse/packages/extramojo" }`. ExtraMojo remains self-contained;
 its buffered I/O and byte-string APIs do not require `mojo-io` or `mojo-bstr`.
 
 

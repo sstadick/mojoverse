@@ -99,7 +99,7 @@ and checksum accumulation, not just index traversal.
 ## Install
 
 The stable toolchain is **Mojo 1.2.0** and **MAX core 26.7.0**.
-For a consumer beside the source checkout:
+For a consumer beside the Mojoverse checkout:
 
 ```toml
 [workspace]
@@ -110,10 +110,12 @@ preview = ["pixi-build"]
 
 [dependencies]
 mojo = "=1.2.0"
-mojo-lapper = { path = "../mojo-lapper" }
+mojo-lapper = { path = "../mojoverse/packages/mojo-lapper" }
 ```
 
 Run `pixi run mojo run main.mojo`; no source include path is needed.
+For pinned Git dependencies, use [Mojoverse dependency setup](https://github.com/sstadick/mojoverse#use-a-dependency)
+with `subdirectory = "packages/mojo-lapper"`.
 
 ## GPU use
 
@@ -141,7 +143,7 @@ Install Pixi 0.80 or newer, then run:
 pixi run t                 # CPU tests
 pixi run test-consumer     # Build and test an isolated installed package
 pixi run format
-pixi run docs              # Sibling Mojoverse, or MOJOVERSE path
+pixi run docs              # This monorepo's root documentation tools
 pixi publish --path . --target-dir dist --force --clean  # Local archive only
 ```
 

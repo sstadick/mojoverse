@@ -1,9 +1,9 @@
 # Executable package documentation
 
-Install the tools from a Mojoverse checkout with `pixi install`, then run:
+Run the tools from the Mojoverse root. The `docs` environment installs only the Python documentation tools:
 
 ```sh
-pixi run docs /path/to/package mojo_topic --site
+pixi run --locked -e docs docs packages/mojo-bstr mojo_bstr --site --readme README.md
 ```
 
 The output is `PACKAGE/target/docs`. Without `--site`, it is plain Markdown. Add `--readme README.md` to render the README and test its marked examples too. The project must already have a current `pixi.lock`; the documentation command intentionally uses `pixi run --locked`.

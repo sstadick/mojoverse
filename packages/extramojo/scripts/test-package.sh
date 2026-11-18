@@ -24,6 +24,10 @@ fi
 consumer=$(mktemp -d)
 trap 'rm -rf "$consumer"' EXIT
 
+# The archive and its consumer must use this workspace's compiler lane.
+mojo_pin=$(python3 -c 'import tomllib; print(tomllib.load(open("pixi.toml", "rb"))["dependencies"]["mojo"])')
+channels=$(python3 -c 'import json,tomllib; print(json.dumps(tomllib.load(open("pixi.toml", "rb"))["workspace"]["channels"]))')
+
 for package in "$@"; do
     test -f "$package"
     case "$package" in
@@ -41,11 +45,11 @@ for package in "$@"; do
     cat > "$work/pixi.toml" <<EOF
 [workspace]
 name = "extramojo-consumer"
-channels = ["https://prefix.dev/conda-forge", "https://conda.modular.com/max"]
+channels = $channels
 platforms = ["$platform"]
 
 [dependencies]
-mojo = "=1.2.0"
+mojo = "$mojo_pin"
 extramojo = { url = "file://$package", sha256 = "$digest" }
 EOF
     (

@@ -4,21 +4,16 @@ A thin wrapper over Pixi that makes common Mojo project tasks easier.
 
 ## Install
 
-```
-pixi self-update --no-release-note
-
-pixi global install \
-  --channel conda-forge \
-  --channel https://conda.modular.com/max \
-  --channel https://repo.prefix.dev/modular-community \
-  --git https://github.com/sstadick/hat
-
-# Add the pixi dir to your path
-export PATH="$HOME/.pixi/bin:$PATH"
+```sh
+git clone https://github.com/sstadick/mojoverse.git
+cd mojoverse
+pixi run --locked hat --help
 ```
 
-To build this checkout, use `pixi global install --path .` with the same channels.
-The manifest pins a compatible Mojopt Git revision; no sibling checkout is needed.
+To install globally from this checkout, use `pixi global install --path bins/hat`
+with the channels in the root manifest. Mojopt comes from the same monorepo.
+For a project dependency, use [Mojoverse dependency setup](../../README.md#use-a-dependency)
+with `subdirectory = "bins/hat"`.
 
 ## Usage
 

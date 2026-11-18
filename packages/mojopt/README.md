@@ -5,17 +5,12 @@ structs. MojOpt parses typed values and generates help from your field descripti
 
 ## Install
 
-This checkout requires **Mojo 1.2.0** from the stable
-`https://conda.modular.com/max` channel.
+Follow the [Mojoverse dependency setup](../../README.md#use-a-dependency),
+using its pinned compiler and the same revision for all Mojoverse packages:
 
-```sh
-pixi add mojopt
-```
-
-To use the source package, pin a compatible revision for reproducible builds:
-
-```sh
-pixi add --git https://github.com/sstadick/mojopt.git mojopt
+```toml
+[dependencies]
+mojopt = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojopt" }
 ```
 
 ## Get started

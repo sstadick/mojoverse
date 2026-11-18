@@ -20,7 +20,8 @@ build:
 
 requirements:
   build:
-    - ${{ compiler('c') }}
+    - clang =18.1.8
+    - clangxx =18.1.8
     - cmake
     - ninja
     - if: linux

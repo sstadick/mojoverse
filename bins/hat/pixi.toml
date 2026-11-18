@@ -16,17 +16,18 @@ license = "MIT"
 description = "Helper utility for working with Mojo projects."
 
 [package.build]
-backend = { name = "pixi-build-mojo", version = "0.*", channels = [
+backend = { name = "pixi-build-mojo", version = "=0.2.9.20261117.1659.e14419f", channels = [
     "https://prefix.dev/pixi-build-backends",
     "https://prefix.dev/conda-forge",
 ] }
 
 [package.host-dependencies]
 mojo-compiler = "=1.2.0"
+mojopt = { path = "../../packages/mojopt" }
 
 [package.build-dependencies]
 mojo-compiler = "=1.2.0"
-mojopt = { git = "https://github.com/sstadick/mojopt", rev = "de6f04b98b2075e9bc05459c5864e3d249534129" }
+mojopt = { path = "../../packages/mojopt" }
 
 [package.run-dependencies]
 mojo-compiler = "=1.2.0"
@@ -42,5 +43,5 @@ t = { cmd = "sh -c 'find ./tests -name test_*.mojo | xargs -I % mojo run --targe
 
 [dependencies]
 mojo = "=1.2.0"
-mojopt = { git = "https://github.com/sstadick/mojopt", rev = "de6f04b98b2075e9bc05459c5864e3d249534129" }
+mojopt = { path = "../../packages/mojopt" }
 #hat = { path = "." }

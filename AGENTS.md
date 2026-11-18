@@ -1,8 +1,10 @@
 # Mojoverse
 
-- Read `.agents/skills/working-with-mojo/SKILL.md` before changing package conventions, templates, or Mojo examples. Load Modular's `mojo-syntax` skill before writing Mojo.
-- This repository is a catalog and development toolkit, not a monorepo. Packages own their source, releases, compiler pins, and lockfiles. The root lockfile covers only this repository's Python tools.
-- Keep public catalog links on moving branches. Distinguish existing public projects from work not yet published; do not publish private maintenance reports, local paths, or credentials here.
-- Run `pixi run test` for documentation-tool changes. Tests execute real Mojo examples; do not replace them with mocked compiler success.
-- Documentation must use the target package's locked compiler and dependencies. Do not let the tools environment silently select its own Mojo version.
-- Existing ExtraMojo APIs remain in place during extraction. New packages live in their own repositories.
+- Libraries live in `packages/`; executables and editor integrations live in `bins/`. Keep the landing README focused on dependency usage and links. Build and maintenance instructions belong in `docs/`.
+- Pixi is the build orchestrator. Internal dependencies use relative paths to this checkout; external consumers pin one Mojoverse Git revision and a package subdirectory. Do not add a second build graph.
+- The root `pixi.toml` owns the compiler/MAX versions. All packages, including Raylib, use the same compiler lane: stable on `main`, published nightly on `nightly`. Use `scripts/toolchain.py update` to change pins and locks together; `check-workspace` rejects compiler/channel drift and detached internal dependencies.
+- Load Modular's `mojo-syntax` skill before writing Mojo, plus its interop or GPU skill when applicable. Existing ExtraMojo APIs remain available; extraction into smaller packages does not authorize breaking them.
+- Run `pixi run --locked test`, `pixi run --locked -e graphics test-graphics`, and `pixi run --locked -e lsp test-lsp`. CI tests the combined graph on every change, not only the edited package. See `docs/development.md` for scoped checks and platform requirements.
+- Package changes need an installed-package check without source `-I` paths. Documentation examples run with the documented package's locked compiler, not whichever compiler the tools happen to find. Documentation conventions are in `docs/documentation.md`.
+- Performance takes precedence over cosmetic refactors. Preserve native Clang `-O3 -march=native` and Mojo `-O3` host-targeted builds. Benchmark serially on an idle host, verify output before timing, and record raw samples and compiler flags. Native artifacts are host-specific, not portable release binaries.
+- Retain per-package licenses and provenance. Keep private maintenance reports, credentials and machine-specific paths out of published files. The nightly updater only advances `nightly`; source compatibility repairs still require tests, and promotion to stable is deliberate.

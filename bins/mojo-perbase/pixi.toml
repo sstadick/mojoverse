@@ -27,20 +27,20 @@ extra-args = ["-O3", "-Xlinker", "-L$PREFIX/lib", "-Xlinker", "-lmojo_perbase_na
 
 [package.host-dependencies]
 mojo-compiler = "=1.2.0"
-mojo-seqair = { path = "../mojo-seqair" }
-mojo-libdeflate = { path = "../mojo-libdeflate" }
-mojo-libdeflate-native = { path = "../mojo-libdeflate/native" }
-mojo-threads = { path = "../mojo-threads" }
-mojo-threads-native = { path = "../mojo-threads/native" }
-mojopt = { git = "https://github.com/sstadick/mojopt", rev = "de6f04b98b2075e9bc05459c5864e3d249534129" }
+mojo-seqair = { path = "../../packages/mojo-seqair" }
+mojo-libdeflate = { path = "../../packages/mojo-libdeflate" }
+mojo-libdeflate-native = { path = "../../packages/mojo-libdeflate/native" }
+mojo-threads = { path = "../../packages/mojo-threads" }
+mojo-threads-native = { path = "../../packages/mojo-threads/native" }
+mojopt = { path = "../../packages/mojopt" }
 mojo-perbase-native = { path = "native" }
 
 [package.build-dependencies]
 mojo-compiler = "=1.2.0"
-mojo-seqair = { path = "../mojo-seqair" }
-mojo-libdeflate = { path = "../mojo-libdeflate" }
-mojo-threads = { path = "../mojo-threads" }
-mojopt = { git = "https://github.com/sstadick/mojopt", rev = "de6f04b98b2075e9bc05459c5864e3d249534129" }
+mojo-seqair = { path = "../../packages/mojo-seqair" }
+mojo-libdeflate = { path = "../../packages/mojo-libdeflate" }
+mojo-threads = { path = "../../packages/mojo-threads" }
+mojopt = { path = "../../packages/mojopt" }
 
 [package.run-dependencies]
 mojo-compiler = "=1.2.0"

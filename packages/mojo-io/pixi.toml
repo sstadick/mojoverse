@@ -14,7 +14,7 @@ license-file = "LICENSE"
 description = "Binary-safe buffered I/O for Mojo"
 
 [package.build]
-backend = { name = "pixi-build-mojo", version = "0.*", channels = ["https://prefix.dev/pixi-build-backends", "conda-forge"] }
+backend = { name = "pixi-build-mojo", version = "=0.2.9.20261117.1659.e14419f", channels = ["https://prefix.dev/pixi-build-backends", "conda-forge"] }
 
 [package.build.config.pkg]
 name = "mojo_io"
@@ -22,20 +22,20 @@ path = "mojo_io"
 
 [package.host-dependencies]
 mojo-compiler = "=1.2.0"
-mojo-bstr = { git = "https://github.com/sstadick/mojo-bstr", rev = "8baa38cfa9fc1f2e5519aaa626094c156124c703" }
+mojo-bstr = { path = "../mojo-bstr" }
 
 [package.build-dependencies]
 mojo-compiler = "=1.2.0"
-mojo-bstr = { git = "https://github.com/sstadick/mojo-bstr", rev = "8baa38cfa9fc1f2e5519aaa626094c156124c703" }
+mojo-bstr = { path = "../mojo-bstr" }
 
 [package.run-dependencies]
 mojo-compiler = "=1.2.0"
-mojo-bstr = { git = "https://github.com/sstadick/mojo-bstr", rev = "8baa38cfa9fc1f2e5519aaa626094c156124c703" }
+mojo-bstr = { path = "../mojo-bstr" }
 
 [dependencies]
 mojo = "=1.2.0"
 python = ">=3.11,<3.15"
-mojo-bstr = { git = "https://github.com/sstadick/mojo-bstr", rev = "8baa38cfa9fc1f2e5519aaa626094c156124c703" }
+mojo-bstr = { path = "../mojo-bstr" }
 mojo-io = { path = "." }
 
 [tasks]

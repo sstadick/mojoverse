@@ -1,14 +1,80 @@
 [workspace]
 name = "mojoverse"
-channels = ["conda-forge"]
+channels = ["https://conda.modular.com/max", "conda-forge"]
 platforms = ["linux-64", "linux-aarch64", "osx-arm64"]
+preview = ["pixi-build"]
+requires-pixi = ">=0.80"
 
 [dependencies]
-python = ">=3.11,<3.15"
-
-[pypi-dependencies]
-mojoverse-tools = { path = ".", editable = true }
+python = "3.12.*"
+mojo = "=1.2.0"
+max-core = "=26.7.0"
+extramojo = { path = "packages/extramojo" }
+mojopt = { path = "packages/mojopt" }
+mojo-bio = { path = "packages/mojo-bio" }
+mojo-lapper = { path = "packages/mojo-lapper" }
+mojo-bstr = { path = "packages/mojo-bstr" }
+mojo-io = { path = "packages/mojo-io" }
+mojo-libdeflate = { path = "packages/mojo-libdeflate" }
+mojo-threads = { path = "packages/mojo-threads" }
+mojo-seqair = { path = "packages/mojo-seqair" }
+hat = { path = "bins/hat" }
+mojo-perbase = { path = "bins/mojo-perbase" }
 
 [tasks]
-test = "python -m unittest discover -s tests -v"
+test = { depends-on = ["check-workspace", "test-packages", "test-installed", "test-bins", "test-docs"] }
+t = { depends-on = ["test"] }
+check-workspace = "python scripts/toolchain.py check"
+lock-all = "python scripts/toolchain.py lock"
+check-locks = "python scripts/toolchain.py lock --check"
+test-installed = "python scripts/test_packages.py --installed"
+test-bins = "python scripts/test_packages.py --bins"
+consumer = "python scripts/check_consumer.py"
+
+[feature.source.dependencies]
+python = "3.12.*"
+mojo = "=1.2.0"
+max-core = "=26.7.0"
+mojo-libdeflate-native = { path = "packages/mojo-libdeflate/native" }
+mojo-threads-native = { path = "packages/mojo-threads/native" }
+
+[feature.source.tasks]
+test-packages = "python scripts/test_packages.py"
+
+[feature.docs.dependencies]
+python = "3.12.*"
+
+[feature.docs.pypi-dependencies]
+mojoverse-tools = { path = ".", editable = true }
+
+[feature.docs.tasks]
+test-docs = "python -m unittest discover -s tests -v"
 docs = "mojoverse-docs"
+
+[feature.lsp.dependencies]
+python = "3.12.*"
+mojo = "=1.2.0"
+nodejs = "22.*"
+rust = ">=1.85"
+
+[feature.lsp.tasks]
+test-lsp = "python scripts/test_lsp.py"
+
+[feature.graphics]
+platforms = ["linux-64", "osx-arm64"]
+
+[feature.graphics.dependencies]
+mojo = "=1.2.0"
+max-core = "=26.7.0"
+python = "3.12.*"
+mojo_raylib = { path = "packages/mojo-raylib" }
+
+[feature.graphics.tasks]
+test-graphics = "python scripts/test_raylib.py"
+
+[environments]
+default = { features = ["docs"] }
+source = { features = ["source"], no-default-feature = true }
+docs = { features = ["docs"], no-default-feature = true }
+lsp = { features = ["lsp"], no-default-feature = true }
+graphics = { features = ["graphics"], no-default-feature = true }

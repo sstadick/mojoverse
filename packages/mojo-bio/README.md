@@ -87,7 +87,7 @@ platforms = ["linux-64"]
 preview = ["pixi-build"]
 
 [dependencies]
-mojo-bio = { path = "../mojo-bio" }
+mojo-bio = { path = "../mojoverse/packages/mojo-bio" }
 ```
 
 Then run `pixi run mojo run main.mojo`. No `-I` source path is needed.
@@ -102,6 +102,7 @@ payload identity, insertion stability, and subspan isolation.
 
 See [bench/RADIX_SORT.md](bench/RADIX_SORT.md) for measurements and reproducible
 commands, and [NOTICE.md](NOTICE.md) for source attribution and licensing.
-Documentation uses the sibling Mojoverse checkout, or the path in `MOJOVERSE`.
+Documentation uses this monorepo's root tools. For pinned Git dependencies,
+see [Mojoverse dependency setup](https://github.com/sstadick/mojoverse#use-a-dependency).
 It checks examples with this package's locked compiler before building
 `target/docs`.

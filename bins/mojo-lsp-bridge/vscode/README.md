@@ -1,6 +1,6 @@
 # Mojo LSP Bridge for VS Code
 
-Runs [Mojo LSP Bridge](https://github.com/sstadick/mojo-lsp-bridge) around your project's native Mojo language server. Adds matching stdlib source discovery/downloads, missing-import quick fixes, and crash recovery. Completion, diagnostics, hover, navigation, and semantic highlighting come from the native server. Formatting uses the matching environment's `mblack`.
+Runs [Mojo LSP Bridge](https://github.com/sstadick/mojoverse/tree/main/bins/mojo-lsp-bridge) around your project's native Mojo language server. Adds matching stdlib source discovery/downloads, missing-import quick fixes, and crash recovery. Completion, diagnostics, hover, navigation, and semantic highlighting come from the native server. Formatting uses the matching environment's `mblack`.
 
 ## Install
 
@@ -47,7 +47,7 @@ Use **Go to Definition**, **Quick Fix…**, and **Format Document** as usual. To
 
 ## Build from source
 
-From this repository's `vscode/` directory, with Node.js 22+:
+From Mojoverse's `bins/mojo-lsp-bridge/vscode/` directory, with Node.js 22+:
 
 ```sh
 npm ci

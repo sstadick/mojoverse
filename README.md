@@ -1,64 +1,45 @@
 # Mojoverse
 
-Seth's Mojo packages, shared development practices, executable documentation, and project templates. Each package owns its repository, releases, tests, and reproducible dependencies. This repository is a catalog, not a coordinated distribution.
+Mojo libraries, bins, and development tools in one repository. This checkout uses **Mojo 1.2.0** and **Pixi 0.80+**. `main` follows stable; `nightly` tracks the published nightly compiler across the whole workspace.
 
-## Projects
+## Use a dependency
 
-| Project | Purpose |
-| --- | --- |
-| [ExtraMojo](https://github.com/ExtraMojo/ExtraMojo) | Utilities beyond the standard library |
-| [mojopt](https://github.com/sstadick/mojopt) | Command-line parsing |
-| [Hat](https://github.com/sstadick/hat) | Pixi-based Mojo project scaffolding, builds, and tests |
-| [Rust → Mojo bindings](https://github.com/sstadick/mojo-import-crates-skill) | Crate-agnostic binding generation and packaging tooling |
-| [mojo-lapper](https://github.com/sstadick/mojo-lapper) | Interval data structures |
-| [mojo-bstr](https://github.com/sstadick/mojo-bstr) | Byte-string searching, transformations, and UTF-8 utilities |
-| [mojo-io](https://github.com/sstadick/mojo-io) | Binary-safe buffered file I/O |
-| [mojo-bio](https://github.com/sstadick/mojo-bio) | Generic integer-key sorting |
+Add a Git dependency with its package subdirectory to your `pixi.toml`. Replace `<full-commit>` with a Mojoverse commit and use that same revision for every Mojoverse dependency:
 
-Dependency order: **mojo-bstr → mojo-io**, and **mojopt → Hat**. Catalog links follow moving branches; packages pin their own compatible dependencies.
+```toml
+[workspace]
+channels = ["https://conda.modular.com/max", "conda-forge"]
+platforms = ["linux-64", "linux-aarch64", "osx-arm64"]
+preview = ["pixi-build"]
+requires-pixi = ">=0.80"
 
-## Shared practices
-
-The [working-with-mojo skill](.agents/skills/working-with-mojo/SKILL.md) adds package conventions to Modular's existing `mojo-syntax`, `mojo-python-interop`, `mojo-gpu-fundamentals`, and `new-modular-project` skills. It does not duplicate their language guidance.
-
-Install the local skill into another checkout:
-
-```sh
-amp skill add /path/to/mojoverse/.agents/skills/working-with-mojo
+[dependencies]
+mojo = "=1.2.0"
+mojo-io = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojo-io" }
 ```
 
-Packages use **Pixi + pixi-build-mojo**, Hat-compatible tests, and clean consumer-install checks. `main` tracks stable Mojo; a rolling `nightly` branch tracks actual nightly compiler packages. Stable promotion remains manual. Linux x86-64, Linux AArch64, and Apple-silicon macOS are the intended package platforms; native checks are required before claiming support.
+Run `pixi install`, then import `mojo_io` normally—no source `-I` paths. Its `mojo-bstr` dependency comes from **the same commit**, through an internal relative path. For local development, use `{ path = "../mojoverse/packages/mojo-io" }` instead. Native packages document their linker flags and platform requirements.
 
-Use Hat to create a package, then apply the [documentation/CI overlay](templates/README.md).
-Hat remains the source of the project scaffold; the overlay adds executable docs.
+## Libraries
 
-## Documentation
+| Package / docs | Import | Purpose |
+| --- | --- | --- |
+| [ExtraMojo](packages/extramojo) | `extramojo` | Collections, strings, I/O and other utilities |
+| [mojopt](packages/mojopt) | `mojopt` | Command-line parsing |
+| [mojo-bstr](packages/mojo-bstr) | `mojo_bstr` | Byte strings, SIMD search and UTF-8 utilities |
+| [mojo-io](packages/mojo-io) | `mojo_io` | Binary-safe buffered I/O |
+| [mojo-bio](packages/mojo-bio) | `mojo_bio` | Generic integer-key radix sorting |
+| [mojo-lapper](packages/mojo-lapper) | `lapper` | Interval data structures |
+| [mojo-libdeflate](packages/mojo-libdeflate) | `mojo_libdeflate` | Inlined libdeflate bindings and native codec |
+| [mojo-threads](packages/mojo-threads) | `mojo_threads` | Joinable pthread workers and synchronization |
+| [mojo-seqair](packages/mojo-seqair) | `mojo_seqair` | Indexed BAM/BGZF reader; not an official Seqair release |
+| [mojo-raylib](packages/mojo-raylib) | `mojo_raylib` | Raylib graphics, audio and math bindings |
 
-`mojoverse-docs` generates API documentation and runs executable examples with the package's locked compiler and dependencies. It produces Markdown or GitHub Pages-ready HTML; deployment is separate.
+## Bins and tools
 
-```sh
-pixi install
-pixi run docs /path/to/package mojo_topic --site
-```
+- [Hat](bins/hat): project scaffolding, builds and tests.
+- [Mojo Perbase](bins/mojo-perbase): BAM base/depth counting and TSV merging. Experimental; no CRAM support.
+- [Mojo LSP Bridge](bins/mojo-lsp-bridge): Zed, VS Code and Neovim integration with stdlib navigation and import fixes.
+- [Rust → Mojo binding tooling](tools/bind-rust-to-mojo): experimental binding-generation skill.
 
-See the [documentation conventions](.agents/skills/working-with-mojo/reference/documentation.md) for executable examples and CI. Builds fail on broken or missing examples and unsupported root-module declarations.
-
-## Performance
-
-mojo-bstr is compared with Goose and Rust bstr/memchr; mojo-io is compared with goose-io on matched read/write workloads. Package benchmark documentation includes results, measured gaps, and reproduction commands. Run timings serially on an idle host.
-
-## Distribution
-
-Use Pixi Git dependencies pinned to a compatible full commit, keeping compiler constraints aligned. Local path dependencies require sibling checkouts and are not portable release dependencies.
-
-`pixi publish --path . --target-dir dist --force --clean` builds local conda artifacts; it does not upload them. Verify a clean consumer installation before sharing an artifact or release.
-
-The [Modular community submission workflow](https://github.com/modular/modular-community#submitting-a-package) currently requires a pull request adding `recipes/<package>/recipe.yaml` and an installed-package test. It is not a direct upload of a pixi-build-mojo artifact. Once releases exist, those small channel recipes can pin source releases and compiler versions while the source repositories keep pixi-build-mojo. Channel submission is optional; immutable Git dependencies work without it.
-
-## Develop the tools
-
-```sh
-pixi run test
-```
-
-The root Pixi lockfile covers the Python documentation tools, not the versions of catalogued Mojo packages. Documentation tests run real Mojo compilers and example assertions.
+[Build and test](docs/development.md) · [Executable documentation](docs/documentation.md) · [Project templates](templates) · [Migration and history](docs/migration.md)

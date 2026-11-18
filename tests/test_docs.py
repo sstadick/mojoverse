@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+import tomllib
 import unittest
 
 
@@ -15,8 +16,9 @@ class DocumentationTests(unittest.TestCase):
         cls.addClassCleanup(cls.temp.cleanup)
         cls.project = Path(cls.temp.name)
         cls.source = cls.project / "src/probe"
-        channel = os.environ.get("MOJO_CHANNEL", "https://conda.modular.com/max")
-        version = os.environ.get("MOJO_VERSION", "1.2.0")
+        config = tomllib.loads((Path(__file__).resolve().parents[1] / "pixi.toml").read_text())
+        channel = next(c for c in config["workspace"]["channels"] if "conda.modular.com" in c)
+        version = config["dependencies"]["mojo"].lstrip("=")
         (cls.project / "pixi.toml").write_text(
             '[workspace]\nname = "docs-fixture"\npreview = ["pixi-build"]\n'
             f'channels = ["{channel}", "conda-forge"]\n'

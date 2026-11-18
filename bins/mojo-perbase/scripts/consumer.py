@@ -1,8 +1,4 @@
-"""Build local artifacts and test an installed, source-independent consumer.
-
-Unpublished libraries live in sibling repositories. Source builds may use those
-paths; the consumer only sees immutable artifact URLs and an isolated cache.
-"""
+"""Build monorepo artifacts and test an installed, source-independent consumer."""
 import hashlib
 import json
 import os
@@ -16,7 +12,7 @@ import tomllib
 
 def main():
     root = Path(__file__).resolve().parents[1]
-    siblings = root.parent
+    siblings = root.parents[1] / "packages"
     manifest = tomllib.loads((root / "pixi.toml").read_text())
     target = {
         ("Linux", "x86_64"): "linux-64",
@@ -29,7 +25,7 @@ def main():
         env.pop(name, None)
     packages = [siblings / "mojo-libdeflate/native", siblings / "mojo-threads/native",
                 siblings / "mojo-libdeflate", siblings / "mojo-threads",
-                siblings / "mojo-seqair", root / "native", root]
+                siblings / "mojo-seqair", siblings / "mojopt", root / "native", root]
     with tempfile.TemporaryDirectory(prefix="perbase-consumer-") as tmp:
         consumer = Path(tmp)
         artifacts = consumer / "artifacts"
@@ -48,7 +44,8 @@ def main():
         print(json.dumps({"platform": target, "artifacts": dependencies}, indent=2), flush=True)
         lines = ["[workspace]", 'name = "perbase-consumer"',
                  "channels = " + json.dumps(manifest["workspace"]["channels"]),
-                 "platforms = " + json.dumps([target]), '[dependencies]', 'mojo = "=1.2.0"']
+                 "platforms = " + json.dumps([target]), '[dependencies]',
+                 "mojo = " + json.dumps(manifest["dependencies"]["mojo"])]
         for name, identity in dependencies.items():
             lines.append(f'{name} = {{ url = {json.dumps(identity["url"])}, '
                          f'sha256 = "{identity["sha256"]}" }}')

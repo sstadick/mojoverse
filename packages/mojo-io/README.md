@@ -3,6 +3,9 @@
 Binary-safe buffered file I/O for Mojo 1.2.0.
 Package: `mojo-io`; import: `mojo_io`. Requires **mojo-bstr**.
 
+Install using the [Mojoverse Git/subdirectory dependency](https://github.com/sstadick/mojoverse#use-a-dependency).
+Its bstr dependency resolves from the same checkout and commit.
+
 ## Read and write arbitrary bytes
 
 ```mojo {doctest="roundtrip" global=true}
@@ -68,7 +71,7 @@ pixi run consumer
 pixi run docs
 ```
 
-Documentation uses a sibling Mojoverse checkout, or the path in `MOJOVERSE`.
+Documentation uses this monorepo's root tools.
 It runs the examples with the package's own locked compiler before producing
 the site under `target/docs`. Documentation CI saves a site artifact; it does
 not deploy or replace stable documentation from nightly.
@@ -80,8 +83,8 @@ line benchmark approach with matching data and buffer sizes; read and write
 measurements must verify output before timing.
 See the [benchmark protocol and results](bench/README.md) for measured gaps.
 
-The manifest pins a compatible `mojo-bstr` Git revision; no sibling checkout is
-needed. The consumer check builds both packages and runs the full I/O tests from
+The manifest uses a relative path to `mojo-bstr` in the same monorepo.
+The consumer check builds both packages and runs the full I/O tests from
 installed modules without source include paths.
 
 `main` targets stable Mojo; `nightly` tracks nightly compiler compatibility.

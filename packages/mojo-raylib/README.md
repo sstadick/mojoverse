@@ -27,7 +27,8 @@ Code generation is fully automated and provides 100% coverage, although not ever
 
 ## Requirements
 
-- [Pixi](https://prefix.dev/) — installs Mojo 1.0.0, raylib, and the build toolchain.
+- [Pixi](https://prefix.dev/) — installs the monorepo's pinned Mojo compiler, raylib, and the build toolchain.
+- Initialize the pinned native source from the Mojoverse root with `git submodule update --init`.
 
 ## Editor and LSP setup
 
@@ -83,7 +84,7 @@ pixi run run
 
 The first run builds raylib + the C shim (`mojo-raylib-shim`) and precompiles the Mojo package (`mojo_raylib`). Subsequent runs hit the build cache.
 
-`mojo_raylib` uses Pixi's [`pixi-build-mojo`](https://pixi.prefix.dev/latest/build/backends/pixi-build-mojo/) backend, while the native shim uses `pixi-build-rattler-build`. The package pins the final Mojo 1.0.0 compiler in its build, host, and run requirements, so consumers get the same compiler used to create the package.
+`mojo_raylib` uses Pixi's [`pixi-build-mojo`](https://pixi.prefix.dev/latest/build/backends/pixi-build-mojo/) backend, while the native shim uses `pixi-build-rattler-build`. Development, build, host and runtime use the same compiler as the rest of Mojoverse. Native builds use Clang `-O3 -march=native` and Pixi's build cache.
 
 ## Use it in your own project
 
@@ -96,7 +97,7 @@ platforms = ["osx-arm64", "linux-64"]
 preview = ["pixi-build"]
 
 [dependencies]
-mojo_raylib = { path = "/path/to/mojo-raylib" }
+mojo_raylib = { path = "../mojoverse/packages/mojo-raylib" }
 
 [tasks.run]
 cmd = "mojo build main.mojo -Xlinker -L$CONDA_PREFIX/lib -Xlinker -lmojo_raylib_shim -Xlinker -lraylib -o .pixi/main && .pixi/main"

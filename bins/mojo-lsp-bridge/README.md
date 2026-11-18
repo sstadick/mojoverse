@@ -2,7 +2,7 @@
 
 An editor-independent bridge for Mojo's native language server, with stdlib navigation, import quick fixes, formatting, and crash recovery. Includes Zed and VS Code extensions and supports Neovim and other LSP clients.
 
-Maintained at [`sstadick/mojo-lsp-bridge`](https://github.com/sstadick/mojo-lsp-bridge), originally forked from [`vadim-su/zed_mojo`](https://github.com/vadim-su/zed_mojo).
+Maintained in [`sstadick/mojoverse`](https://github.com/sstadick/mojoverse/tree/main/bins/mojo-lsp-bridge), originally forked from [`vadim-su/zed_mojo`](https://github.com/vadim-su/zed_mojo). Build and test this directory with the [root Pixi tasks](../../docs/development.md).
 
 Previously named `sstadick/zed_mojo`. Existing `initializationOptions.zed_mojo` settings and the Zed extension ID `mojo` remain unchanged. If you rename an existing checkout, update editor launch paths and reselect the directory for Zed's dev extension.
 
@@ -28,7 +28,7 @@ Have a working Mojo installation, Python 3.10 or newer (`python3`), and Git avai
 1. Open Zed.
 2. Run `zed: extensions` from the command palette.
 3. Click `Install Dev Extension`.
-4. Select this repository directory: `mojo-lsp-bridge`.
+4. Select `bins/mojo-lsp-bridge` inside the Mojoverse checkout.
 5. Open a `.mojo` file.
 
 Installing this checkout as a dev extension replaces the published Mojo extension. Zed shows the published version as "Overridden by dev extension" and uses this local checkout for future development. After changing the extension, use its `Rebuild` button on the extensions page.
@@ -140,7 +140,7 @@ An existing stdlib source directory on your import path is used before downloadi
 
 The Python bridge speaks standard LSP over stdin/stdout; it is not Zed-specific. Launch it as `python3 /path/to/mojo-lsp-bridge/server/mojo_lsp.py --server /absolute/path/to/mojo-lsp-server --workspace /path/to/project --cache /path/to/cache`. Pass native server arguments after `--`, and bridge settings through the client's `initializationOptions.zed_mojo`. The client must select the project's native executable and workspace; Zed's Rust launcher normally handles that discovery. No Rust build is required for Neovim.
 
-The [ai_dotfiles Neovim config](https://github.com/sstadick/ai_dotfiles) uses `~/dev/mojo-lsp-bridge/server/mojo_lsp.py` and `mojo.nvim`'s per-project environment discovery, with sources cached under Neovim's cache directory in `mojo-lsp`. Only one Mojo client runs per project. Formatting goes through the bridge's `mblack` support, including unsaved changes; the plugin's separate `mojo format` adapter is disabled while the bridge is present.
+The [ai_dotfiles Neovim config](https://github.com/sstadick/ai_dotfiles) integrates the bridge with `mojo.nvim`'s per-project environment discovery, with sources cached under Neovim's cache directory in `mojo-lsp`. Point its bridge path at this checkout's `bins/mojo-lsp-bridge/server/mojo_lsp.py` after migrating. Only one Mojo client should run per project. Formatting goes through the bridge's `mblack` support, including unsaved changes; disable the plugin's separate `mojo format` adapter while the bridge is present.
 
 ### Import quick fixes
 
@@ -255,6 +255,6 @@ MOJO_LSP_SERVER=/path/to/project/.pixi/envs/default/bin/mojo-lsp-server \
 PYTHONPATH=tests python3 -m unittest test_bridge.ZeroConfigurationIntegrationTests -v
 ```
 
-It downloads matching sources into an empty temporary cache, verifies stdlib and project definitions, completion, semantic tokens, error diagnostics, and compilation, then repeats after restarting to verify cache reuse. CI runs this test against a freshly installed Pixi Mojo 1.0.0 environment. Rust tests cover per-project discovery, nested folders/single files, spaces in paths, and `PATH` fallback.
+It downloads matching sources into an empty temporary cache, verifies stdlib and project definitions, completion, semantic tokens, error diagnostics, and compilation, then repeats after restarting to verify cache reuse. Root CI runs this test against the same stable or nightly compiler as the rest of the monorepo. Rust tests cover per-project discovery, nested folders/single files, spaces in paths, and `PATH` fallback.
 
 `extension.wasm` is a generated build artifact and is intentionally ignored by git.

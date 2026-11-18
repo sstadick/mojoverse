@@ -14,20 +14,19 @@ name = "mojopt"
 version = "0.5.0"
 
 [package.build]
-backend = { name = "pixi-build-mojo", version = "0.*", channels = [
+backend = { name = "pixi-build-mojo", version = "=0.2.9.20261117.1659.e14419f", channels = [
     "https://prefix.dev/pixi-build-backends",
     "https://prefix.dev/conda-forge",
-    "https://repo.prefix.dev/modular-community",
 ] }
 
 [package.host-dependencies]
-mojo-compiler = "==1.2.0"
+mojo-compiler = "=1.2.0"
 
 [package.build-dependencies]
-mojo-compiler = "==1.2.0"
+mojo-compiler = "=1.2.0"
 
 [package.run-dependencies]
-mojo-compiler = "==1.2.0"
+mojo-compiler = "=1.2.0"
 
 [tasks]
 r = "mojo run main.mojo"
@@ -49,5 +48,5 @@ t = { cmd = "sh -c 'files=$(find ./tests -name test_*.mojo); test -n \"$files\" 
 examples = { cmd = "sh -c 'find ./examples -name *.mojo | xargs -I % mojo run --target-features=-avx512f,-avx512bw,-avx512cd,-avx512dq,-avx512vl,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vnni,-avx512bitalg,-avx512vpopcntdq,-avx512fp16,-avx512bf16 -I . -D ASSERT=all % --help'" }
 
 [dependencies]
-mojo = "==1.2.0"
+mojo = "=1.2.0"
 # mojopt = { path = "." }

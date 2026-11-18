@@ -46,12 +46,13 @@ preview = ["pixi-build"]
 
 [dependencies]
 mojo = "=1.2.0"
-mojo-bstr = { path = "../mojo-bstr" }
+mojo-bstr = { path = "../mojoverse/packages/mojo-bstr" }
 ```
 
 `pixi-build-mojo` builds the module into the consumer's `lib/mojo` directory.
-No `-I` is needed in the consumer. Git source dependencies can replace the path
-once a repository is published. The stable toolchain is pinned in `pixi.toml`
+No `-I` is needed in the consumer. For a pinned Git dependency, use
+[Mojoverse dependency setup](https://github.com/sstadick/mojoverse#use-a-dependency) with
+`subdirectory = "packages/mojo-bstr"`. The toolchain is pinned in `pixi.toml`
 and `pixi.lock`. `main` targets stable; nightly updates belong on a separate
 rolling branch, with explicit promotion back to stable.
 
@@ -111,7 +112,7 @@ pixi run consumer      # Fresh consumer install and execution, without -I
 pixi run differential # Requires Cargo; 71,784 cases against bstr 1.13.1
 pixi run ownership    # Compile-fail origin safety checks
 pixi run doc-examples # Execute marked README examples
-pixi run docs         # API site, using sibling Mojoverse or MOJOVERSE path
+pixi run docs         # API site, using this monorepo's root tools
 pixi run bench-verify # Untimed benchmark protocol checks
 ```
 

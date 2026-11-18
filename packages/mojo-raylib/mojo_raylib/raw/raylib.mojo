@@ -10,12 +10,11 @@ resource lifetimes.
 """
 
 from .types import *
-from std.ffi import CStringSlice, c_char, c_uchar, c_short, c_ushort, c_int, c_uint, c_long, c_ulong, c_float, c_double, external_call
+from std.ffi import CStringSpan, c_char, c_uchar, c_short, c_ushort, c_int, c_uint, c_long, c_ulong, c_float, c_double, external_call
 from std.memory import stack_allocation
-from std.collections import InlineArray
 
 
-def InitWindow(width: c_int, height: c_int, title: CStringSlice):
+def InitWindow(width: c_int, height: c_int, title: CStringSpan):
     """Initialize window and OpenGL context.
 
     Args:
@@ -157,7 +156,7 @@ def SetWindowIcons(images: Pointer[mut=True, Image, _], count: c_int):
     """
     external_call["SetWindowIcons", NoneType](images, count)
 
-def SetWindowTitle(title: CStringSlice):
+def SetWindowTitle(title: CStringSpan):
     """Set title for window.
 
     Args:
@@ -376,7 +375,7 @@ def GetMonitorName(monitor: c_int) -> Pointer[c_char, ImmUntrackedOrigin]:
     """
     return external_call["GetMonitorName", Pointer[c_char, ImmUntrackedOrigin]](monitor)
 
-def SetClipboardText(text: CStringSlice):
+def SetClipboardText(text: CStringSpan):
     """Set clipboard text content.
 
     Args:
@@ -566,7 +565,7 @@ def UnloadVrStereoConfig(config: VrStereoConfig):
     """
     external_call["mojo_raylib_UnloadVrStereoConfig", NoneType](Pointer(to=config))
 
-def LoadShader(vsFileName: CStringSlice, fsFileName: CStringSlice) -> Shader:
+def LoadShader(vsFileName: CStringSpan, fsFileName: CStringSpan) -> Shader:
     """Load shader from files and bind default locations.
 
     Args:
@@ -580,7 +579,7 @@ def LoadShader(vsFileName: CStringSlice, fsFileName: CStringSlice) -> Shader:
     external_call["mojo_raylib_LoadShader", NoneType](vsFileName, fsFileName, __out)
     return __out[]
 
-def LoadShaderFromMemory(vsCode: CStringSlice, fsCode: CStringSlice) -> Shader:
+def LoadShaderFromMemory(vsCode: CStringSpan, fsCode: CStringSpan) -> Shader:
     """Load shader from code strings and bind default locations.
 
     Args:
@@ -605,7 +604,7 @@ def IsShaderValid(shader: Shader) -> Bool:
     """
     return external_call["mojo_raylib_IsShaderValid", Bool](Pointer(to=shader))
 
-def GetShaderLocation(shader: Shader, uniformName: CStringSlice) -> c_int:
+def GetShaderLocation(shader: Shader, uniformName: CStringSpan) -> c_int:
     """Get shader uniform location.
 
     Args:
@@ -617,7 +616,7 @@ def GetShaderLocation(shader: Shader, uniformName: CStringSlice) -> c_int:
     """
     return external_call["mojo_raylib_GetShaderLocation", c_int](Pointer(to=shader), uniformName)
 
-def GetShaderLocationAttrib(shader: Shader, attribName: CStringSlice) -> c_int:
+def GetShaderLocationAttrib(shader: Shader, attribName: CStringSpan) -> c_int:
     """Get shader attribute location.
 
     Args:
@@ -883,7 +882,7 @@ def UnloadRandomSequence(sequence: Pointer[mut=True, c_int, _]):
     """
     external_call["UnloadRandomSequence", NoneType](sequence)
 
-def TakeScreenshot(fileName: CStringSlice):
+def TakeScreenshot(fileName: CStringSpan):
     """Takes a screenshot of current screen (filename extension defines format).
 
     Args:
@@ -899,7 +898,7 @@ def SetConfigFlags(flags: c_uint):
     """
     external_call["SetConfigFlags", NoneType](flags)
 
-def OpenURL(url: CStringSlice):
+def OpenURL(url: CStringSpan):
     """Open URL with default system browser (if available).
 
     Args:
@@ -954,7 +953,7 @@ def MemFree(ptr: Pointer[mut=True, NoneType, _]):
     """
     external_call["MemFree", NoneType](ptr)
 
-def LoadFileData(fileName: CStringSlice, dataSize: Pointer[mut=True, c_int, _]) -> Pointer[c_uchar, MutUntrackedOrigin]:
+def LoadFileData(fileName: CStringSpan, dataSize: Pointer[mut=True, c_int, _]) -> Pointer[c_uchar, MutUntrackedOrigin]:
     """Load file data as byte array (read).
 
     Args:
@@ -974,7 +973,7 @@ def UnloadFileData(data: Pointer[mut=True, c_uchar, _]):
     """
     external_call["UnloadFileData", NoneType](data)
 
-def SaveFileData(fileName: CStringSlice, data: Pointer[mut=True, NoneType, _], dataSize: c_int) -> Bool:
+def SaveFileData(fileName: CStringSpan, data: Pointer[mut=True, NoneType, _], dataSize: c_int) -> Bool:
     """Save data to file from byte array (write), returns true on success.
 
     Args:
@@ -987,7 +986,7 @@ def SaveFileData(fileName: CStringSlice, data: Pointer[mut=True, NoneType, _], d
     """
     return external_call["SaveFileData", Bool](fileName, data, dataSize)
 
-def ExportDataAsCode(data: Pointer[mut=False, c_uchar, _], dataSize: c_int, fileName: CStringSlice) -> Bool:
+def ExportDataAsCode(data: Pointer[mut=False, c_uchar, _], dataSize: c_int, fileName: CStringSpan) -> Bool:
     """Export data to code (.h), returns true on success.
 
     Args:
@@ -1000,7 +999,7 @@ def ExportDataAsCode(data: Pointer[mut=False, c_uchar, _], dataSize: c_int, file
     """
     return external_call["ExportDataAsCode", Bool](data, dataSize, fileName)
 
-def LoadFileText(fileName: CStringSlice) -> Pointer[c_char, MutUntrackedOrigin]:
+def LoadFileText(fileName: CStringSpan) -> Pointer[c_char, MutUntrackedOrigin]:
     """Load text data from file (read), returns a '\\0' terminated string.
 
     Args:
@@ -1019,7 +1018,7 @@ def UnloadFileText(text: Pointer[mut=True, c_char, _]):
     """
     external_call["UnloadFileText", NoneType](text)
 
-def SaveFileText(fileName: CStringSlice, text: CStringSlice) -> Bool:
+def SaveFileText(fileName: CStringSpan, text: CStringSpan) -> Bool:
     """Save text data to file (write), string must be '\\0' terminated, returns true on success.
 
     Args:
@@ -1063,7 +1062,7 @@ def SetSaveFileTextCallback(callback: Pointer[mut=True, NoneType, _]):
     """
     external_call["SetSaveFileTextCallback", NoneType](callback)
 
-def FileRename(fileName: CStringSlice, fileRename: CStringSlice) -> c_int:
+def FileRename(fileName: CStringSpan, fileRename: CStringSpan) -> c_int:
     """Rename file (if exists).
 
     Args:
@@ -1075,7 +1074,7 @@ def FileRename(fileName: CStringSlice, fileRename: CStringSlice) -> c_int:
     """
     return external_call["FileRename", c_int](fileName, fileRename)
 
-def FileRemove(fileName: CStringSlice) -> c_int:
+def FileRemove(fileName: CStringSpan) -> c_int:
     """Remove file (if exists).
 
     Args:
@@ -1086,7 +1085,7 @@ def FileRemove(fileName: CStringSlice) -> c_int:
     """
     return external_call["FileRemove", c_int](fileName)
 
-def FileCopy(srcPath: CStringSlice, dstPath: CStringSlice) -> c_int:
+def FileCopy(srcPath: CStringSpan, dstPath: CStringSpan) -> c_int:
     """Copy file from one path to another, dstPath created if it doesn't exist.
 
     Args:
@@ -1098,7 +1097,7 @@ def FileCopy(srcPath: CStringSlice, dstPath: CStringSlice) -> c_int:
     """
     return external_call["FileCopy", c_int](srcPath, dstPath)
 
-def FileMove(srcPath: CStringSlice, dstPath: CStringSlice) -> c_int:
+def FileMove(srcPath: CStringSpan, dstPath: CStringSpan) -> c_int:
     """Move file from one directory to another, dstPath created if it doesn't exist.
 
     Args:
@@ -1110,7 +1109,7 @@ def FileMove(srcPath: CStringSlice, dstPath: CStringSlice) -> c_int:
     """
     return external_call["FileMove", c_int](srcPath, dstPath)
 
-def FileTextReplace(fileName: CStringSlice, search: CStringSlice, replacement: CStringSlice) -> c_int:
+def FileTextReplace(fileName: CStringSpan, search: CStringSpan, replacement: CStringSpan) -> c_int:
     """Replace text in an existing file.
 
     Args:
@@ -1123,7 +1122,7 @@ def FileTextReplace(fileName: CStringSlice, search: CStringSlice, replacement: C
     """
     return external_call["FileTextReplace", c_int](fileName, search, replacement)
 
-def FileTextFindIndex(fileName: CStringSlice, search: CStringSlice) -> c_int:
+def FileTextFindIndex(fileName: CStringSpan, search: CStringSpan) -> c_int:
     """Find text in existing file.
 
     Args:
@@ -1135,7 +1134,7 @@ def FileTextFindIndex(fileName: CStringSlice, search: CStringSlice) -> c_int:
     """
     return external_call["FileTextFindIndex", c_int](fileName, search)
 
-def FileExists(fileName: CStringSlice) -> Bool:
+def FileExists(fileName: CStringSpan) -> Bool:
     """Check if file exists.
 
     Args:
@@ -1146,7 +1145,7 @@ def FileExists(fileName: CStringSlice) -> Bool:
     """
     return external_call["FileExists", Bool](fileName)
 
-def DirectoryExists(dirPath: CStringSlice) -> Bool:
+def DirectoryExists(dirPath: CStringSpan) -> Bool:
     """Check if a directory path exists.
 
     Args:
@@ -1157,7 +1156,7 @@ def DirectoryExists(dirPath: CStringSlice) -> Bool:
     """
     return external_call["DirectoryExists", Bool](dirPath)
 
-def IsFileExtension(fileName: CStringSlice, ext: CStringSlice) -> Bool:
+def IsFileExtension(fileName: CStringSpan, ext: CStringSpan) -> Bool:
     """Check file extension (recommended include point: .png, .wav).
 
     Args:
@@ -1169,7 +1168,7 @@ def IsFileExtension(fileName: CStringSlice, ext: CStringSlice) -> Bool:
     """
     return external_call["IsFileExtension", Bool](fileName, ext)
 
-def GetFileLength(fileName: CStringSlice) -> c_int:
+def GetFileLength(fileName: CStringSpan) -> c_int:
     """Get file length in bytes (NOTE: GetFileSize() conflicts with windows.h).
 
     Args:
@@ -1180,7 +1179,7 @@ def GetFileLength(fileName: CStringSlice) -> c_int:
     """
     return external_call["GetFileLength", c_int](fileName)
 
-def GetFileModTime(fileName: CStringSlice) -> c_long:
+def GetFileModTime(fileName: CStringSpan) -> c_long:
     """Get file modification time (last write time).
 
     Args:
@@ -1191,7 +1190,7 @@ def GetFileModTime(fileName: CStringSlice) -> c_long:
     """
     return external_call["GetFileModTime", c_long](fileName)
 
-def GetFileExtension(fileName: CStringSlice) -> Pointer[c_char, ImmUntrackedOrigin]:
+def GetFileExtension(fileName: CStringSpan) -> Pointer[c_char, ImmUntrackedOrigin]:
     """Get pointer to extension for a filename string (includes dot: '.png').
 
     Args:
@@ -1202,7 +1201,7 @@ def GetFileExtension(fileName: CStringSlice) -> Pointer[c_char, ImmUntrackedOrig
     """
     return external_call["GetFileExtension", Pointer[c_char, ImmUntrackedOrigin]](fileName)
 
-def GetFileName(filePath: CStringSlice) -> Pointer[c_char, ImmUntrackedOrigin]:
+def GetFileName(filePath: CStringSpan) -> Pointer[c_char, ImmUntrackedOrigin]:
     """Get pointer to filename for a path string.
 
     Args:
@@ -1213,7 +1212,7 @@ def GetFileName(filePath: CStringSlice) -> Pointer[c_char, ImmUntrackedOrigin]:
     """
     return external_call["GetFileName", Pointer[c_char, ImmUntrackedOrigin]](filePath)
 
-def GetFileNameWithoutExt(filePath: CStringSlice) -> Pointer[c_char, ImmUntrackedOrigin]:
+def GetFileNameWithoutExt(filePath: CStringSpan) -> Pointer[c_char, ImmUntrackedOrigin]:
     """Get filename string without extension (uses static string).
 
     Args:
@@ -1224,7 +1223,7 @@ def GetFileNameWithoutExt(filePath: CStringSlice) -> Pointer[c_char, ImmUntracke
     """
     return external_call["GetFileNameWithoutExt", Pointer[c_char, ImmUntrackedOrigin]](filePath)
 
-def GetDirectoryPath(filePath: CStringSlice) -> Pointer[c_char, ImmUntrackedOrigin]:
+def GetDirectoryPath(filePath: CStringSpan) -> Pointer[c_char, ImmUntrackedOrigin]:
     """Get full path for a given fileName with path (uses static string).
 
     Args:
@@ -1235,7 +1234,7 @@ def GetDirectoryPath(filePath: CStringSlice) -> Pointer[c_char, ImmUntrackedOrig
     """
     return external_call["GetDirectoryPath", Pointer[c_char, ImmUntrackedOrigin]](filePath)
 
-def GetPrevDirectoryPath(dirPath: CStringSlice) -> Pointer[c_char, ImmUntrackedOrigin]:
+def GetPrevDirectoryPath(dirPath: CStringSpan) -> Pointer[c_char, ImmUntrackedOrigin]:
     """Get previous directory path for a given path (uses static string).
 
     Args:
@@ -1262,7 +1261,7 @@ def GetApplicationDirectory() -> Pointer[c_char, ImmUntrackedOrigin]:
     """
     return external_call["GetApplicationDirectory", Pointer[c_char, ImmUntrackedOrigin]]()
 
-def MakeDirectory(dirPath: CStringSlice) -> c_int:
+def MakeDirectory(dirPath: CStringSpan) -> c_int:
     """Create directories (including full path requested), returns 0 on success.
 
     Args:
@@ -1273,7 +1272,7 @@ def MakeDirectory(dirPath: CStringSlice) -> c_int:
     """
     return external_call["MakeDirectory", c_int](dirPath)
 
-def ChangeDirectory(dirPath: CStringSlice) -> Bool:
+def ChangeDirectory(dirPath: CStringSpan) -> Bool:
     """Change working directory, return true on success.
 
     Args:
@@ -1284,7 +1283,7 @@ def ChangeDirectory(dirPath: CStringSlice) -> Bool:
     """
     return external_call["ChangeDirectory", Bool](dirPath)
 
-def IsPathFile(path: CStringSlice) -> Bool:
+def IsPathFile(path: CStringSpan) -> Bool:
     """Check if a given path is a file or a directory.
 
     Args:
@@ -1295,7 +1294,7 @@ def IsPathFile(path: CStringSlice) -> Bool:
     """
     return external_call["IsPathFile", Bool](path)
 
-def IsFileNameValid(fileName: CStringSlice) -> Bool:
+def IsFileNameValid(fileName: CStringSpan) -> Bool:
     """Check if fileName is valid for the platform/OS.
 
     Args:
@@ -1306,7 +1305,7 @@ def IsFileNameValid(fileName: CStringSlice) -> Bool:
     """
     return external_call["IsFileNameValid", Bool](fileName)
 
-def LoadDirectoryFiles(dirPath: CStringSlice) -> FilePathList:
+def LoadDirectoryFiles(dirPath: CStringSpan) -> FilePathList:
     """Load directory filepaths, files and directories, no subdirs scan.
 
     Args:
@@ -1319,7 +1318,7 @@ def LoadDirectoryFiles(dirPath: CStringSlice) -> FilePathList:
     external_call["mojo_raylib_LoadDirectoryFiles", NoneType](dirPath, __out)
     return __out[]
 
-def LoadDirectoryFilesEx(basePath: CStringSlice, filter: CStringSlice, scanSubdirs: Bool) -> FilePathList:
+def LoadDirectoryFilesEx(basePath: CStringSpan, filter: CStringSpan, scanSubdirs: Bool) -> FilePathList:
     """Load directory filepaths with extension filtering and subdir scan; some filters available: '*.*', 'FILES*', 'DIRS*'.
 
     Args:
@@ -1368,7 +1367,7 @@ def UnloadDroppedFiles(files: FilePathList):
     """
     external_call["mojo_raylib_UnloadDroppedFiles", NoneType](Pointer(to=files))
 
-def GetDirectoryFileCount(dirPath: CStringSlice) -> c_uint:
+def GetDirectoryFileCount(dirPath: CStringSpan) -> c_uint:
     """Get the file count in a directory.
 
     Args:
@@ -1379,7 +1378,7 @@ def GetDirectoryFileCount(dirPath: CStringSlice) -> c_uint:
     """
     return external_call["GetDirectoryFileCount", c_uint](dirPath)
 
-def GetDirectoryFileCountEx(basePath: CStringSlice, filter: CStringSlice, scanSubdirs: Bool) -> c_uint:
+def GetDirectoryFileCountEx(basePath: CStringSpan, filter: CStringSpan, scanSubdirs: Bool) -> c_uint:
     """Get the file count in a directory with extension filtering and recursive directory scan. Use 'DIR' in the filter string to include directories in the result.
 
     Args:
@@ -1431,7 +1430,7 @@ def EncodeDataBase64(data: Pointer[mut=False, c_uchar, _], dataSize: c_int, outp
     """
     return external_call["EncodeDataBase64", Pointer[c_char, MutUntrackedOrigin]](data, dataSize, outputSize)
 
-def DecodeDataBase64(text: CStringSlice, outputSize: Pointer[mut=True, c_int, _]) -> Pointer[c_uchar, MutUntrackedOrigin]:
+def DecodeDataBase64(text: CStringSpan, outputSize: Pointer[mut=True, c_int, _]) -> Pointer[c_uchar, MutUntrackedOrigin]:
     """Decode Base64 string (expected NULL terminated), memory must be MemFree().
 
     Args:
@@ -1491,7 +1490,7 @@ def ComputeSHA256(data: Pointer[mut=True, c_uchar, _], dataSize: c_int) -> Point
     """
     return external_call["ComputeSHA256", Pointer[c_uint, MutUntrackedOrigin]](data, dataSize)
 
-def LoadAutomationEventList(fileName: CStringSlice) -> AutomationEventList:
+def LoadAutomationEventList(fileName: CStringSpan) -> AutomationEventList:
     """Load automation events list from file, NULL for empty list, capacity = MAX_AUTOMATION_EVENTS.
 
     Args:
@@ -1512,7 +1511,7 @@ def UnloadAutomationEventList(list: AutomationEventList):
     """
     external_call["mojo_raylib_UnloadAutomationEventList", NoneType](Pointer(to=list))
 
-def ExportAutomationEventList(list: AutomationEventList, fileName: CStringSlice) -> Bool:
+def ExportAutomationEventList(list: AutomationEventList, fileName: CStringSpan) -> Bool:
     """Export automation events list as text file.
 
     Args:
@@ -1747,7 +1746,7 @@ def GetGamepadAxisMovement(gamepad: c_int, axis: c_int) -> c_float:
     """
     return external_call["GetGamepadAxisMovement", c_float](gamepad, axis)
 
-def SetGamepadMappings(mappings: CStringSlice) -> c_int:
+def SetGamepadMappings(mappings: CStringSpan) -> c_int:
     """Set internal gamepad mappings (SDL_GameControllerDB).
 
     Args:
@@ -2870,7 +2869,7 @@ def GetCollisionRec(rec1: Rectangle, rec2: Rectangle) -> Rectangle:
     external_call["mojo_raylib_GetCollisionRec", NoneType](Pointer(to=rec1), Pointer(to=rec2), __out)
     return __out[]
 
-def LoadImage(fileName: CStringSlice) -> Image:
+def LoadImage(fileName: CStringSpan) -> Image:
     """Load image from file into CPU memory (RAM).
 
     Args:
@@ -2883,7 +2882,7 @@ def LoadImage(fileName: CStringSlice) -> Image:
     external_call["mojo_raylib_LoadImage", NoneType](fileName, __out)
     return __out[]
 
-def LoadImageRaw(fileName: CStringSlice, width: c_int, height: c_int, format: c_int, headerSize: c_int) -> Image:
+def LoadImageRaw(fileName: CStringSpan, width: c_int, height: c_int, format: c_int, headerSize: c_int) -> Image:
     """Load image from RAW file data.
 
     Args:
@@ -2900,7 +2899,7 @@ def LoadImageRaw(fileName: CStringSlice, width: c_int, height: c_int, format: c_
     external_call["mojo_raylib_LoadImageRaw", NoneType](fileName, width, height, format, headerSize, __out)
     return __out[]
 
-def LoadImageAnim(fileName: CStringSlice, frames: Pointer[mut=True, c_int, _]) -> Image:
+def LoadImageAnim(fileName: CStringSpan, frames: Pointer[mut=True, c_int, _]) -> Image:
     """Load image sequence from file (frames appended to image.data).
 
     Args:
@@ -2914,7 +2913,7 @@ def LoadImageAnim(fileName: CStringSlice, frames: Pointer[mut=True, c_int, _]) -
     external_call["mojo_raylib_LoadImageAnim", NoneType](fileName, frames, __out)
     return __out[]
 
-def LoadImageAnimFromMemory(fileType: CStringSlice, fileData: Pointer[mut=False, c_uchar, _], dataSize: c_int, frames: Pointer[mut=True, c_int, _]) -> Image:
+def LoadImageAnimFromMemory(fileType: CStringSpan, fileData: Pointer[mut=False, c_uchar, _], dataSize: c_int, frames: Pointer[mut=True, c_int, _]) -> Image:
     """Load image sequence from memory buffer.
 
     Args:
@@ -2930,7 +2929,7 @@ def LoadImageAnimFromMemory(fileType: CStringSlice, fileData: Pointer[mut=False,
     external_call["mojo_raylib_LoadImageAnimFromMemory", NoneType](fileType, fileData, dataSize, frames, __out)
     return __out[]
 
-def LoadImageFromMemory(fileType: CStringSlice, fileData: Pointer[mut=False, c_uchar, _], dataSize: c_int) -> Image:
+def LoadImageFromMemory(fileType: CStringSpan, fileData: Pointer[mut=False, c_uchar, _], dataSize: c_int) -> Image:
     """Load image from memory buffer, fileType refers to extension: i.e. '.png'.
 
     Args:
@@ -2987,7 +2986,7 @@ def UnloadImage(image: Image):
     """
     external_call["mojo_raylib_UnloadImage", NoneType](Pointer(to=image))
 
-def ExportImage(image: Image, fileName: CStringSlice) -> Bool:
+def ExportImage(image: Image, fileName: CStringSpan) -> Bool:
     """Export image data to file, returns true on success.
 
     Args:
@@ -2999,7 +2998,7 @@ def ExportImage(image: Image, fileName: CStringSlice) -> Bool:
     """
     return external_call["mojo_raylib_ExportImage", Bool](Pointer(to=image), fileName)
 
-def ExportImageToMemory(image: Image, fileType: CStringSlice, fileSize: Pointer[mut=True, c_int, _]) -> Pointer[c_uchar, MutUntrackedOrigin]:
+def ExportImageToMemory(image: Image, fileType: CStringSpan, fileSize: Pointer[mut=True, c_int, _]) -> Pointer[c_uchar, MutUntrackedOrigin]:
     """Export image to memory buffer, memory must be MemFree().
 
     Args:
@@ -3012,7 +3011,7 @@ def ExportImageToMemory(image: Image, fileType: CStringSlice, fileSize: Pointer[
     """
     return external_call["mojo_raylib_ExportImageToMemory", Pointer[c_uchar, MutUntrackedOrigin]](Pointer(to=image), fileType, fileSize)
 
-def ExportImageAsCode(image: Image, fileName: CStringSlice) -> Bool:
+def ExportImageAsCode(image: Image, fileName: CStringSpan) -> Bool:
     """Export image as code file defining an array of bytes, returns true on success.
 
     Args:
@@ -3155,7 +3154,7 @@ def GenImageCellular(width: c_int, height: c_int, tileSize: c_int) -> Image:
     external_call["mojo_raylib_GenImageCellular", NoneType](width, height, tileSize, __out)
     return __out[]
 
-def GenImageText(width: c_int, height: c_int, text: CStringSlice) -> Image:
+def GenImageText(width: c_int, height: c_int, text: CStringSpan) -> Image:
     """Generate image: grayscale image from text data.
 
     Args:
@@ -3211,7 +3210,7 @@ def ImageFromChannel(image: Image, selectedChannel: c_int) -> Image:
     external_call["mojo_raylib_ImageFromChannel", NoneType](Pointer(to=image), selectedChannel, __out)
     return __out[]
 
-def ImageText(text: CStringSlice, fontSize: c_int, color: Color) -> Image:
+def ImageText(text: CStringSpan, fontSize: c_int, color: Color) -> Image:
     """Create an image from text (default font).
 
     Args:
@@ -3226,7 +3225,7 @@ def ImageText(text: CStringSlice, fontSize: c_int, color: Color) -> Image:
     external_call["mojo_raylib_ImageText", NoneType](text, fontSize, Pointer(to=color), __out)
     return __out[]
 
-def ImageTextEx(font: Font, text: CStringSlice, fontSize: c_float, spacing: c_float, tint: Color) -> Image:
+def ImageTextEx(font: Font, text: CStringSpan, fontSize: c_float, spacing: c_float, tint: Color) -> Image:
     """Create an image from text (custom sprite font).
 
     Args:
@@ -3770,7 +3769,7 @@ def ImageDraw(dst: Pointer[mut=True, Image, _], src: Image, srcRec: Rectangle, d
     """
     external_call["mojo_raylib_ImageDraw", NoneType](dst, Pointer(to=src), Pointer(to=srcRec), Pointer(to=dstRec), Pointer(to=tint))
 
-def ImageDrawText(dst: Pointer[mut=True, Image, _], text: CStringSlice, posX: c_int, posY: c_int, fontSize: c_int, color: Color):
+def ImageDrawText(dst: Pointer[mut=True, Image, _], text: CStringSpan, posX: c_int, posY: c_int, fontSize: c_int, color: Color):
     """Draw text (using default font) within an image (destination).
 
     Args:
@@ -3783,7 +3782,7 @@ def ImageDrawText(dst: Pointer[mut=True, Image, _], text: CStringSlice, posX: c_
     """
     external_call["mojo_raylib_ImageDrawText", NoneType](dst, text, posX, posY, fontSize, Pointer(to=color))
 
-def ImageDrawTextEx(dst: Pointer[mut=True, Image, _], font: Font, text: CStringSlice, position: Vector2, fontSize: c_float, spacing: c_float, tint: Color):
+def ImageDrawTextEx(dst: Pointer[mut=True, Image, _], font: Font, text: CStringSpan, position: Vector2, fontSize: c_float, spacing: c_float, tint: Color):
     """Draw text (custom sprite font) within an image (destination).
 
     Args:
@@ -3797,7 +3796,7 @@ def ImageDrawTextEx(dst: Pointer[mut=True, Image, _], font: Font, text: CStringS
     """
     external_call["mojo_raylib_ImageDrawTextEx", NoneType](dst, Pointer(to=font), text, Pointer(to=position), fontSize, spacing, Pointer(to=tint))
 
-def LoadTexture(fileName: CStringSlice) -> Texture2D:
+def LoadTexture(fileName: CStringSpan) -> Texture2D:
     """Load texture from file into GPU memory (VRAM).
 
     Args:
@@ -4241,7 +4240,7 @@ def GetFontDefault() -> Font:
     external_call["mojo_raylib_GetFontDefault", NoneType](__out)
     return __out[]
 
-def LoadFont(fileName: CStringSlice) -> Font:
+def LoadFont(fileName: CStringSpan) -> Font:
     """Load font from file into GPU memory (VRAM).
 
     Args:
@@ -4254,7 +4253,7 @@ def LoadFont(fileName: CStringSlice) -> Font:
     external_call["mojo_raylib_LoadFont", NoneType](fileName, __out)
     return __out[]
 
-def LoadFontEx(fileName: CStringSlice, fontSize: c_int, codepoints: Pointer[mut=False, c_int, _], codepointCount: c_int) -> Font:
+def LoadFontEx(fileName: CStringSpan, fontSize: c_int, codepoints: Pointer[mut=False, c_int, _], codepointCount: c_int) -> Font:
     """Load font from file with extended parameters, use NULL for codepoints and 0 for codepointCount to load the default character set, font size is provided in pixels height.
 
     Args:
@@ -4285,7 +4284,7 @@ def LoadFontFromImage(image: Image, key: Color, firstChar: c_int) -> Font:
     external_call["mojo_raylib_LoadFontFromImage", NoneType](Pointer(to=image), Pointer(to=key), firstChar, __out)
     return __out[]
 
-def LoadFontFromMemory(fileType: CStringSlice, fileData: Pointer[mut=False, c_uchar, _], dataSize: c_int, fontSize: c_int, codepoints: Pointer[mut=False, c_int, _], codepointCount: c_int) -> Font:
+def LoadFontFromMemory(fileType: CStringSpan, fileData: Pointer[mut=False, c_uchar, _], dataSize: c_int, fontSize: c_int, codepoints: Pointer[mut=False, c_int, _], codepointCount: c_int) -> Font:
     """Load font from memory buffer, fileType refers to extension: i.e. '.ttf'.
 
     Args:
@@ -4366,7 +4365,7 @@ def UnloadFont(font: Font):
     """
     external_call["mojo_raylib_UnloadFont", NoneType](Pointer(to=font))
 
-def ExportFontAsCode(font: Font, fileName: CStringSlice) -> Bool:
+def ExportFontAsCode(font: Font, fileName: CStringSpan) -> Bool:
     """Export font as code file, returns true on success.
 
     Args:
@@ -4387,7 +4386,7 @@ def DrawFPS(posX: c_int, posY: c_int):
     """
     external_call["DrawFPS", NoneType](posX, posY)
 
-def DrawText(text: CStringSlice, posX: c_int, posY: c_int, fontSize: c_int, color: Color):
+def DrawText(text: CStringSpan, posX: c_int, posY: c_int, fontSize: c_int, color: Color):
     """Draw text (using default font).
 
     Args:
@@ -4399,7 +4398,7 @@ def DrawText(text: CStringSlice, posX: c_int, posY: c_int, fontSize: c_int, colo
     """
     external_call["mojo_raylib_DrawText", NoneType](text, posX, posY, fontSize, Pointer(to=color))
 
-def DrawTextEx(font: Font, text: CStringSlice, position: Vector2, fontSize: c_float, spacing: c_float, tint: Color):
+def DrawTextEx(font: Font, text: CStringSpan, position: Vector2, fontSize: c_float, spacing: c_float, tint: Color):
     """Draw text using font and additional parameters.
 
     Args:
@@ -4412,7 +4411,7 @@ def DrawTextEx(font: Font, text: CStringSlice, position: Vector2, fontSize: c_fl
     """
     external_call["mojo_raylib_DrawTextEx", NoneType](Pointer(to=font), text, Pointer(to=position), fontSize, spacing, Pointer(to=tint))
 
-def DrawTextPro(font: Font, text: CStringSlice, position: Vector2, origin: Vector2, rotation: c_float, fontSize: c_float, spacing: c_float, tint: Color):
+def DrawTextPro(font: Font, text: CStringSpan, position: Vector2, origin: Vector2, rotation: c_float, fontSize: c_float, spacing: c_float, tint: Color):
     """Draw text using Font and pro parameters (rotation).
 
     Args:
@@ -4461,7 +4460,7 @@ def SetTextLineSpacing(spacing: c_int):
     """
     external_call["SetTextLineSpacing", NoneType](spacing)
 
-def MeasureText(text: CStringSlice, fontSize: c_int) -> c_int:
+def MeasureText(text: CStringSpan, fontSize: c_int) -> c_int:
     """Measure string width for default font.
 
     Args:
@@ -4473,7 +4472,7 @@ def MeasureText(text: CStringSlice, fontSize: c_int) -> c_int:
     """
     return external_call["MeasureText", c_int](text, fontSize)
 
-def MeasureTextEx(font: Font, text: CStringSlice, fontSize: c_float, spacing: c_float) -> Vector2:
+def MeasureTextEx(font: Font, text: CStringSpan, fontSize: c_float, spacing: c_float) -> Vector2:
     """Measure string size for Font.
 
     Args:
@@ -4566,7 +4565,7 @@ def UnloadUTF8(text: Pointer[mut=True, c_char, _]):
     """
     external_call["UnloadUTF8", NoneType](text)
 
-def LoadCodepoints(text: CStringSlice, count: Pointer[mut=True, c_int, _]) -> Pointer[c_int, MutUntrackedOrigin]:
+def LoadCodepoints(text: CStringSpan, count: Pointer[mut=True, c_int, _]) -> Pointer[c_int, MutUntrackedOrigin]:
     """Load all codepoints from a UTF-8 text string, codepoints count returned by parameter.
 
     Args:
@@ -4586,7 +4585,7 @@ def UnloadCodepoints(codepoints: Pointer[mut=True, c_int, _]):
     """
     external_call["UnloadCodepoints", NoneType](codepoints)
 
-def GetCodepointCount(text: CStringSlice) -> c_int:
+def GetCodepointCount(text: CStringSpan) -> c_int:
     """Get total number of codepoints in a UTF-8 encoded string.
 
     Args:
@@ -4597,7 +4596,7 @@ def GetCodepointCount(text: CStringSlice) -> c_int:
     """
     return external_call["GetCodepointCount", c_int](text)
 
-def GetCodepoint(text: CStringSlice, codepointSize: Pointer[mut=True, c_int, _]) -> c_int:
+def GetCodepoint(text: CStringSpan, codepointSize: Pointer[mut=True, c_int, _]) -> c_int:
     """Get next codepoint in a UTF-8 encoded string, 0x3f('?') is returned on failure.
 
     Args:
@@ -4609,7 +4608,7 @@ def GetCodepoint(text: CStringSlice, codepointSize: Pointer[mut=True, c_int, _])
     """
     return external_call["GetCodepoint", c_int](text, codepointSize)
 
-def GetCodepointNext(text: CStringSlice, codepointSize: Pointer[mut=True, c_int, _]) -> c_int:
+def GetCodepointNext(text: CStringSpan, codepointSize: Pointer[mut=True, c_int, _]) -> c_int:
     """Get next codepoint in a UTF-8 encoded string, 0x3f('?') is returned on failure.
 
     Args:
@@ -4621,7 +4620,7 @@ def GetCodepointNext(text: CStringSlice, codepointSize: Pointer[mut=True, c_int,
     """
     return external_call["GetCodepointNext", c_int](text, codepointSize)
 
-def GetCodepointPrevious(text: CStringSlice, codepointSize: Pointer[mut=True, c_int, _]) -> c_int:
+def GetCodepointPrevious(text: CStringSpan, codepointSize: Pointer[mut=True, c_int, _]) -> c_int:
     """Get previous codepoint in a UTF-8 encoded string, 0x3f('?') is returned on failure.
 
     Args:
@@ -4645,7 +4644,7 @@ def CodepointToUTF8(codepoint: c_int, utf8Size: Pointer[mut=True, c_int, _]) -> 
     """
     return external_call["CodepointToUTF8", Pointer[c_char, ImmUntrackedOrigin]](codepoint, utf8Size)
 
-def LoadTextLines(text: CStringSlice, count: Pointer[mut=True, c_int, _]) -> Pointer[Pointer[c_char, MutUntrackedOrigin], MutUntrackedOrigin]:
+def LoadTextLines(text: CStringSpan, count: Pointer[mut=True, c_int, _]) -> Pointer[Pointer[c_char, MutUntrackedOrigin], MutUntrackedOrigin]:
     """Load text as separate lines ('\\n').
 
     Args:
@@ -4666,7 +4665,7 @@ def UnloadTextLines(text: Pointer[mut=True, Pointer[c_char, MutUntrackedOrigin],
     """
     external_call["UnloadTextLines", NoneType](text, lineCount)
 
-def TextCopy(dst: Pointer[mut=True, c_char, _], src: CStringSlice) -> c_int:
+def TextCopy(dst: Pointer[mut=True, c_char, _], src: CStringSpan) -> c_int:
     """Copy one string to another, returns bytes copied.
 
     Args:
@@ -4678,7 +4677,7 @@ def TextCopy(dst: Pointer[mut=True, c_char, _], src: CStringSlice) -> c_int:
     """
     return external_call["TextCopy", c_int](dst, src)
 
-def TextIsEqual(text1: CStringSlice, text2: CStringSlice) -> Bool:
+def TextIsEqual(text1: CStringSpan, text2: CStringSpan) -> Bool:
     """Check if two text string are equal.
 
     Args:
@@ -4690,7 +4689,7 @@ def TextIsEqual(text1: CStringSlice, text2: CStringSlice) -> Bool:
     """
     return external_call["TextIsEqual", Bool](text1, text2)
 
-def TextLength(text: CStringSlice) -> c_uint:
+def TextLength(text: CStringSpan) -> c_uint:
     """Get text length, checks for '\\0' ending.
 
     Args:
@@ -4701,7 +4700,7 @@ def TextLength(text: CStringSlice) -> c_uint:
     """
     return external_call["TextLength", c_uint](text)
 
-def TextSubtext(text: CStringSlice, position: c_int, length: c_int) -> Pointer[c_char, ImmUntrackedOrigin]:
+def TextSubtext(text: CStringSpan, position: c_int, length: c_int) -> Pointer[c_char, ImmUntrackedOrigin]:
     """Get a piece of a text string.
 
     Args:
@@ -4714,7 +4713,7 @@ def TextSubtext(text: CStringSlice, position: c_int, length: c_int) -> Pointer[c
     """
     return external_call["TextSubtext", Pointer[c_char, ImmUntrackedOrigin]](text, position, length)
 
-def TextRemoveSpaces(text: CStringSlice) -> Pointer[c_char, ImmUntrackedOrigin]:
+def TextRemoveSpaces(text: CStringSpan) -> Pointer[c_char, ImmUntrackedOrigin]:
     """Remove text spaces, concat words.
 
     Args:
@@ -4725,7 +4724,7 @@ def TextRemoveSpaces(text: CStringSlice) -> Pointer[c_char, ImmUntrackedOrigin]:
     """
     return external_call["TextRemoveSpaces", Pointer[c_char, ImmUntrackedOrigin]](text)
 
-def GetTextBetween(text: CStringSlice, begin: CStringSlice, end: CStringSlice) -> Pointer[c_char, MutUntrackedOrigin]:
+def GetTextBetween(text: CStringSpan, begin: CStringSpan, end: CStringSpan) -> Pointer[c_char, MutUntrackedOrigin]:
     """Get text between two strings.
 
     Args:
@@ -4738,7 +4737,7 @@ def GetTextBetween(text: CStringSlice, begin: CStringSlice, end: CStringSlice) -
     """
     return external_call["GetTextBetween", Pointer[c_char, MutUntrackedOrigin]](text, begin, end)
 
-def TextReplace(text: CStringSlice, search: CStringSlice, replacement: CStringSlice) -> Pointer[c_char, MutUntrackedOrigin]:
+def TextReplace(text: CStringSpan, search: CStringSpan, replacement: CStringSpan) -> Pointer[c_char, MutUntrackedOrigin]:
     """Replace text string with new string.
 
     Args:
@@ -4751,7 +4750,7 @@ def TextReplace(text: CStringSlice, search: CStringSlice, replacement: CStringSl
     """
     return external_call["TextReplace", Pointer[c_char, MutUntrackedOrigin]](text, search, replacement)
 
-def TextReplaceAlloc(text: CStringSlice, search: CStringSlice, replacement: CStringSlice) -> Pointer[c_char, MutUntrackedOrigin]:
+def TextReplaceAlloc(text: CStringSpan, search: CStringSpan, replacement: CStringSpan) -> Pointer[c_char, MutUntrackedOrigin]:
     """Replace text string with new string, memory must be MemFree().
 
     Args:
@@ -4764,7 +4763,7 @@ def TextReplaceAlloc(text: CStringSlice, search: CStringSlice, replacement: CStr
     """
     return external_call["TextReplaceAlloc", Pointer[c_char, MutUntrackedOrigin]](text, search, replacement)
 
-def TextReplaceBetween(text: CStringSlice, begin: CStringSlice, end: CStringSlice, replacement: CStringSlice) -> Pointer[c_char, MutUntrackedOrigin]:
+def TextReplaceBetween(text: CStringSpan, begin: CStringSpan, end: CStringSpan, replacement: CStringSpan) -> Pointer[c_char, MutUntrackedOrigin]:
     """Replace text between two specific strings.
 
     Args:
@@ -4778,7 +4777,7 @@ def TextReplaceBetween(text: CStringSlice, begin: CStringSlice, end: CStringSlic
     """
     return external_call["TextReplaceBetween", Pointer[c_char, MutUntrackedOrigin]](text, begin, end, replacement)
 
-def TextReplaceBetweenAlloc(text: CStringSlice, begin: CStringSlice, end: CStringSlice, replacement: CStringSlice) -> Pointer[c_char, MutUntrackedOrigin]:
+def TextReplaceBetweenAlloc(text: CStringSpan, begin: CStringSpan, end: CStringSpan, replacement: CStringSpan) -> Pointer[c_char, MutUntrackedOrigin]:
     """Replace text between two specific strings, memory must be MemFree().
 
     Args:
@@ -4792,7 +4791,7 @@ def TextReplaceBetweenAlloc(text: CStringSlice, begin: CStringSlice, end: CStrin
     """
     return external_call["TextReplaceBetweenAlloc", Pointer[c_char, MutUntrackedOrigin]](text, begin, end, replacement)
 
-def TextInsert(text: CStringSlice, insert: CStringSlice, position: c_int) -> Pointer[c_char, MutUntrackedOrigin]:
+def TextInsert(text: CStringSpan, insert: CStringSpan, position: c_int) -> Pointer[c_char, MutUntrackedOrigin]:
     """Insert text in a defined byte position.
 
     Args:
@@ -4805,7 +4804,7 @@ def TextInsert(text: CStringSlice, insert: CStringSlice, position: c_int) -> Poi
     """
     return external_call["TextInsert", Pointer[c_char, MutUntrackedOrigin]](text, insert, position)
 
-def TextInsertAlloc(text: CStringSlice, insert: CStringSlice, position: c_int) -> Pointer[c_char, MutUntrackedOrigin]:
+def TextInsertAlloc(text: CStringSpan, insert: CStringSpan, position: c_int) -> Pointer[c_char, MutUntrackedOrigin]:
     """Insert text in a defined byte position, memory must be MemFree().
 
     Args:
@@ -4818,7 +4817,7 @@ def TextInsertAlloc(text: CStringSlice, insert: CStringSlice, position: c_int) -
     """
     return external_call["TextInsertAlloc", Pointer[c_char, MutUntrackedOrigin]](text, insert, position)
 
-def TextJoin(textList: Pointer[mut=True, Pointer[c_char, MutUntrackedOrigin], _], count: c_int, delimiter: CStringSlice) -> Pointer[c_char, MutUntrackedOrigin]:
+def TextJoin(textList: Pointer[mut=True, Pointer[c_char, MutUntrackedOrigin], _], count: c_int, delimiter: CStringSpan) -> Pointer[c_char, MutUntrackedOrigin]:
     """Join text strings with delimiter.
 
     Args:
@@ -4831,7 +4830,7 @@ def TextJoin(textList: Pointer[mut=True, Pointer[c_char, MutUntrackedOrigin], _]
     """
     return external_call["TextJoin", Pointer[c_char, MutUntrackedOrigin]](textList, count, delimiter)
 
-def TextSplit(text: CStringSlice, delimiter: c_char, count: Pointer[mut=True, c_int, _]) -> Pointer[Pointer[c_char, MutUntrackedOrigin], MutUntrackedOrigin]:
+def TextSplit(text: CStringSpan, delimiter: c_char, count: Pointer[mut=True, c_int, _]) -> Pointer[Pointer[c_char, MutUntrackedOrigin], MutUntrackedOrigin]:
     """Split text into multiple strings, using MAX_TEXTSPLIT_COUNT static strings.
 
     Args:
@@ -4844,7 +4843,7 @@ def TextSplit(text: CStringSlice, delimiter: c_char, count: Pointer[mut=True, c_
     """
     return external_call["TextSplit", Pointer[Pointer[c_char, MutUntrackedOrigin], MutUntrackedOrigin]](text, delimiter, count)
 
-def TextAppend(text: Pointer[mut=True, c_char, _], append: CStringSlice, position: Pointer[mut=True, c_int, _]):
+def TextAppend(text: Pointer[mut=True, c_char, _], append: CStringSpan, position: Pointer[mut=True, c_int, _]):
     """Append text at specific position and move cursor.
 
     Args:
@@ -4854,7 +4853,7 @@ def TextAppend(text: Pointer[mut=True, c_char, _], append: CStringSlice, positio
     """
     external_call["TextAppend", NoneType](text, append, position)
 
-def TextFindIndex(text: CStringSlice, search: CStringSlice) -> c_int:
+def TextFindIndex(text: CStringSpan, search: CStringSpan) -> c_int:
     """Find first text occurrence within a string, -1 if not found.
 
     Args:
@@ -4866,7 +4865,7 @@ def TextFindIndex(text: CStringSlice, search: CStringSlice) -> c_int:
     """
     return external_call["TextFindIndex", c_int](text, search)
 
-def TextToUpper(text: CStringSlice) -> Pointer[c_char, MutUntrackedOrigin]:
+def TextToUpper(text: CStringSpan) -> Pointer[c_char, MutUntrackedOrigin]:
     """Get upper case version of provided string.
 
     Args:
@@ -4877,7 +4876,7 @@ def TextToUpper(text: CStringSlice) -> Pointer[c_char, MutUntrackedOrigin]:
     """
     return external_call["TextToUpper", Pointer[c_char, MutUntrackedOrigin]](text)
 
-def TextToLower(text: CStringSlice) -> Pointer[c_char, MutUntrackedOrigin]:
+def TextToLower(text: CStringSpan) -> Pointer[c_char, MutUntrackedOrigin]:
     """Get lower case version of provided string.
 
     Args:
@@ -4888,7 +4887,7 @@ def TextToLower(text: CStringSlice) -> Pointer[c_char, MutUntrackedOrigin]:
     """
     return external_call["TextToLower", Pointer[c_char, MutUntrackedOrigin]](text)
 
-def TextToPascal(text: CStringSlice) -> Pointer[c_char, MutUntrackedOrigin]:
+def TextToPascal(text: CStringSpan) -> Pointer[c_char, MutUntrackedOrigin]:
     """Get Pascal case notation version of provided string.
 
     Args:
@@ -4899,7 +4898,7 @@ def TextToPascal(text: CStringSlice) -> Pointer[c_char, MutUntrackedOrigin]:
     """
     return external_call["TextToPascal", Pointer[c_char, MutUntrackedOrigin]](text)
 
-def TextToSnake(text: CStringSlice) -> Pointer[c_char, MutUntrackedOrigin]:
+def TextToSnake(text: CStringSpan) -> Pointer[c_char, MutUntrackedOrigin]:
     """Get Snake case notation version of provided string.
 
     Args:
@@ -4910,7 +4909,7 @@ def TextToSnake(text: CStringSlice) -> Pointer[c_char, MutUntrackedOrigin]:
     """
     return external_call["TextToSnake", Pointer[c_char, MutUntrackedOrigin]](text)
 
-def TextToCamel(text: CStringSlice) -> Pointer[c_char, MutUntrackedOrigin]:
+def TextToCamel(text: CStringSpan) -> Pointer[c_char, MutUntrackedOrigin]:
     """Get Camel case notation version of provided string.
 
     Args:
@@ -4921,7 +4920,7 @@ def TextToCamel(text: CStringSlice) -> Pointer[c_char, MutUntrackedOrigin]:
     """
     return external_call["TextToCamel", Pointer[c_char, MutUntrackedOrigin]](text)
 
-def TextToInteger(text: CStringSlice) -> c_int:
+def TextToInteger(text: CStringSpan) -> c_int:
     """Get integer value from text.
 
     Args:
@@ -4932,7 +4931,7 @@ def TextToInteger(text: CStringSlice) -> c_int:
     """
     return external_call["TextToInteger", c_int](text)
 
-def TextToFloat(text: CStringSlice) -> c_float:
+def TextToFloat(text: CStringSpan) -> c_float:
     """Get float value from text.
 
     Args:
@@ -5179,7 +5178,7 @@ def DrawGrid(slices: c_int, spacing: c_float):
     """
     external_call["DrawGrid", NoneType](slices, spacing)
 
-def LoadModel(fileName: CStringSlice) -> Model:
+def LoadModel(fileName: CStringSpan) -> Model:
     """Load model from files (meshes and materials).
 
     Args:
@@ -5406,7 +5405,7 @@ def GenMeshTangents(mesh: Pointer[mut=True, Mesh, _]):
     """
     external_call["GenMeshTangents", NoneType](mesh)
 
-def ExportMesh(mesh: Mesh, fileName: CStringSlice) -> Bool:
+def ExportMesh(mesh: Mesh, fileName: CStringSpan) -> Bool:
     """Export mesh data to file, returns true on success.
 
     Args:
@@ -5418,7 +5417,7 @@ def ExportMesh(mesh: Mesh, fileName: CStringSlice) -> Bool:
     """
     return external_call["mojo_raylib_ExportMesh", Bool](Pointer(to=mesh), fileName)
 
-def ExportMeshAsCode(mesh: Mesh, fileName: CStringSlice) -> Bool:
+def ExportMeshAsCode(mesh: Mesh, fileName: CStringSpan) -> Bool:
     """Export mesh as code file (.h) defining multiple arrays of vertex attributes.
 
     Args:
@@ -5595,7 +5594,7 @@ def GenMeshCubicmap(cubicmap: Image, cubeSize: Vector3) -> Mesh:
     external_call["mojo_raylib_GenMeshCubicmap", NoneType](Pointer(to=cubicmap), Pointer(to=cubeSize), __out)
     return __out[]
 
-def LoadMaterials(fileName: CStringSlice, materialCount: Pointer[mut=True, c_int, _]) -> Pointer[Material, MutUntrackedOrigin]:
+def LoadMaterials(fileName: CStringSpan, materialCount: Pointer[mut=True, c_int, _]) -> Pointer[Material, MutUntrackedOrigin]:
     """Load materials from model file.
 
     Args:
@@ -5656,7 +5655,7 @@ def SetModelMeshMaterial(model: Pointer[mut=True, Model, _], meshId: c_int, mate
     """
     external_call["SetModelMeshMaterial", NoneType](model, meshId, materialId)
 
-def LoadModelAnimations(fileName: CStringSlice, animCount: Pointer[mut=True, c_int, _]) -> Pointer[ModelAnimation, MutUntrackedOrigin]:
+def LoadModelAnimations(fileName: CStringSpan, animCount: Pointer[mut=True, c_int, _]) -> Pointer[ModelAnimation, MutUntrackedOrigin]:
     """Load model animations from file.
 
     Args:
@@ -5860,7 +5859,7 @@ def GetMasterVolume() -> c_float:
     """
     return external_call["GetMasterVolume", c_float]()
 
-def LoadWave(fileName: CStringSlice) -> Wave:
+def LoadWave(fileName: CStringSpan) -> Wave:
     """Load wave data from file.
 
     Args:
@@ -5873,7 +5872,7 @@ def LoadWave(fileName: CStringSlice) -> Wave:
     external_call["mojo_raylib_LoadWave", NoneType](fileName, __out)
     return __out[]
 
-def LoadWaveFromMemory(fileType: CStringSlice, fileData: Pointer[mut=False, c_uchar, _], dataSize: c_int) -> Wave:
+def LoadWaveFromMemory(fileType: CStringSpan, fileData: Pointer[mut=False, c_uchar, _], dataSize: c_int) -> Wave:
     """Load wave from memory buffer, fileType refers to extension: i.e. '.wav'.
 
     Args:
@@ -5899,7 +5898,7 @@ def IsWaveValid(wave: Wave) -> Bool:
     """
     return external_call["mojo_raylib_IsWaveValid", Bool](Pointer(to=wave))
 
-def LoadSound(fileName: CStringSlice) -> Sound:
+def LoadSound(fileName: CStringSpan) -> Sound:
     """Load sound from file.
 
     Args:
@@ -5983,7 +5982,7 @@ def UnloadSoundAlias(alias_: Sound):
     """
     external_call["mojo_raylib_UnloadSoundAlias", NoneType](Pointer(to=alias_))
 
-def ExportWave(wave: Wave, fileName: CStringSlice) -> Bool:
+def ExportWave(wave: Wave, fileName: CStringSpan) -> Bool:
     """Export wave data to file, returns true on success.
 
     Args:
@@ -5995,7 +5994,7 @@ def ExportWave(wave: Wave, fileName: CStringSlice) -> Bool:
     """
     return external_call["mojo_raylib_ExportWave", Bool](Pointer(to=wave), fileName)
 
-def ExportWaveAsCode(wave: Wave, fileName: CStringSlice) -> Bool:
+def ExportWaveAsCode(wave: Wave, fileName: CStringSpan) -> Bool:
     """Export wave sample data to code (.h), returns true on success.
 
     Args:
@@ -6130,7 +6129,7 @@ def UnloadWaveSamples(samples: Pointer[mut=True, c_float, _]):
     """
     external_call["UnloadWaveSamples", NoneType](samples)
 
-def LoadMusicStream(fileName: CStringSlice) -> Music:
+def LoadMusicStream(fileName: CStringSpan) -> Music:
     """Load music stream from file.
 
     Args:
@@ -6143,7 +6142,7 @@ def LoadMusicStream(fileName: CStringSlice) -> Music:
     external_call["mojo_raylib_LoadMusicStream", NoneType](fileName, __out)
     return __out[]
 
-def LoadMusicStreamFromMemory(fileType: CStringSlice, data: Pointer[mut=False, c_uchar, _], dataSize: c_int) -> Music:
+def LoadMusicStreamFromMemory(fileType: CStringSpan, data: Pointer[mut=False, c_uchar, _], dataSize: c_int) -> Music:
     """Load music stream from data.
 
     Args:

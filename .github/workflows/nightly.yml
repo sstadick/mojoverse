@@ -1,0 +1,54 @@
+name: Update nightly compiler
+on:
+  schedule:
+    - cron: '17 9 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: nightly-compiler-update
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      revision: ${{ steps.update.outputs.revision }}
+    env:
+      PIXI_CACHE_DIR: ${{ github.workspace }}/.pixi/cache
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: nightly
+          fetch-depth: 0
+          submodules: recursive
+      - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e
+        with:
+          pixi-version: v0.80.0
+          run-install: false
+          cache: false
+      - name: Update only the nightly branch
+        id: update
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main nightly
+          git merge --no-edit origin/main
+          git submodule update --init --recursive
+          python3 scripts/toolchain.py update --channel nightly
+          python3 scripts/toolchain.py check --lane nightly
+          git add --all
+          if ! git diff --cached --quiet; then
+            git commit -m 'Update the workspace to the latest published Mojo nightly'
+          fi
+          git push origin HEAD:refs/heads/nightly
+          echo "revision=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+  verify:
+    needs: update
+    permissions:
+      contents: read
+    # GITHUB_TOKEN pushes do not trigger another push workflow. Call it explicitly.
+    uses: ./.github/workflows/test.yml
+    with:
+      ref: ${{ needs.update.outputs.revision }}
+      lane: nightly

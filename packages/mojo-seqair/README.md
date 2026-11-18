@@ -30,8 +30,9 @@ def count(path: String) raises -> Int:
 Compile consumers with `-Xlinker -ldeflate` and their installed prefix's library
 directory on the linker search path. `mojo-libdeflate` and its native dependency
 install the bindings and static archive; no checkout-specific include path is
-needed after package installation. Keep the unpublished `mojo-libdeflate`
-repository beside this one for source builds.
+needed after package installation. Use [Mojoverse dependency setup](../../README.md#use-a-dependency)
+with `subdirectory = "packages/mojo-seqair"`; internal dependencies stay at the
+same Git revision through relative paths.
 
 Stable Mojo 1.2.0 is pinned. `pixi run t` runs assertion-enabled SIMD/scalar
 sequence tests. `pixi build` creates the Mojo package with `pixi-build-mojo`.

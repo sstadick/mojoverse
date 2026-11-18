@@ -13,14 +13,16 @@ It is not a binding to every libdeflate API and does not implement BGZF framing.
 ## Build and test
 
 ```sh
-git clone https://github.com/sstadick/mojo-libdeflate
-cd mojo-libdeflate
+git clone https://github.com/sstadick/mojoverse.git
+cd mojoverse/packages/mojo-libdeflate
 pixi install --locked
 pixi run t
 ```
 
 Import from `mojo_libdeflate`. Link consumers with
 `-Xlinker -L$CONDA_PREFIX/lib -Xlinker -ldeflate` using `mojo build`.
+For Git consumers use [Mojoverse dependency setup](../../README.md#use-a-dependency)
+with `subdirectory = "packages/mojo-libdeflate"`.
 The `mojo-libdeflate-native` dependency installs the static archive, C header,
 and upstream license. No reader/application dependency is needed.
 

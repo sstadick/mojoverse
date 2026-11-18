@@ -10,7 +10,6 @@ fields and conversion helpers for the low-level FFI representation.
 
 import mojo_raylib.raw.types as raw_types
 from std.ffi import c_char, c_uchar, c_short, c_ushort, c_int, c_uint, c_long, c_ulong, c_float, c_double
-from std.collections import InlineArray
 
 @fieldwise_init
 struct rAudioBuffer(TrivialRegisterPassable):

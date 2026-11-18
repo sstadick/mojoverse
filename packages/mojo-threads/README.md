@@ -13,11 +13,14 @@ architecture-specific assembly, spin loop, queue or process-wide signal handler.
 ## Build and test
 
 ```sh
-git clone https://github.com/sstadick/mojo-threads
-cd mojo-threads
+git clone https://github.com/sstadick/mojoverse.git
+cd mojoverse/packages/mojo-threads
 pixi install --locked
 pixi run t
 ```
+
+For Git consumers use [Mojoverse dependency setup](../../README.md#use-a-dependency)
+with `subdirectory = "packages/mojo-threads"`.
 
 The source targets Linux x86-64/AArch64 and Apple Silicon macOS 15+. macOS
 requires Xcode command-line tools. Native code uses Clang 18.1.8 on Linux and

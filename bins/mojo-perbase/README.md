@@ -4,19 +4,18 @@ Experimental, native Mojo port of Perbase's indexed **BAM** workloads. This is
 an independent project following Mojoverse's package conventions, not a wrapper
 around the C, Rust or Goose executable. It is not the official Perbase release.
 
-The BAM decoder is in the sibling `mojo-seqair` package. Counting, mate selection,
+The BAM decoder is in [`mojo-seqair`](../../packages/mojo-seqair). Counting, mate selection,
 sparse depth traversal, interval/reference parsing, formatting and scheduling
 are Mojo. `mojo-libdeflate` packages the unchanged libdeflate 1.26 codec and
 inlined bindings. `mojo-threads` supplies reusable pthread workers/monitors;
 Perbase retains scheduling, byte-bounded mailboxes and ordered output. The
 small C library under `native/` now contains only application-specific
-stat/write/SIGPIPE glue. CLI parsing uses mojopt, pinned to a compatible commit;
+stat/write/SIGPIPE glue. CLI parsing uses mojopt from the same monorepo;
 strict numeric ranges and command restrictions are validated before opening output.
 
 ## Build and run
 
-Keep `mojo-perbase`, `mojo-seqair`, `mojo-threads` and `mojo-libdeflate` in sibling
-directories, then (Pixi 0.80 or newer):
+Clone Mojoverse and run from `bins/mojo-perbase` (Pixi 0.80 or newer):
 
 ```sh
 pixi install --locked
@@ -38,8 +37,9 @@ are **host-specific**, not portable release binaries. Linux x86-64 and Apple
 Silicon macOS have native build and installed-consumer checks. Linux AArch64
 is declared as a source target but has not been run on an AArch64 Linux host.
 macOS requires Xcode command-line tools; Intel Macs and Windows are not targets.
-Local path dependencies are deliberate until publication; these packages are
-unpublished. The independent catalog is Mojoverse, not a source monorepo.
+Internal path dependencies resolve within this monorepo. External consumers
+can pin [one Git revision](../../README.md#use-a-dependency) with
+`subdirectory = "bins/mojo-perbase"`; no separately cloned packages are needed.
 
 `consumer` builds local conda artifacts, installs exact archive URLs/SHA-256s in
 an isolated Pixi cache/prefix, and exercises the application and library APIs

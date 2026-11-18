@@ -4,11 +4,11 @@ from pathlib import Path
 import subprocess
 
 root = Path(__file__).resolve().parents[1]
-tools = Path(os.environ.get("MOJOVERSE", root.parent / "mojoverse"))
+tools = Path(os.environ.get("MOJOVERSE", root.parent.parent))
 if not (tools / "pixi.toml").is_file():
-    raise SystemExit("Set MOJOVERSE to your Mojoverse checkout (or clone it beside this project).")
+    raise SystemExit("Set MOJOVERSE to the Mojoverse repository root.")
 subprocess.run(
-    ["pixi", "run", "--locked", "--manifest-path", str(tools / "pixi.toml"),
+    ["pixi", "run", "--locked", "-e", "docs", "--manifest-path", str(tools / "pixi.toml"),
      "docs", str(root), "mojo_io", "--site", "--readme", "README.md",
      "--include", "LICENSE", "--include", "bench/README.md"],
     check=True,

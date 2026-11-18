@@ -21,7 +21,7 @@ repository = "https://github.com/ExtraMojo/ExtraMojo"
 description = "Extra functionality not yet in the standard library, mostly focused on strings and file IO."
 
 [package.build]
-backend = { name = "pixi-build-mojo", version = "0.2.*", channels = [
+backend = { name = "pixi-build-mojo", version = "=0.2.9.20261117.1659.e14419f", channels = [
     "https://prefix.dev/pixi-build-backends",
     "https://prefix.dev/conda-forge",
 ] }
