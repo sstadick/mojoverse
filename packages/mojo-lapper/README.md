@@ -6,7 +6,7 @@ Distribution: `mojo-lapper`; import: `lapper`.
 ## Query intervals
 
 ```mojo {doctest="overlap" global=true}
-from lapper.lapper import Interval, Lapper
+from lapper import Interval, Lapper
 from std.testing import assert_equal
 
 def main() raises:

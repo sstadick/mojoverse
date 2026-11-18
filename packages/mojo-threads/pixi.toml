@@ -37,6 +37,7 @@ mojo-threads-native = { path = "native" }
 [tasks]
 # Library projects do not define a run task.
 t = "mkdir -p target && mojo build -O3 -I . -D ASSERT=all -Xlinker -L$CONDA_PREFIX/lib -Xlinker -lmojo_threads_native -Xlinker -lpthread tests/test_worker.mojo -o target/test-worker && target/test-worker"
+docs = "pixi run --locked -e docs --manifest-path ../../pixi.toml docs packages/mojo-threads mojo_threads --site --readme README.md --link-library mojo_threads_native --link-library pthread"
 format = "mojo format --line-length 100 ."
 
 [target.linux-64.tasks]

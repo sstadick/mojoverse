@@ -49,7 +49,8 @@ def main():
     output = root / "target" / ("installed-tests" if args.installed else "source-tests")
     output.mkdir(parents=True, exist_ok=True)
     # These tests exercise APIs requiring native link dependencies.
-    links = {"mojo-libdeflate": ["deflate"], "mojo-threads": ["mojo_threads_native", "pthread"]}
+    links = {"mojo-libdeflate": ["deflate"], "mojo-seqair": ["deflate"],
+             "mojo-threads": ["mojo_threads_native", "pthread"]}
     count = 0
     for name, package in projects.items():
         manifest = tomllib.loads((package / "pixi.toml").read_text())

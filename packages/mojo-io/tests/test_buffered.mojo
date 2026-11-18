@@ -31,6 +31,11 @@ def test_lines_bytes_and_delimiters() raises:
         assert_equal(found, data)
         assert_equal(reader.read_bytes(destination), 0)
         reader.close()
+        var sliced = BufferedReader(open(path, "r"), cap)
+        var storage = List[UInt8](length=6, fill=255)
+        assert_equal(sliced.read_bytes(Span(storage)[1:5]), 4)
+        assert_equal(storage, [255, 10, 97, 13, 10, 255])
+        sliced.close()
         var until = BufferedReader(open(path, "r"), cap)
         var record: List[UInt8] = [42]
         assert_equal(until.read_until(record), 1)

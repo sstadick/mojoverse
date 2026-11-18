@@ -65,6 +65,7 @@ class DocumentationTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout)
         self.assertTrue((self.output / "probe/api/add.html").is_file())
         self.assertTrue((self.output / "index.html").is_file())
+        self.assertTrue((self.output / "probe.json").is_file())
         self.assertIn("Fixture attribution", (self.output / "NOTICE.html").read_text())
         html = (self.output / "probe/api/add.html").read_text()
         self.assertNotIn('doctest=', html)
@@ -74,6 +75,25 @@ class DocumentationTests(unittest.TestCase):
         self.assertIn("    print(values[1])", index)
         self.assertNotIn('href="3, 7"', index)
         self.assertNotIn("```mojo", index)
+
+    def test_native_linked_example(self):
+        native = self.project / "docs_probe.c"
+        native.write_text("int docs_probe(int value) { return value + 17; }\n")
+        obj = self.project / "docs_probe.o"
+        archive = self.project / "libdocs_probe.a"
+        subprocess.run(["clang", "-O3", "-march=native", "-c", str(native), "-o", str(obj)], check=True)
+        subprocess.run(["ar", "rcs", str(archive), str(obj)], check=True)
+        (self.project / "README.md").write_text(
+            '```mojo {doctest="native" global=true}\n'
+            'from std.ffi import external_call\n'
+            'from std.testing import assert_equal\n'
+            'def main() raises:\n'
+            '    assert_equal(external_call["docs_probe", Int32](Int32(25)), Int32(42))\n'
+            '```\n'
+        )
+        result = self.invoke("--readme", "README.md", "--link-library", str(archive))
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn("3 executable examples passed", result.stdout)
 
     def test_failed_assertion_preserves_previous_output(self):
         result = self.invoke()

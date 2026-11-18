@@ -6,13 +6,13 @@ Buffer views expire on the next read or seek, move, or destruction.
 
 from std.ffi import external_call
 from std.memory import unsafe_memcpy
-from mojo_libdeflate import alloc_decompressor, free_decompressor, gzip_decompress
+from mojo_libdeflate import Decompressor
 from .buffer import Buffer, BytePtr, le32, le64
 
 
 struct Input(Movable):
     var file: Int
-    var codec: Int
+    var codec: Optional[Decompressor]
     var packed: Buffer
     var data: Buffer
     var position: Int
@@ -23,7 +23,7 @@ struct Input(Movable):
 
     def __init__(out self, path: String) raises:
         self.file = 0
-        self.codec = 0
+        self.codec = None
         self.packed = Buffer(65536)
         self.data = Buffer(65536)
         self.position = 0
@@ -41,15 +41,11 @@ struct Input(Movable):
             raise Error("input pushback failed")
         self.compressed = first == 31
         if self.compressed:
-            self.codec = alloc_decompressor()
-            if not self.codec:
-                raise Error("cannot allocate BGZF decoder")
+            self.codec = Decompressor()
 
     def __deinit__(deinit self):
         if self.file:
             _ = external_call["fclose", Int32](self.file)
-        if self.codec:
-            free_decompressor(self.codec)
 
     def raw_read(self, dest: BytePtr, count: Int, eof_ok: Bool = False) raises -> Bool:
         var got = external_call["fread", Int](dest, Int(1), count, self.file)
@@ -98,22 +94,15 @@ struct Input(Movable):
             if block < 12 + extra + 8 or block > 65536:
                 raise Error("missing or invalid BGZF BC field")
             _ = self.raw_read(p.unsafe_offset(12 + extra), block - 12 - extra)
-            var consumed = Int(0)
-            var written = Int(0)
-            var result = gzip_decompress(
-                self.codec,
-                p,
-                block,
-                self.data.data,
-                Int(65536),
-                consumed,
-                written,
+            var result = self.codec.value().decompress_gzip(
+                Span(unsafe_ptr=p.unsafe_mut_cast[False](), length=block),
+                Span(unsafe_ptr=self.data.data, length=65536),
             )
-            if result != 0 or consumed != block:
-                raise Error("BGZF decompression or CRC failure")
+            if result.consumed != block:
+                raise Error("BGZF block contains trailing compressed bytes")
             self.next_address += UInt64(block)
-            self.data.length = written
-            if written:
+            self.data.length = result.written
+            if result.written:
                 return True
 
     def read(mut self, dest: BytePtr, count: Int) raises -> Bool:

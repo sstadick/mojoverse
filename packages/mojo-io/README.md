@@ -50,8 +50,10 @@ def main() raises:
   so an empty terminated record returns one. Unlike `read_line`, it does not
   strip CR.
 - `read_bytes(destination)` fills up to `len(destination)` and returns the
-  number read. A zero-length destination consumes nothing. Short underlying
-  reads are not mistaken for EOF; the implementation does not seek.
+  number read. Pass a list or a mutable span, such as `Span(buffer)[16:32]`,
+  to read into existing storage without allocating or resizing. A zero-length
+  destination consumes nothing. Short underlying reads are not mistaken for
+  EOF; the implementation does not seek.
 - `read_lines(path, buf_size=...)` returns owned byte lists for all lines.
 - `write_bytes` accepts arbitrary bytes; `write_string` accepts UTF-8 text.
   Both can raise I/O errors. `BufferedWriter` does not implement Mojo's

@@ -21,10 +21,10 @@ def le64(p: BytePtr) -> UInt64:
     return UInt64(le32(p)) | (UInt64(le32(p.unsafe_offset(4))) << 32)
 
 
-struct Buffer(Movable):
+struct Buffer(Movable, Sized):
     """Own allocation; views expire on growth, move or destruction.
 
-    Only bytes in [0, length) are initialized. reserve does not change length.
+    Only bytes in `0 <= offset < length` are initialized. reserve does not change length.
     append sources must not alias this allocation, which growth can relocate.
     """
 
@@ -42,6 +42,27 @@ struct Buffer(Movable):
 
     def __deinit__(deinit self):
         external_call["free", NoneType](self.data)
+
+    def __len__(self) -> Int:
+        """Return the initialized byte count, not the allocation capacity."""
+        return self.length
+
+    def clear(mut self):
+        """Discard contents, keeping the allocation for reuse."""
+        self.length = 0
+
+    def as_bytes(self) -> Span[UInt8, ImmOrigin(origin_of(self))]:
+        """Borrow initialized bytes; growth, move and destruction invalidate the view."""
+        return Span(
+            unsafe_ptr=self.data.unsafe_mut_cast[False]().unsafe_origin_cast[
+                ImmOrigin(origin_of(self))
+            ](),
+            length=self.length,
+        )
+
+    def append(mut self, source: Span[mut=False, UInt8, _]) raises:
+        """Append bytes without an intermediate copy; source must not alias self."""
+        self.append(source.unsafe_ptr(), len(source))
 
     @always_inline
     def reserve(mut self, needed: Int) raises:

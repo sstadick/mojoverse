@@ -45,13 +45,17 @@ def main():
     cpus = sorted(os.sched_getaffinity(0))
     env = {k: v for k, v in os.environ.items() if not k.startswith(("MALLOC_", "MIMALLOC_")) and k != "LD_PRELOAD"}
     root = Path(__file__).resolve().parents[1]
+    packages = root.parents[1] / "packages"
+    sources = [*root.glob("*.mojo"), root / "native/perbase.c", root / "pixi.toml"]
+    for name in ("mojo-seqair", "mojo-libdeflate", "mojo-threads", "mojopt"):
+        sources.extend((packages / name / name.replace("-", "_")).rglob("*.mojo"))
     report = {
         "method": "Serial rotating/reversed order; warm cache; regular TSV; close, not fsync; SHA256 outside timing.",
         "input": str(bam), "input_sha256": digest(bam), "input_bytes": bam.stat().st_size,
         "cpus": cpus, "threads": 32, "chunksize": 1000000,
         "warmups": a.warmups, "measured_runs": a.runs,
         "programs": {n: {"path": str(v), "sha256": digest(v)} for n, v in programs.items()},
-        "mojo_sources": {str(v): digest(v) for v in sorted([*root.glob("*.mojo"), root / "native/perbase.c", *root.parent.joinpath("mojo-seqair/mojo_seqair").glob("*.mojo")])},
+        "mojo_sources": {str(v): digest(v) for v in sorted(sources)},
         "runner_sha256": digest(Path(__file__)), "runs": [],
     }
     for workload in a.workloads:

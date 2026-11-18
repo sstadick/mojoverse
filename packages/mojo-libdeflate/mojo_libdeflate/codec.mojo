@@ -63,3 +63,9 @@ def gzip_decompress(
 def crc32(initial: UInt32, source: Pointer[UInt8, _], size: Int) -> UInt32:
     """Extend an IEEE CRC32 (initial checksum 0)."""
     return external_call["libdeflate_crc32", UInt32](initial, source, size)
+
+
+@always_inline
+def crc32(source: Span[mut=False, UInt8, _], initial: UInt32 = 0) -> UInt32:
+    """Checksum bytes, or extend an earlier checksum with another span."""
+    return crc32(initial, source.unsafe_ptr(), len(source))

@@ -5,37 +5,70 @@ official Seqair release or a complete port of its public API. BAM/BGZF parsing,
 BAI/CSI lookup, auxiliary validation and CG long-CIGAR resolution are Mojo;
 libdeflate 1.26 handles DEFLATE/CRC32 through direct static FFI calls.
 
-Public imports are `Bam`, `Reader`, `Record`, `Reference`, `Region`, `Input`,
-`Buffer` and `decode_sequence`. `Bam` owns an immutable dictionary/index that
-can be shared. Each worker owns a `Reader`. A returned record borrows bytes
-that expire on the next reader operation. Record names are bytes, not assumed
-UTF-8. `Buffer` views expire on growth, move or destruction; append sources
-must not alias the buffer. The unchecked `decode_sequence` primitive requires
-non-overlapping buffers of at least ceil(n/2) source and n destination bytes.
+## Query reads
+
+Give an indexed, coordinate-sorted BAM and a **zero-based, half-open** region:
 
 ```mojo
-from mojo_seqair import Bam, Reader, Region
+from mojo_seqair import Bam
 
-def count(path: String) raises -> Int:
-    var bam = Bam(path)
-    var reader = Reader(path)
-    var total = 0
-    for tid in range(len(bam.references)):
-        reader.fetch(bam, Region(tid, 0, bam.references[tid].length))
-        while reader.next():
-            total += 1
-    return total
+def main() raises:
+    var bam = Bam("reads.bam")
+    var reader = bam.query("chr20", 10000000, 10001000)
+    while reader.next():
+        var record = reader.record.value()
+        print(record.pos, record.mapq, List(record.name_bytes()))
 ```
+
+`query` returns overlapping reads, including reads beginning before the region.
+Unknown names, empty intervals and coordinates outside the reference raise.
+For many regions, keep a `Reader(bam.path)` and call
+`reader.fetch(bam, bam.region("chr20", begin, end))` to reuse its buffers/codec.
+`Bam` owns the dictionary/index; keep it immutable when sharing across threads.
+Each thread needs its own reader.
+
+**Consume records before the next reader operation.** Names and `qualities()`
+are borrowed byte spans; use `List(view)` to retain them. Names are not assumed
+UTF-8. Qualities are numeric Phred scores (255 means missing). `record.nseq`
+is the sequence length: `record.decode_bases(Span(destination))` writes ASCII
+bases into an existing buffer of at least that size and returns bytes written.
+The raw `Record` does not statically track its reader's lifetime.
+
+## Reuse a byte buffer
+
+```mojo {doctest="buffer" global=true}
+from mojo_seqair import Buffer
+from std.testing import assert_equal
+
+def main() raises:
+    var buffer = Buffer(1024)
+    buffer.append("ACGT".as_bytes())
+    assert_equal(String(from_utf8=buffer.as_bytes()), "ACGT")
+    buffer.clear()  # Retain capacity for the next record.
+    buffer.append("NN".as_bytes())
+    assert_equal(len(buffer), 2)
+```
+
+`Buffer` is the library's libc-owned scratch buffer. Views expire on growth,
+move or destruction; append sources must not alias it. `Input` and the pointer
+overload of `decode_sequence` remain advanced APIs. The latter requires
+non-overlapping buffers of at least ceil(n/2) source and n destination bytes.
+Neither adds bounds checks to Perbase's validated hot loops.
+
+## Build and documentation
 
 Compile consumers with `-Xlinker -ldeflate` and their installed prefix's library
 directory on the linker search path. `mojo-libdeflate` and its native dependency
 install the bindings and static archive; no checkout-specific include path is
-needed after package installation. Use [Mojoverse dependency setup](../../README.md#use-a-dependency)
+needed after package installation. Use [Mojoverse dependency setup](https://github.com/sstadick/mojoverse#use-a-dependency)
 with `subdirectory = "packages/mojo-seqair"`; internal dependencies stay at the
 same Git revision through relative paths.
 
-Stable Mojo 1.2.0 is pinned. `pixi run t` runs assertion-enabled SIMD/scalar
-sequence tests. `pixi build` creates the Mojo package with `pixi-build-mojo`.
+Stable Mojo 1.2.0 is pinned. `pixi run t` tests named BAM queries, record views,
+buffer reuse and SIMD/scalar sequence decoding. `pixi run docs` builds the API
+reference and executes marked README examples. The BAM example needs your own
+file; the test suite exercises it against an independent miniature fixture.
+`pixi build` creates the Mojo package with `pixi-build-mojo`.
 The codec package uses Clang 18.1.8 on Linux and Apple Clang on macOS, with
 `-O3 -march=native`; builds are host-specific, not portable binary artifacts.
 Linux x86-64 and Apple Silicon macOS have native installed-consumer checks.

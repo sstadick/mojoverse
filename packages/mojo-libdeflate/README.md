@@ -5,10 +5,42 @@ C, not a Mojo reimplementation. There are no extra copies, intermediary buffers,
 callbacks or dynamic symbol lookups. This is an experimental source package,
 not a package-index release.
 
-The current API covers the operations used by Mojo Seqair and Perbase:
-raw DEFLATE compression, gzip member decompression with consumed/written byte
-counts, incremental CRC32, and compressor/decompressor allocation and release.
-It is not a binding to every libdeflate API and does not implement BGZF framing.
+Start with `Compressor`, `Decompressor` and byte spans. Handles are freed
+automatically, buffers are caller-owned, and codec instances can be reused.
+The API covers raw DEFLATE/gzip compression, gzip member decompression and
+incremental CRC32. It does not implement BGZF framing or every libdeflate API.
+
+## Compress and decompress
+
+```mojo {doctest="gzip" global=true}
+from mojo_libdeflate import Compressor, Decompressor, crc32
+from std.testing import assert_equal
+
+def main() raises:
+    var text = String("hello, compressed world")
+    var compressor = Compressor(level=2)
+    var packed = List[UInt8](length=compressor.gzip_bound(text.byte_length()), fill=0)
+    var size = compressor.compress_gzip(text.as_bytes(), Span(packed))
+
+    var decoder = Decompressor()
+    var output = List[UInt8](length=text.byte_length(), fill=0)
+    var result = decoder.decompress_gzip(Span(packed)[:size], Span(output))
+    assert_equal(result.consumed, size)
+    assert_equal(String(from_utf8=Span(output)[:result.written]), text)
+    assert_equal(crc32("123456789".as_bytes()), UInt32(0xCBF43926))
+```
+
+Reuse the codecs and buffers across calls; there are no intermediate copies.
+Compression levels range from 0 to 12. Methods raise on bad input, invalid
+levels, overlapping buffers or insufficient output space. Only the returned
+output prefix is initialized. A decoder processes **one member**: use
+`result.consumed` to locate trailing input, rather than silently ignoring it.
+The caller must know or bound the uncompressed size. Do not concurrently use
+the same codec; give each worker its own instance.
+
+`compress_deflate` emits raw DEFLATE rather than a complete gzip member.
+For direct FFI and status-code handling, the original pointer functions remain
+available in `mojo_libdeflate.codec` and at the package root.
 
 ## Build and test
 
@@ -17,11 +49,12 @@ git clone https://github.com/sstadick/mojoverse.git
 cd mojoverse/packages/mojo-libdeflate
 pixi install --locked
 pixi run t
+pixi run docs
 ```
 
 Import from `mojo_libdeflate`. Link consumers with
 `-Xlinker -L$CONDA_PREFIX/lib -Xlinker -ldeflate` using `mojo build`.
-For Git consumers use [Mojoverse dependency setup](../../README.md#use-a-dependency)
+For Git consumers use [Mojoverse dependency setup](https://github.com/sstadick/mojoverse#use-a-dependency)
 with `subdirectory = "packages/mojo-libdeflate"`.
 The `mojo-libdeflate-native` dependency installs the static archive, C header,
 and upstream license. No reader/application dependency is needed.

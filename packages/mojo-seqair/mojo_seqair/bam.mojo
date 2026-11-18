@@ -15,6 +15,8 @@ from .bgzf import Input
 
 @fieldwise_init
 struct Region(ImplicitlyCopyable):
+    """Zero-based half-open reference interval: `begin <= pos < end`, identified by tid."""
+
     var tid: Int
     var begin: Int
     var end: Int
@@ -44,6 +46,8 @@ struct IndexRef(Movable):
 
 @fieldwise_init
 struct Reference(Movable):
+    """Reference name as bytes and its length in bases."""
+
     var name: List[UInt8]
     var length: Int
 
@@ -135,6 +139,27 @@ struct Bam(Movable):
                     linear.append(indexed.wide())
             self.index.append(IndexRef(bins^, linear^))
 
+    def region(self, reference: StringSlice, begin: Int, end: Int) raises -> Region:
+        """Resolve a reference name and validate a zero-based half-open interval."""
+        for tid in range(len(self.references)):
+            if Span(self.references[tid].name) == reference.as_bytes():
+                if begin < 0 or begin >= end or end > self.references[tid].length:
+                    raise Error("region must be nonempty and within the reference")
+                return Region(tid, begin, end)
+        raise Error(String("unknown BAM reference: ", reference))
+
+    def query(self, reference: StringSlice, begin: Int, end: Int) raises -> Reader:
+        """Open an independent reader positioned at reads overlapping this interval.
+
+        Use `while reader.next():` and `reader.record.value()` to access each
+        borrowed record. For repeated queries, retain a Reader and call fetch
+        with regions returned by `region`; this reuses its codec and buffers.
+        """
+        var selected = self.region(reference, begin, end)
+        var reader = Reader(self.path)
+        reader.fetch(self, selected)
+        return reader^
+
 
 @fieldwise_init
 struct Record(ImplicitlyCopyable):
@@ -157,8 +182,36 @@ struct Record(ImplicitlyCopyable):
     var sequence: BytePtr
     var quality: BytePtr
 
+    def name_bytes(self) -> Span[UInt8, ImmUntrackedOrigin]:
+        """Borrow the read name, excluding its NUL terminator; not necessarily UTF-8.
+
+        Valid only until the next reader operation, move or destruction. The
+        raw Record does not track its reader's origin. Copy with List(view)
+        before advancing if the name must survive.
+        """
+        return Span(unsafe_ptr=self.name.unsafe_mut_cast[False](), length=self.name_length)
+
+    def qualities(self) -> Span[UInt8, ImmUntrackedOrigin]:
+        """Borrow numeric Phred qualities; 255 means absent. Same lifetime as name_bytes."""
+        return Span(unsafe_ptr=self.quality.unsafe_mut_cast[False](), length=self.nseq)
+
+    def decode_bases(self, dest: Span[mut=True, UInt8, _]) raises -> Int:
+        """Decode into a reusable destination, returning the initialized prefix length.
+
+        The destination needs at least nseq bytes and must not overlap the
+        record. Decode before advancing the reader. Empty sequence writes zero
+        bytes. Symbols follow BAM's full =ACMGRSVTWYHKDBN alphabet.
+        """
+        if len(dest) < self.nseq:
+            raise Error("sequence destination too small")
+        decode_sequence(
+            self.sequence, dest.unsafe_ptr().unsafe_origin_cast[MutUntrackedOrigin](), self.nseq
+        )
+        return self.nseq
+
     @always_inline
     def cigar_word(self, i: Int) -> UInt32:
+        """Unchecked packed CIGAR operation; requires `0 <= i < ncigar`."""
         return le32(self.cigar.unsafe_offset(i * 4))
 
 
@@ -303,6 +356,13 @@ def parse_record(p: BytePtr, length: Int) raises -> Record:
 
 
 struct Reader(Movable):
+    """Reusable indexed cursor. Call fetch before next, then read record.value().
+
+    next returns False at the end of a query and raises on corrupt input. Every
+    fetch/next invalidates previous records, including the call reaching EOF.
+    Each thread needs its own Reader; Bam's immutable index may be shared.
+    """
+
     var source: Input
     var raw: Buffer
     var chunks: List[Chunk]

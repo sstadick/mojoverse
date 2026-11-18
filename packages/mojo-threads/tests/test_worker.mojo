@@ -1,5 +1,55 @@
-from std.testing import assert_equal, assert_true, TestSuite
-from mojo_threads import Worker, available_parallelism
+from std.testing import assert_equal, assert_true, assert_raises, TestSuite
+from std.tempfile import TemporaryDirectory
+from std.pathlib import Path
+from mojo_threads import Worker, available_parallelism, spawn
+
+
+def summarize(var values: List[Int]) raises -> String:
+    var total = 0
+    for value in values:
+        total += value
+    return String("sum=", total)
+
+
+def fail(var message: String) raises -> Int:
+    raise Error(message)
+
+
+def write_file(var path: String) raises:
+    with open(path, "w") as file:
+        file.write("finished")
+
+
+def no_input(var value: NoneType) -> Int:
+    return 23
+
+
+def test_owned_threads() raises:
+    var first = spawn[summarize]([7, -2, 31])
+    var second = spawn[summarize]([100, 3])
+    var moved = first^
+    assert_equal(second.join(), "sum=103")
+    assert_equal(moved.join(), "sum=36")
+    with assert_raises():
+        _ = moved.join()
+    var failed = spawn[fail](String("worker failure"))
+    try:
+        _ = failed.join()
+        assert_true(False)
+    except error:
+        assert_equal(String(error), "worker failure")
+    var directory = TemporaryDirectory()
+    var path = String(Path(directory.name) / "result")
+    var discarded = spawn[write_file](path.copy())
+    _ = discarded^
+    with open(path, "r") as file:
+        assert_equal(file.read(), "finished")
+    var writer = spawn[write_file](path.copy())
+    writer.join()
+    with assert_raises():
+        writer.join()
+    var empty_input = spawn[no_input](None)
+    assert_equal(empty_input.join(), 23)
 
 
 struct Job(Movable):

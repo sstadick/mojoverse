@@ -61,7 +61,7 @@ jobs:
       - name: Executable package documentation
         if: matrix.os == 'ubuntu-latest'
         run: |
-          for package in mojo-bio mojo-bstr mojo-io mojo-lapper; do
+          for package in mojo-bio mojo-bstr mojo-io mojo-lapper mojo-threads mojo-libdeflate mojo-seqair; do
             pixi run --locked --manifest-path "packages/$package/pixi.toml" docs
           done
       - name: Compile GPU examples without claiming GPU execution

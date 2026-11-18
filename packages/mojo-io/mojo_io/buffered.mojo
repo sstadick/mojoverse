@@ -59,8 +59,13 @@ struct BufferedReader(Movable):
             _close_file[FileHandle.close](self._file.take())
 
     def read_bytes(mut self, mut buffer: List[UInt8]) raises -> Int:
+        """Fill the list's existing length without resizing it; return bytes read."""
+        return self.read_bytes(Span(buffer))
+
+    def read_bytes(mut self, buffer: Span[mut=True, UInt8, _]) raises -> Int:
         """Fill at most len(buffer) bytes, returning the number read.
 
+        Accepts a list/array view or subspan without an intermediate allocation.
         An empty destination consumes nothing. Only a zero-byte underlying
         read means EOF; short reads are handled without seeking.
         """

@@ -1,5 +1,7 @@
-from std.testing import assert_equal, assert_true, TestSuite
+from std.testing import assert_equal, assert_true, assert_raises, TestSuite
 from mojo_libdeflate import (
+    Compressor,
+    Decompressor,
     alloc_compressor,
     free_compressor,
     alloc_decompressor,
@@ -48,6 +50,13 @@ def test_gzip_and_checksums() raises:
     ]
     var plain: List[UInt8] = [49, 50, 51, 52, 53, 54, 55, 56, 57, 0, 255]
     var output = List[UInt8](length=32, fill=0)
+    var owned = Decompressor()
+    var decoded = owned.decompress_gzip(Span(packed), Span(output))
+    assert_equal(decoded.consumed, 31)
+    assert_equal(decoded.written, 11)
+    assert_equal(List(Span(output)[:11]), plain)
+    with assert_raises():
+        _ = owned.decompress_gzip(Span(packed), Span(output)[:10])
     var decoder = alloc_decompressor()
     assert_true(decoder != 0)
     var consumed = 0
@@ -68,6 +77,8 @@ def test_gzip_and_checksums() raises:
         decoder, packed.unsafe_ptr(), 31, output.unsafe_ptr(), 10, consumed, written
     )
     packed[23] ^= 1  # Corrupt CRC, not the DEFLATE payload.
+    with assert_raises():
+        _ = owned.decompress_gzip(Span(packed), Span(output))
     var corrupt = gzip_decompress(
         decoder, packed.unsafe_ptr(), 31, output.unsafe_ptr(), len(output), consumed, written
     )
@@ -78,6 +89,38 @@ def test_gzip_and_checksums() raises:
     assert_equal(crc32(0, plain.unsafe_ptr(), 9), UInt32(0xCBF43926))
     var prefix = crc32(0, plain.unsafe_ptr(), 4)
     assert_equal(crc32(prefix, plain.unsafe_ptr().unsafe_offset(4), 5), UInt32(0xCBF43926))
+    assert_equal(crc32(Span(plain)[4:9], crc32(Span(plain)[:4])), UInt32(0xCBF43926))
+
+
+def test_owned_codec_reuse() raises:
+    var compressor = Compressor(level=2)
+    var decoder = Decompressor()
+    var source: List[UInt8] = [97, 0, 255, 13, 10]
+    var packed = List[UInt8](length=compressor.gzip_bound(len(source)), fill=0)
+    var output = List[UInt8](length=len(source), fill=0)
+    for size in range(len(source) + 1):
+        var written = compressor.compress_gzip(Span(source)[:size], Span(packed))
+        var result = decoder.decompress_gzip(Span(packed)[:written], Span(output))
+        assert_equal(result.consumed, written)
+        assert_equal(result.written, size)
+        assert_equal(List(Span(output)[:size]), List(Span(source)[:size]))
+    with assert_raises():
+        _ = compressor.compress_gzip(Span(source), Span(packed)[:1])
+    with assert_raises():
+        _ = compressor.compress_deflate(Span(source), Span(packed)[:1])
+    # An FFI caller can supply untracked overlapping views; reject them too.
+    var alias = Span(
+        unsafe_ptr=packed.unsafe_ptr()
+        .unsafe_mut_cast[False]()
+        .unsafe_origin_cast[ImmUntrackedOrigin](),
+        length=3,
+    )
+    with assert_raises():
+        _ = compressor.compress_gzip(alias, Span(packed))
+    with assert_raises():
+        _ = Compressor(13)
+    with assert_raises():
+        _ = compressor.gzip_bound(-1)
 
 
 def test_compression() raises:
@@ -91,10 +134,9 @@ def test_compression() raises:
     var failed = deflate_compress(
         compressor, source.unsafe_ptr(), len(source), gzip.unsafe_ptr().unsafe_offset(10), 1
     )
-    var n = deflate_compress(
-        compressor, source.unsafe_ptr(), len(source), gzip.unsafe_ptr().unsafe_offset(10), 100
-    )
     free_compressor(compressor)
+    var owned = Compressor(level=2)
+    var n = owned.compress_deflate(Span(source), Span(gzip)[10:110])
     assert_equal(failed, 0)
     assert_true(n > 0)
     # Known checksum, rather than computing expected data with the binding.
