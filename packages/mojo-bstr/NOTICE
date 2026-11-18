@@ -1,0 +1,15 @@
+mojo-bstr is a Mojo port of the current goostr byte-string API by Seth Stadick.
+
+The goostr source states that its search algorithms derive from memchr 2.8.3.
+Byte-string/UTF-8 behavior follows bstr 1.13.1. Both projects are by Andrew
+Gallant. The original MIT license and copyright notices are retained in LICENSE.
+
+tests/oracle and tests/differential.py derive from goostr's test harness.
+Benchmark protocol and verification conventions derive from goostr's
+Rust/bstr comparison and memchr/rebar benchmark harnesses.
+
+Upstream references:
+https://github.com/sstadick/goostr
+https://github.com/BurntSushi/bstr
+https://github.com/BurntSushi/memchr
+https://github.com/BurntSushi/rebar

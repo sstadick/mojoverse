@@ -1,0 +1,6 @@
+.pixi/
+__pycache__/
+target/
+*.mojoc
+*.mojopkg
+bench/results/

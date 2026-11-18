@@ -1,0 +1,133 @@
+# mojo-bstr
+
+Arbitrary byte strings for Mojo 1.2.0. The distribution is `mojo-bstr`; import
+`mojo_bstr`. NUL and malformed UTF-8 are ordinary input bytes.
+
+## Use
+
+```mojo {doctest="bytes" global=true}
+from std.testing import assert_equal, assert_true
+from mojo_bstr import memchr, lines, trim, to_str_lossy
+
+def main() raises:
+    var data: List[UInt8] = [32, 97, 0, 255, 13, 10, 98]
+    assert_equal(memchr(0, Span(data)), 2)
+    var sizes = List[Int]()
+    for line in lines(Span(data)):
+        sizes.append(len(trim(line)))
+    assert_equal(sizes, [3, 1])
+    var valid = to_str_lossy(Span(data))
+    var expected = String(" a\0�\r\nb")
+    assert_true(Span(valid) == expected.as_bytes())
+```
+
+Use `Span(buffer)` for a `List[UInt8]` or `Array[UInt8, N]`, and
+`text.as_bytes()` for a Mojo `String`. No wrapper allocation is required.
+Read-only functions accept immutable spans (mutable spans coerce). Mutation
+functions require mutable spans. Owned transformations return `List[UInt8]`.
+
+**Views and searchers borrow their source. Keep the owner alive and unchanged
+while using them.** Origins reject returning a view of destroyed local storage,
+but Mojo 1.2 does **not** reject every invalidating mutation: `List.append` can
+reallocate underneath a live `Span`. This is a verified compiler/stdlib safety
+limitation, not a supported use. Make an owned copy when mutation or a longer
+lifetime is needed. `_into` functions append without clearing; their output
+must not alias an input view.
+
+## Install with Pixi
+
+For a checkout beside the consumer, add to its `pixi.toml`:
+
+```toml
+[workspace]
+channels = ["https://conda.modular.com/max", "conda-forge"]
+platforms = ["linux-64"]
+preview = ["pixi-build"]
+
+[dependencies]
+mojo = "=1.2.0"
+mojo-bstr = { path = "../mojo-bstr" }
+```
+
+`pixi-build-mojo` builds the module into the consumer's `lib/mojo` directory.
+No `-I` is needed in the consumer. Git source dependencies can replace the path
+once a repository is published. The stable toolchain is pinned in `pixi.toml`
+and `pixi.lock`. `main` targets stable; nightly updates belong on a separate
+rolling branch, with explicit promotion back to stable.
+
+## API contracts
+
+The API covers searching, splitting, byte transforms, and UTF-8 decoding.
+
+| Area | Public API |
+| --- | --- |
+| Substrings | `find`, `rfind`, `Finder`, `FinderReverse`, `finder`, `finder_reverse`, `contains_str`, `starts_with_str`, `ends_with_str` |
+| Bytes | `find_byte`, `rfind_byte`, `find_byteset`, `rfind_byteset`, `find_not_byteset`, `rfind_not_byteset`, `find_char`, `rfind_char` |
+| Memchr additions | `memchr`, `memrchr`, `memchr2`, `memrchr2`, `memchr3`, `memrchr3` |
+| Streaming matches/splits | `find_iter`, `rfind_iter`, `split_str`, `rsplit_str`, `splitn_str`, `rsplitn_str`, `split_once_str`, `rsplit_once_str` |
+| Owned output | `replace`, `replacen`, `replace_into`, `replacen_into`, `repeatn` |
+| Lines/fields/trim | `lines`, `lines_with_terminator`, `fields`, `fields_with`, `trim`, `trim_start`, `trim_end`, `trim_with`, `trim_start_with`, `trim_end_with`, `is_whitespace` |
+| UTF-8 | `decode_utf8`, `decode_last_utf8`, `decode_utf8_lossy`, `decode_last_utf8_lossy`, `validate_utf8`, `is_utf8`, `chars`, `char_indices`, `utf8_chunks`, `to_str_lossy`, `to_str_lossy_into` |
+| Byte transforms | `is_ascii`, `find_non_ascii_byte`, `to_ascii_lowercase`, `to_ascii_uppercase`, `make_ascii_lowercase`, `make_ascii_uppercase`, `reverse_bytes`, `reverse_chars`, `escape_bytes`, `unescape_bytes` |
+
+- Search returns a byte offset or **-1**. `memchr*` takes
+  needle byte(s) before the haystack; other searches take haystack first.
+  Prepared searchers expose `needle()` for inspection; construct a new searcher
+  to change its needle.
+- Empty substring needles match all byte boundaries, including both ends and
+  boundaries *inside* UTF-8 encodings. Matches never overlap; reverse matches
+  may select different positions from forward matches.
+- Streaming iterators work with
+  `for`, `break`, and `__next__()`. Calling `__iter__()` copies the current
+  cursor; `__next__()` advances the iterator itself. Fields accepts copyable
+  non-raising predicates (including closures) and supports structural `for`
+  iteration; unlike other iterators it cannot currently conform to Mojo 1.2's
+  non-capturing `Iterator` trait for arbitrary captured predicates.
+- `split_once_str`/`rsplit_once_str` return `Optional[Tuple[Span, Span]]`.
+  Limited splits take `(s, needle, n)`.
+- Negative split/replacement/repeat limits and non-scalar `find_char` arguments
+  raise `Error`, including release builds. Zero limits yield no split pieces,
+  unchanged replacement output, or an empty repetition.
+- Lines strip LF and a directly preceding CR; bare CR is data. A final LF
+  does not create an extra empty line. Empty input yields no lines.
+- Malformed UTF-8 consumes maximal subparts and decodes to U+FFFD.
+  `decode_utf8` returns `(scalar, consumed, valid)`, and `validate_utf8` returns
+  `(valid_up_to, error_len)` with 0 for success and -1 for truncation.
+- `to_str_lossy` returns **owned valid UTF-8 bytes**, not `String`.
+  `find_char` searches encoded scalars and does not
+  interpret malformed bytes as U+FFFD. `reverse_chars` preserves bytes within
+  each decoded scalar or malformed subpart; it is not grapheme reversal.
+- Trimming/fields use Unicode White_Space. ASCII casing never changes bytes
+  outside A–Z/a–z. Escaping retains valid non-ASCII UTF-8, escapes ASCII space,
+  and uses uppercase hex for invalid bytes. Unknown/incomplete escapes remain
+  literal, including bytes consumed while attempting a hex escape.
+
+## Verify
+
+```sh
+pixi run t             # Hat-compatible test_*.mojo discovery, assertions enabled
+pixi run examples      # Executable example
+pixi run consumer      # Fresh consumer install and execution, without -I
+pixi run differential # Requires Cargo; 71,784 cases against bstr 1.13.1
+pixi run ownership    # Compile-fail origin safety checks
+pixi run doc-examples # Execute marked README examples
+pixi run docs         # API site, using sibling Mojoverse or MOJOVERSE path
+pixi run bench-verify # Untimed benchmark protocol checks
+```
+
+Differential tests cover every one-/two-byte input, Unicode boundaries, invalid
+sequences, escape failures, and deterministic randomized binary/text inputs.
+Additional search tests check unaligned/vector-tail spans and 3,000 random or
+periodic short/long searches against an independent scalar implementation.
+
+## Performance scope
+
+**No performance parity is claimed.** Common-host comparisons with Rust and
+Goose show workload-dependent gaps. See
+[`bench/README.md`](bench/README.md) for reproducible comparisons and gaps.
+
+## Attribution
+
+MIT licensed; see [LICENSE](LICENSE) and [NOTICE](NOTICE). API semantics, UTF-8
+algorithms, tests, and benchmark methodology derive from Seth Stadick's goostr
+and Andrew Gallant's bstr/memchr.
