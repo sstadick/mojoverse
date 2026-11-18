@@ -1,6 +1,6 @@
 # Executable package documentation
 
-Run the tools from the Mojoverse root. The `docs` environment installs only the Python documentation tools:
+Run the tools from the Mojoverse root. The `docs` environment installs the Python documentation tools and Modo's bundled executable. It supports Linux x86-64 and macOS (with Rosetta), not Linux AArch64; this restriction does not apply to the Mojo libraries or bins:
 
 ```sh
 pixi run --locked -e docs docs packages/mojo-bstr mojo_bstr --site --readme README.md

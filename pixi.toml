@@ -22,9 +22,10 @@ hat = { path = "bins/hat" }
 mojo-perbase = { path = "bins/mojo-perbase" }
 
 [tasks]
-test = { depends-on = ["check-workspace", "test-packages", "test-installed", "test-bins", "test-docs"] }
+test = { depends-on = ["check-workspace", "test-packages", "test-installed", "test-bins", "test-toolchain"] }
 t = { depends-on = ["test"] }
 check-workspace = "python scripts/toolchain.py check"
+test-toolchain = "python -m unittest discover -s tests -p test_toolchain.py -v"
 lock-all = "python scripts/toolchain.py lock"
 check-locks = "python scripts/toolchain.py lock --check"
 test-installed = "python scripts/test_packages.py --installed"
@@ -41,6 +42,11 @@ mojo-threads-native = { path = "packages/mojo-threads/native" }
 [feature.source.tasks]
 test-packages = "python scripts/test_packages.py"
 
+[feature.docs]
+# pymodo bundles x86-64 binaries; macOS runs its binary through Rosetta.
+# It does not currently ship a Linux AArch64 executable.
+platforms = ["linux-64", "osx-arm64"]
+
 [feature.docs.dependencies]
 python = "3.12.*"
 
@@ -48,7 +54,7 @@ python = "3.12.*"
 mojoverse-tools = { path = ".", editable = true }
 
 [feature.docs.tasks]
-test-docs = "python -m unittest discover -s tests -v"
+test-docs = "python -m unittest discover -s tests -p test_docs.py -v"
 docs = "mojoverse-docs"
 
 [feature.lsp.dependencies]
@@ -73,7 +79,7 @@ mojo_raylib = { path = "packages/mojo-raylib" }
 test-graphics = "python scripts/test_raylib.py"
 
 [environments]
-default = { features = ["docs"] }
+default = { features = [] }
 source = { features = ["source"], no-default-feature = true }
 docs = { features = ["docs"], no-default-feature = true }
 lsp = { features = ["lsp"], no-default-feature = true }

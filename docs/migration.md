@@ -24,3 +24,21 @@ Internal dependencies now use relative paths within this repository. External co
 `main` uses one stable compiler throughout. Raylib's generated bindings were migrated from Mojo 1.0 to that compiler by changing their generator. Its native recipe now uses the same Clang/native-optimization policy and Pixi's cache, instead of a separate cache that did not include compiler flags.
 
 The migration itself does not archive or delete the old GitHub repositories, publish conda releases, replace existing ExtraMojo APIs, or claim new performance measurements. Original local checkouts remain under `mojo-projects` as recovery copies. New coordinated development belongs here.
+
+## Standalone repositories to revisit later
+
+Keep these active while trying the monorepo. After checking downstream consumers, releases and outstanding work, they are candidates for archiving—not repositories already archived by this migration:
+
+| Standalone repository | Monorepo destination |
+| --- | --- |
+| [sstadick/mojopt](https://github.com/sstadick/mojopt) | [packages/mojopt](../packages/mojopt) |
+| [sstadick/mojo-bio](https://github.com/sstadick/mojo-bio) | [packages/mojo-bio](../packages/mojo-bio) |
+| [sstadick/mojo-lapper](https://github.com/sstadick/mojo-lapper) | [packages/mojo-lapper](../packages/mojo-lapper) |
+| [sstadick/mojo-bstr](https://github.com/sstadick/mojo-bstr) | [packages/mojo-bstr](../packages/mojo-bstr) |
+| [sstadick/mojo-io](https://github.com/sstadick/mojo-io) | [packages/mojo-io](../packages/mojo-io) |
+| [sstadick/mojo-raylib](https://github.com/sstadick/mojo-raylib) | [packages/mojo-raylib](../packages/mojo-raylib) |
+| [sstadick/hat](https://github.com/sstadick/hat) | [bins/hat](../bins/hat) |
+| [sstadick/mojo-lsp-bridge](https://github.com/sstadick/mojo-lsp-bridge) | [bins/mojo-lsp-bridge](../bins/mojo-lsp-bridge) |
+| [sstadick/mojo-import-crates-skill](https://github.com/sstadick/mojo-import-crates-skill) | [tools/bind-rust-to-mojo](../tools/bind-rust-to-mojo) |
+
+ExtraMojo is not on this list: its shared repository and separate experimental work need a distinct decision. The four source-snapshot projects had no standalone published repository at migration time.

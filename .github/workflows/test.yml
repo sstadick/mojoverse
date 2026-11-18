@@ -41,6 +41,9 @@ jobs:
           LANE: ${{ inputs.lane || ((github.base_ref == 'nightly' || github.ref_name == 'nightly') && 'nightly' || 'stable') }}
         run: python3 scripts/toolchain.py check --lane "$LANE"
       - run: pixi run --locked test
+      - name: Test documentation tools on Modo's supported hosts
+        if: matrix.os != 'ubuntu-24.04-arm'
+        run: pixi run --locked -e docs test-docs
       - name: Check every workspace lock
         if: matrix.os == 'ubuntu-latest'
         run: pixi run --locked check-locks

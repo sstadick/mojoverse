@@ -68,7 +68,7 @@ This uses the commit, not uncommitted edits. To test the published source, omit 
 
 The root manifest pins the compiler for every library and bin. Mojo builds use `-O3` and the compiler's default host CPU/features where explicitly configured. `--target-cpu=native` is not a valid Mojo 1.2 option. Native codec/glue builds use **Clang `-O3 -march=native`**, including dependencies. These artifacts are host-tuned, not universal binary releases; rebuild them on the destination CPU.
 
-The stable workspace targets Linux x86-64, Linux AArch64 and Apple-silicon macOS. CI runs native jobs on those platforms. A resolved lockfile alone is not evidence of native execution or performance. GPU checks additionally require suitable hardware.
+The stable workspace targets Linux x86-64, Linux AArch64 and Apple-silicon macOS. CI runs native jobs on those platforms. The separate documentation environment supports Linux x86-64 and macOS only: Modo's bundled executable does not support Linux AArch64, and its macOS executable requires Rosetta. CI checks documentation on both supported hosts, separately from the native package suite. A resolved lockfile alone is not evidence of native execution or performance. GPU checks additionally require suitable hardware.
 
 Raylib uses the same stable compiler as the rest of `main`; its graphics environment currently targets Linux x86-64 and Apple-silicon macOS. To work on it:
 
