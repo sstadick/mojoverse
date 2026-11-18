@@ -15,3 +15,24 @@ document.querySelectorAll(".highlight").forEach(block => {
   });
   block.append(button);
 });
+
+// Without JavaScript the complete catalog and its ordinary links stay usable.
+const filter = document.querySelector("#library-filter");
+if (filter) {
+  const table = document.querySelector(".md-typeset table");
+  table.id = "library-catalog";
+  const rows = [...table.querySelectorAll("tbody tr")];
+  const count = document.querySelector("#library-count");
+  const update = () => {
+    const words = filter.value.toLocaleLowerCase().trim().split(/\s+/);
+    let visible = 0;
+    rows.forEach(row => {
+      row.hidden = !words.every(word => row.textContent.toLocaleLowerCase().includes(word));
+      if (!row.hidden) visible++;
+    });
+    count.textContent = visible ? `${visible} of ${rows.length} libraries` : "No matching libraries. Try another name or purpose.";
+  };
+  filter.closest(".library-filter").hidden = false;
+  filter.addEventListener("input", update);
+  update();
+}

@@ -24,7 +24,7 @@ def navigation(directory, root):
     return entries
 
 
-def build_site(source, output, title, nav=None):
+def build_site(source, output, title, nav=None, *, catalog=False):
     shutil.copytree(Path(__file__).with_name("assets"), source / "assets", dirs_exist_ok=True)
     config = {
         "site_name": title,
@@ -36,12 +36,14 @@ def build_site(source, output, title, nav=None):
         "theme": {
             "variant": "classic",
             "font": False,
+            "custom_dir": str(Path(__file__).with_name("theme")),
             "features": ["navigation.indexes", "navigation.top", "toc.follow", "search.highlight", "content.code.copy"],
             "palette": [
                 {"scheme": "default", "media": "(prefers-color-scheme: light)", "toggle": {"icon": "material/weather-night", "name": "Switch to dark mode"}},
                 {"scheme": "slate", "media": "(prefers-color-scheme: dark)", "toggle": {"icon": "material/weather-sunny", "name": "Switch to light mode"}},
             ],
         },
+        "extra": {"library_catalog": catalog},
         "nav": nav if nav is not None else navigation(source, source),
         "markdown_extensions": [
             "attr_list",

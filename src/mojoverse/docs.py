@@ -9,6 +9,7 @@ import subprocess
 import tempfile
 import textwrap
 import tomllib
+from urllib.parse import quote
 
 import yaml
 from pymodo.modo import get_executable_path
@@ -32,6 +33,36 @@ def check_init_declarations(decl):
             )
     for package in decl.get("packages", []):
         check_init_declarations(package)
+
+
+def add_source_links(project, package_path, package, markdown, readme):
+    """Link generated declarations to their defining file at this Git revision."""
+    try:
+        def git(*args):
+            return subprocess.check_output(
+                ["git", "-C", str(project), *args], text=True, stderr=subprocess.DEVNULL
+            ).strip()
+
+        root = Path(git("rev-parse", "--show-toplevel"))
+        revision = git("rev-parse", "HEAD")
+        remote = git("remote", "get-url", "origin")
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return  # Source archives and standalone local projects need no Git remote.
+    match = re.fullmatch(r"(?:https://github\.com/|git@github\.com:)([^/]+/[^/]+?)(?:\.git)?/?", remote)
+    if not match:
+        return
+    base = f"https://github.com/{match[1]}/blob/{revision}/"
+    sources = {}
+    for path in package_path.rglob("*.mojo"):
+        relative = path.relative_to(package_path)
+        module = relative.parent if path.stem == "__init__" else relative.with_suffix("")
+        for page in (markdown / package / module).glob("*.md"):
+            sources[page] = path
+    if readme:
+        sources[markdown / "index.md"] = project / readme
+    for page, path in sources.items():
+        url = base + quote(path.resolve().relative_to(root).as_posix())
+        page.write_text("---\n" + yaml.safe_dump({"source_url": url}) + "---\n\n" + page.read_text())
 
 
 def build(project, package, output, site, readme, includes, libraries=()):
@@ -113,6 +144,7 @@ def build(project, package, output, site, readme, includes, libraries=()):
             (markdown / "index.md").write_text(
                 f"# {package}\n\n[API reference]({package}/_index.md)\n"
             )
+        add_source_links(project, package_path, package, markdown, readme)
         result = markdown
         if site:
             build_site(markdown, work / "site", package)

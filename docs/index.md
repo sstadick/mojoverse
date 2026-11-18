@@ -9,6 +9,12 @@ Pin the same Mojoverse revision for each dependency and use that revision's Mojo
 
 ## Libraries
 
+<div class="library-filter" hidden>
+  <label for="library-filter">Find a library</label>
+  <input id="library-filter" type="search" placeholder="Filter by name or purpose…" aria-controls="library-catalog" autocomplete="off">
+  <p id="library-count" role="status" aria-live="polite"></p>
+</div>
+
 | Package | Purpose | Docs |
 | --- | --- | --- |
 | mojo-bstr | Byte strings, SIMD search, UTF-8 | [Usage](mojo-bstr/index.md) · [API](mojo-bstr/mojo_bstr/_index.md) |

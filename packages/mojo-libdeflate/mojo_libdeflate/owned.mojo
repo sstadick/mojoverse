@@ -25,7 +25,9 @@ struct Decompressed(ImplicitlyCopyable):
     """Byte counts for one decoded member; input may contain trailing bytes."""
 
     var consumed: Int
+    """Compressed input bytes used; advance the input by this many bytes."""
     var written: Int
+    """Decoded output bytes; only this prefix of the destination is valid."""
 
 
 struct Compressor(Movable):
@@ -35,6 +37,24 @@ struct Compressor(Movable):
     No intermediate allocation or copy is made. Too-small output raises;
     its contents are unspecified after failure. The raw codec module retains
     status-returning pointer calls for pipelines that handle overflow themselves.
+
+    Allocate the destination with `length`, not just `capacity`, so its span
+    covers writable bytes. Reuse both codec instances and storage across calls:
+
+    ```mojo {doctest="compressor-reuse" global=true}
+    from mojo_libdeflate import Compressor, Decompressor
+    from std.testing import assert_equal
+
+    def main() raises:
+        var compressor = Compressor(level=2)
+        var decoder = Decompressor()
+        var packed = List[UInt8](length=compressor.gzip_bound(64), fill=0)
+        var output = List[UInt8](length=64, fill=0)
+        for text in [String("alpha"), String("a longer second record")]:
+            var size = compressor.compress_gzip(text.as_bytes(), Span(packed))
+            var result = decoder.decompress_gzip(Span(packed)[:size], Span(output))
+            assert_equal(String(from_utf8=Span(output)[:result.written]), text)
+    ```
     """
 
     var _handle: Int
@@ -86,7 +106,38 @@ struct Compressor(Movable):
 
 
 struct Decompressor(Movable):
-    """Own and reuse a libdeflate decoder. Do not use it concurrently."""
+    """Own and reuse a libdeflate decoder. Do not use it concurrently.
+
+    Supply an output buffer large enough for the decoded data. The returned
+    `consumed` counts compressed input, while `written` counts decoded output.
+    Trailing bytes are left for the caller, not silently decoded or rejected:
+
+    ```mojo {doctest="decoder-lengths" global=true}
+    from mojo_libdeflate import Compressor, Decompressor
+    from std.testing import assert_equal, assert_raises
+
+    def main() raises:
+        var compressor = Compressor()
+        var packed = List[UInt8](length=compressor.gzip_bound(5), fill=0)
+        var size = compressor.compress_gzip("hello".as_bytes(), Span(packed))
+        var input = List(Span(packed)[:size])
+        input.extend("trailer".as_bytes())
+
+        var decoder = Decompressor()
+        var output = List[UInt8](length=32, fill=0)
+        var result = decoder.decompress_gzip(Span(input), Span(output))
+        assert_equal(result.consumed, size)
+        assert_equal(result.written, 5)
+        assert_equal(String(from_utf8=Span(output)[:result.written]), "hello")
+        assert_equal(String(from_utf8=Span(input)[result.consumed:]), "trailer")
+
+        # Too-small output and truncated input both raise Error.
+        with assert_raises():
+            _ = decoder.decompress_gzip(Span(input), Span(output)[:2])
+        with assert_raises():
+            _ = decoder.decompress_gzip(Span(input)[:5], Span(output))
+    ```
+    """
 
     var _handle: Int
 

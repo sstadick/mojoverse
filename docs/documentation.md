@@ -12,7 +12,8 @@ python3 -m http.server 8767 --directory target/docs
 Open `http://localhost:8767/` to browse the documentation hub, package usage
 guides, and Modo API references. The builder invokes each package's `docs`
 task, runs its executable examples, and renders their Markdown together in
-`target/docs`, with one navigation tree and search index for all packages.
+`target/docs`. The sidebar shows only the current library; **All libraries**
+opens a filterable catalog. Search covers every package, not just the sidebar.
 Failed builds leave the previous complete site intact. Package sites include
 the original `mojo doc` JSON.
 
@@ -73,6 +74,10 @@ def main() raises:
 
 For fragments, omit `global=true`: the tools wrap the body in `def main() raises:`. Imports can be in a separate block with the same doctest name and `global=true`. Do not combine an explicit `main` with a body fragment in one doctest.
 
+Inside Mojo docstrings, double backslashes in example strings: write `\\n` to
+preserve `\n` in the generated code. Otherwise the compiler expands the escape
+before Modo sees it, potentially breaking both the fence and test extraction.
+
 The build requires at least one doctest and runs every extracted program with assertions enabled in a temporary directory. Exceptions and failed assertions fail the command before replacing the previous generated site. Examples that write files must use relative paths or temporary directories. Compilation alone is not an example test.
 
 The tools pin Modo 0.11.13 and override its callable signature, struct signature, and doctest templates for current Mojo. Do not remove these overrides without checking rendered signatures and executing the examples on stable and nightly. The stock templates still use `fn` and emit `fn def` for current compiler JSON.
@@ -83,7 +88,8 @@ The complete pipeline lives in this repository:
 
 - `src/mojoverse/docs.py`: compiler JSON, Modo Markdown, and executable examples.
 - `src/mojoverse/site.py`: Zensical configuration and navigation.
-- `src/mojoverse/assets/`: shared CSS and the accessible code-wrap toggle.
+- `src/mojoverse/theme/`: current-library navigation and source-link templates.
+- `src/mojoverse/assets/`: shared CSS, fonts, catalog filter, and code-wrap toggle.
 - `src/mojoverse/highlight.py`: Pygments' Mojo lexer plus current ownership and
   compile-time keywords. Keep these aligned with compiler updates.
 - `scripts/build_docs.py`: the combined site, reusing each package's docs task.
@@ -91,7 +97,18 @@ The complete pipeline lives in this repository:
 Highlighting is generated at build time; no CDN or browser-side language detection
 is required. Code wraps by default. The **Wrap** toggle changes only presentation;
 copying preserves the original text and indentation. The theme supplies the copy
-button, light/dark modes, mobile navigation, and search. Fonts are local system fonts.
+button, light/dark modes, mobile navigation, and search. Inter 4.1 is self-hosted
+from [its upstream release](https://github.com/rsms/inter/tree/v4.1); its SIL Open
+Font License is alongside the font in `assets/fonts/OFL.txt`. Code uses system
+monospace fonts. No font service is required.
+
+**View source** opens the defining `.mojo` file (or a guide's README) at the Git
+commit used to build the site. Module paths come from the package's configured
+source directory, including nested packages. The compiler JSON has no source
+line locations, so links target files rather than guessed line numbers. Local
+builds use `HEAD`; uncommitted edits appear on GitHub only after committing and
+publishing them. Source archives and projects without a GitHub `origin` omit
+the action instead of generating a broken link.
 
 The layout follows the readable article/sidebar conventions of the official
 [Mojo docs](https://mojolang.org/docs/). Their Docusaurus frontend is maintained in

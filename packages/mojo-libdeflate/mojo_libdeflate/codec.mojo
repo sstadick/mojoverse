@@ -67,5 +67,20 @@ def crc32(initial: UInt32, source: Pointer[UInt8, _], size: Int) -> UInt32:
 
 @always_inline
 def crc32(source: Span[mut=False, UInt8, _], initial: UInt32 = 0) -> UInt32:
-    """Checksum bytes, or extend an earlier checksum with another span."""
+    """Checksum bytes, or extend an earlier checksum with another span.
+
+    Start at zero; pass the preceding result when processing another chunk.
+    This computes an IEEE CRC32, not a cryptographic hash.
+
+    ```mojo {doctest="crc32-incremental" global=true}
+    from mojo_libdeflate import crc32
+    from std.testing import assert_equal
+
+    def main() raises:
+        var checksum = crc32("1234".as_bytes())
+        checksum = crc32("56789".as_bytes(), checksum)
+        assert_equal(checksum, UInt32(0xCBF43926))
+        assert_equal(crc32("123456789".as_bytes()), checksum)
+    ```
+    """
     return crc32(initial, source.unsafe_ptr(), len(source))

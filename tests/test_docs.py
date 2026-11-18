@@ -1,6 +1,7 @@
 """Integration tests: real compiler, Modo, example execution, and Zensical."""
 
 from html import unescape
+from html.parser import HTMLParser
 import os
 from pathlib import Path
 import re
@@ -9,6 +10,9 @@ import subprocess
 import tempfile
 import tomllib
 import unittest
+from urllib.parse import urljoin
+
+from mojoverse.site import build_site
 
 
 class DocumentationTests(unittest.TestCase):
@@ -52,6 +56,22 @@ class DocumentationTests(unittest.TestCase):
             f"\n[API](https://sstadick.github.io/mojoverse/{self.project.name}/probe/api/add.html)\n"
         )
         (self.project / "NOTICE.md").write_text("# Notice\n\nFixture attribution.\n")
+        nested = self.source / "nested"
+        nested.mkdir()
+        (nested / "__init__.mojo").write_text('"""Nested package."""\n')
+        (nested / "detail.mojo").write_text('"""Nested module."""\n')
+        subprocess.run(["git", "init", str(self.project)], check=True, capture_output=True)
+        self.addCleanup(shutil.rmtree, self.project / ".git")
+        subprocess.run(["git", "-C", str(self.project), "add", "src", "README.md"], check=True)
+        subprocess.run([
+            "git", "-C", str(self.project), "-c", "user.name=Docs Fixture",
+            "-c", "user.email=docs@example.invalid", "commit", "-m", "Fixture",
+        ], check=True, capture_output=True)
+        subprocess.run([
+            "git", "-C", str(self.project), "remote", "add", "origin", "git@github.com:example/docs-fixture.git",
+        ], check=True)
+        revision = subprocess.check_output(["git", "-C", str(self.project), "rev-parse", "HEAD"], text=True).strip()
+        source_base = f"https://github.com/example/docs-fixture/blob/{revision}/"
         includes = ("--readme", "README.md", "--include", "NOTICE.md")
         result = self.invoke(*includes)
         self.assertEqual(result.returncode, 0, result.stdout)
@@ -61,6 +81,10 @@ class DocumentationTests(unittest.TestCase):
         self.assertIn("def add(a: Float64, b: Float64) -> Float64", api)
         self.assertNotIn("fn def", api)
         self.assertIn("Box.md", api)
+        self.assertIn(source_base + "src/probe/api.mojo", api)
+        self.assertIn(source_base + "src/probe/__init__.mojo", (self.output / "probe/_index.md").read_text())
+        self.assertIn(source_base + "src/probe/nested/detail.mojo", (self.output / "probe/nested/detail/_index.md").read_text())
+        self.assertIn(source_base + "src/probe/nested/__init__.mojo", (self.output / "probe/nested/_index.md").read_text())
         box = (self.output / "probe/api/Box.md").read_text()
         self.assertIn("struct Box[T: Copyable & Deinitable]", box)
         self.assertNotIn("@memory_only", box)
@@ -73,7 +97,10 @@ class DocumentationTests(unittest.TestCase):
         html = (self.output / "probe/api/add.html").read_text()
         self.assertNotIn('doctest=', html)
         self.assertNotIn('```mojo', html)
+        self.assertIn(f'href="{source_base}src/probe/api.mojo"', html)
+        self.assertIn("View source", html)
         index = (self.output / "index.html").read_text()
+        self.assertIn(f'href="{source_base}README.md"', index)
         text = unescape(re.sub(r"<[^>]+>", "", index))
         self.assertIn("var values = [3, 7]", text)
         self.assertIn("    print(values[1])", text)
@@ -108,6 +135,47 @@ class DocumentationTests(unittest.TestCase):
         result = self.invoke("--readme", "README.md", "--link-library", str(archive))
         self.assertEqual(result.returncode, 0, result.stdout)
         self.assertIn("3 executable examples passed", result.stdout)
+        self.assertNotIn("source_url:", (self.output / "probe/api/add.md").read_text())
+
+    def test_sidebar_shows_only_current_library(self):
+        class SidebarLinks(HTMLParser):
+            def __init__(self, html):
+                super().__init__()
+                self.depth = 0
+                self.links = []
+                self.feed(html)
+
+            def handle_starttag(self, tag, attrs):
+                attrs = dict(attrs)
+                if tag == "nav" and (self.depth or "md-nav--primary" in attrs.get("class", "")):
+                    self.depth += 1
+                if self.depth and tag == "a":
+                    self.links.append(attrs["href"])
+
+            def handle_endtag(self, tag):
+                if tag == "nav" and self.depth:
+                    self.depth -= 1
+
+        with tempfile.TemporaryDirectory() as directory:
+            work = Path(directory)
+            source = work / "source"
+            source.mkdir()
+            (source / "index.md").write_text("# Libraries\n")
+            nav = [{"Libraries": "index.md"}]
+            for name in ("first", "second"):
+                (source / name).mkdir()
+                (source / name / "index.md").write_text(f"# {name}\n")
+                (source / name / "symbol.md").write_text("# Symbol\n")
+                nav.append({name: [{"Guide": f"{name}/index.md"}, {"Symbol": f"{name}/symbol.md"}]})
+            build_site(source, work / "site", "Fixture", nav, catalog=True)
+            home = SidebarLinks((work / "site/index.html").read_text()).links
+            self.assertEqual(home, ["index.html"])
+            for name in ("first", "second"):
+                links = SidebarLinks((work / f"site/{name}/symbol.html").read_text()).links
+                self.assertEqual(
+                    {urljoin(f"https://docs.test/{name}/symbol.html", link) for link in links},
+                    {"https://docs.test/index.html", f"https://docs.test/{name}/index.html", f"https://docs.test/{name}/symbol.html"},
+                )
 
     def test_failed_assertion_preserves_previous_output(self):
         result = self.invoke()

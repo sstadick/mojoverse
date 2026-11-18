@@ -24,6 +24,31 @@ struct BufferedReader(Movable):
     `read_line` returns a view borrowing this reader; consume it before reading
     again. LF and CRLF terminate lines, a bare CR does not. A final terminator
     adds no extra line. NUL and malformed UTF-8 are ordinary bytes.
+
+    Convert or copy a borrowed line before retaining it. Test for `None`, not
+    an empty span: empty lines are records, not the end of the file.
+
+    ```mojo {doctest="reader-lines" global=true}
+    from mojo_io import BufferedReader
+    from std.pathlib import Path
+    from std.tempfile import TemporaryDirectory
+    from std.testing import assert_equal
+
+    def main() raises:
+        var directory = TemporaryDirectory()
+        var path = String(Path(directory.name) / "names.txt")
+        with open(path, "w") as file:
+            file.write("alpha\\r\\n\\nbeta")
+        var reader = BufferedReader(open(path, "r"))
+        var names = List[String]()
+        while True:
+            var line = reader.read_line()
+            if not line:
+                break
+            names.append(String(from_utf8=line.value()))
+        reader.close()
+        assert_equal(names, [String("alpha"), String(""), String("beta")])
+    ```
     """
 
     var _file: Optional[FileHandle]
@@ -173,6 +198,26 @@ struct BufferedWriter(Movable):
     so a retry or destructor cannot duplicate a partially written buffer.
     Destruction attempts to flush, but cannot report an error; explicit close
     is required when successful output matters.
+
+    ```mojo {doctest="writer-bytes" global=true}
+    from mojo_io import BufferedWriter
+    from std.pathlib import Path
+    from std.tempfile import TemporaryDirectory
+    from std.testing import assert_equal
+
+    def main() raises:
+        var directory = TemporaryDirectory()
+        var path = String(Path(directory.name) / "bytes.bin")
+        var bytes: List[UInt8] = [65, 0, 255, 10]
+        var writer = BufferedWriter(open(path, "w"))
+        writer.write_bytes(Span(bytes))
+        writer.close()  # Flushes buffered bytes and reports write errors.
+
+        var actual = List[UInt8](length=4, fill=0)
+        with open(path, "r") as file:
+            assert_equal(file.read(Span(actual)), 4)
+        assert_equal(actual, bytes)
+    ```
     """
 
     var _file: Optional[FileHandle]
