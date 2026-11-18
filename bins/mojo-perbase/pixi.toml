@@ -1,0 +1,57 @@
+[workspace]
+authors = ["Seth Stadick <sstadick@gmail.com>"]
+channels = [
+    "https://prefix.dev/conda-forge",
+    "https://conda.modular.com/max",
+    "https://repo.prefix.dev/modular-community",
+]
+platforms = ["linux-64", "linux-aarch64", "osx-arm64"]
+preview = ["pixi-build"]
+requires-pixi = ">=0.76"
+
+[package]
+name = "mojo-perbase"
+version = "0.1.0"
+license = "MIT"
+license-file = "LICENSE"
+
+[package.build]
+backend = { name = "pixi-build-mojo", version = "=0.2.9.20261117.1659.e14419f", channels = [
+    "https://prefix.dev/pixi-build-backends",
+    "https://prefix.dev/conda-forge",
+] }
+[[package.build.config.bins]]
+name = "mojo-perbase"
+path = "main.mojo"
+extra-args = ["-O3", "-Xlinker", "-L$PREFIX/lib", "-Xlinker", "-lmojo_perbase_native", "-Xlinker", "-lmojo_threads_native", "-Xlinker", "-ldeflate", "-Xlinker", "-lpthread"]
+
+[package.host-dependencies]
+mojo-compiler = "=1.2.0"
+mojo-seqair = { path = "../mojo-seqair" }
+mojo-libdeflate = { path = "../mojo-libdeflate" }
+mojo-libdeflate-native = { path = "../mojo-libdeflate/native" }
+mojo-threads = { path = "../mojo-threads" }
+mojo-threads-native = { path = "../mojo-threads/native" }
+mojopt = { git = "https://github.com/sstadick/mojopt", rev = "de6f04b98b2075e9bc05459c5864e3d249534129" }
+mojo-perbase-native = { path = "native" }
+
+[package.build-dependencies]
+mojo-compiler = "=1.2.0"
+mojo-seqair = { path = "../mojo-seqair" }
+mojo-libdeflate = { path = "../mojo-libdeflate" }
+mojo-threads = { path = "../mojo-threads" }
+mojopt = { git = "https://github.com/sstadick/mojopt", rev = "de6f04b98b2075e9bc05459c5864e3d249534129" }
+
+[package.run-dependencies]
+mojo-compiler = "=1.2.0"
+
+[tasks]
+r = "mojo-perbase"
+t = "python3 tests/smoke.py --binary $CONDA_PREFIX/bin/mojo-perbase"
+consumer = "python3 scripts/consumer.py"
+format = "mojo format --line-length 100 ."
+
+[dependencies]
+mojo = "=1.2.0"
+mojo-perbase = { path = "." }
+python = "3.12.*"

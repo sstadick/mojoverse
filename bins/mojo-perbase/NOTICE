@@ -1,0 +1,19 @@
+Native Mojo experiment derived from the MIT Perbase, goose-perbase and
+c-perbase application algorithms by Seth Stadick. The Goose application
+reference is e84cc768234f3332237c609fe934178eaf46ebb6. C Perbase's optimized local
+source was also consulted; it is not linked into this application.
+
+The reader dependency mojo-seqair retains the Seth Stadick and Pascal Hertleif
+MIT attribution for Goose Seqair/Seqair-derived algorithms. libdeflate 1.26 is
+vendored in mojo-libdeflate with its original COPYING file. No Goose-generated
+C or Rust code is linked. native/perbase.c is application-specific POSIX output
+glue; reusable pthread/CPU-count glue lives in mojo-threads.
+
+CoffeeVampir3/Mojo-Linuxperiments revision
+0637c1082ffd43e9fb561f24163d1a4a5e0e09f0 was evaluated, not copied or linked.
+It uses obsolete Mojo APIs and raw clone/TLS setup not validated for this
+allocation-heavy application. Persistent pthreads are used instead.
+
+tests/compare.py imports an external Goose test suite read-only, preserving
+its assertions. Python/pysam and reference binaries are validation tools,
+not application runtime dependencies.

@@ -1,0 +1,495 @@
+{
+  "scope": "Local unpublished packaging refactor; no counting, formatting or record-processing algorithm changes.",
+  "linux_platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.39",
+  "mojo": "1.2.0 (2016d0cd)",
+  "mojopt_revision": "de6f04b98b2075e9bc05459c5864e3d249534129",
+  "libdeflate": "1.26",
+  "benchmark": "packaging-benchmarks.json",
+  "benchmark_summary": {
+    "base": {
+      "before": {
+        "wall_runs_s": [
+          4.38,
+          4.35,
+          4.37,
+          4.32,
+          4.33
+        ],
+        "median_wall_s": 4.35,
+        "median_cpu_s": 41.39,
+        "median_rss_gib": 5.200313568115234
+      },
+      "packaged": {
+        "wall_runs_s": [
+          4.34,
+          4.38,
+          4.31,
+          4.32,
+          4.31
+        ],
+        "median_wall_s": 4.32,
+        "median_cpu_s": 40.63,
+        "median_rss_gib": 5.223506927490234
+      }
+    },
+    "base-mates": {
+      "before": {
+        "wall_runs_s": [
+          4.78,
+          4.71,
+          4.8,
+          4.81,
+          4.7
+        ],
+        "median_wall_s": 4.78,
+        "median_cpu_s": 51.870000000000005,
+        "median_rss_gib": 5.538177490234375
+      },
+      "packaged": {
+        "wall_runs_s": [
+          4.89,
+          4.84,
+          4.81,
+          4.81,
+          4.75
+        ],
+        "median_wall_s": 4.81,
+        "median_cpu_s": 52.8,
+        "median_rss_gib": 5.602821350097656
+      }
+    },
+    "depth": {
+      "before": {
+        "wall_runs_s": [
+          0.95,
+          0.94,
+          0.94,
+          0.93,
+          0.93
+        ],
+        "median_wall_s": 0.94,
+        "median_cpu_s": 8.23,
+        "median_rss_gib": 0.254638671875
+      },
+      "packaged": {
+        "wall_runs_s": [
+          0.93,
+          0.95,
+          0.95,
+          0.95,
+          0.96
+        ],
+        "median_wall_s": 0.95,
+        "median_cpu_s": 8.25,
+        "median_rss_gib": 0.254150390625
+      }
+    },
+    "depth-mates": {
+      "before": {
+        "wall_runs_s": [
+          0.91,
+          0.96,
+          0.93,
+          0.95,
+          0.96
+        ],
+        "median_wall_s": 0.95,
+        "median_cpu_s": 8.67,
+        "median_rss_gib": 0.340576171875
+      },
+      "packaged": {
+        "wall_runs_s": [
+          0.95,
+          0.93,
+          0.95,
+          0.96,
+          0.95
+        ],
+        "median_wall_s": 0.95,
+        "median_cpu_s": 8.54,
+        "median_rss_gib": 0.34130859375
+      }
+    },
+    "depth-fast": {
+      "before": {
+        "wall_runs_s": [
+          0.91,
+          0.92,
+          0.94,
+          0.93,
+          0.93
+        ],
+        "median_wall_s": 0.93,
+        "median_cpu_s": 8.17,
+        "median_rss_gib": 0.2548828125
+      },
+      "packaged": {
+        "wall_runs_s": [
+          0.92,
+          0.92,
+          0.92,
+          0.93,
+          0.94
+        ],
+        "median_wall_s": 0.92,
+        "median_cpu_s": 8.16,
+        "median_rss_gib": 0.254638671875
+      }
+    }
+  },
+  "identical_output_checks": 60,
+  "native_compilation": [
+    {
+      "repository": "mojo-perbase",
+      "commands": [
+        {
+          "directory": "<DEV>/mojo-perbase/native/.pixi/bld/mojo-perbase-native/wYwiHt_TPcg/work/build",
+          "command": "<DEV>/mojo-perbase/native/.pixi/bld/mojo-perbase-native/wYwiHt_TPcg/bld/bin/clang -O3 -DNDEBUG -fcolor-diagnostics -O3 -march=native -Wall -Wextra -Werror -o CMakeFiles/mojo_perbase_native.dir/perbase.c.o -c <DEV>/mojo-perbase/native/perbase.c",
+          "file": "<DEV>/mojo-perbase/native/perbase.c",
+          "output": "<DEV>/mojo-perbase/native/.pixi/bld/mojo-perbase-native/wYwiHt_TPcg/work/build/CMakeFiles/mojo_perbase_native.dir/perbase.c.o"
+        }
+      ]
+    },
+    {
+      "repository": "mojo-threads",
+      "commands": [
+        {
+          "directory": "<DEV>/mojo-threads/native/.pixi/bld/mojo-threads-native/hhH1IngyslI/work/build",
+          "command": "<DEV>/mojo-threads/native/.pixi/bld/mojo-threads-native/hhH1IngyslI/bld/bin/clang -O3 -DNDEBUG -fcolor-diagnostics -O3 -march=native -Wall -Wextra -Werror -o CMakeFiles/mojo_threads_native.dir/threads.c.o -c <DEV>/mojo-threads/native/threads.c",
+          "file": "<DEV>/mojo-threads/native/threads.c",
+          "output": "<DEV>/mojo-threads/native/.pixi/bld/mojo-threads-native/hhH1IngyslI/work/build/CMakeFiles/mojo_threads_native.dir/threads.c.o"
+        }
+      ]
+    },
+    {
+      "repository": "mojo-libdeflate",
+      "commands": [
+        {
+          "directory": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build",
+          "command": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/bld/bin/clang -I<DEV>/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/arm/cpu_features.c.o -c <DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/arm/cpu_features.c",
+          "file": "<DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/arm/cpu_features.c",
+          "output": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/arm/cpu_features.c.o"
+        },
+        {
+          "directory": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build",
+          "command": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/bld/bin/clang -I<DEV>/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/utils.c.o -c <DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/utils.c",
+          "file": "<DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/utils.c",
+          "output": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/utils.c.o"
+        },
+        {
+          "directory": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build",
+          "command": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/bld/bin/clang -I<DEV>/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/x86/cpu_features.c.o -c <DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/x86/cpu_features.c",
+          "file": "<DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/x86/cpu_features.c",
+          "output": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/x86/cpu_features.c.o"
+        },
+        {
+          "directory": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build",
+          "command": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/bld/bin/clang -I<DEV>/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/deflate_compress.c.o -c <DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/deflate_compress.c",
+          "file": "<DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/deflate_compress.c",
+          "output": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/deflate_compress.c.o"
+        },
+        {
+          "directory": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build",
+          "command": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/bld/bin/clang -I<DEV>/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/deflate_decompress.c.o -c <DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/deflate_decompress.c",
+          "file": "<DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/deflate_decompress.c",
+          "output": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/deflate_decompress.c.o"
+        },
+        {
+          "directory": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build",
+          "command": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/bld/bin/clang -I<DEV>/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/adler32.c.o -c <DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/adler32.c",
+          "file": "<DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/adler32.c",
+          "output": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/adler32.c.o"
+        },
+        {
+          "directory": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build",
+          "command": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/bld/bin/clang -I<DEV>/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/zlib_compress.c.o -c <DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/zlib_compress.c",
+          "file": "<DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/zlib_compress.c",
+          "output": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/zlib_compress.c.o"
+        },
+        {
+          "directory": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build",
+          "command": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/bld/bin/clang -I<DEV>/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/zlib_decompress.c.o -c <DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/zlib_decompress.c",
+          "file": "<DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/zlib_decompress.c",
+          "output": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/zlib_decompress.c.o"
+        },
+        {
+          "directory": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build",
+          "command": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/bld/bin/clang -I<DEV>/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/crc32.c.o -c <DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/crc32.c",
+          "file": "<DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/crc32.c",
+          "output": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/crc32.c.o"
+        },
+        {
+          "directory": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build",
+          "command": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/bld/bin/clang -I<DEV>/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/gzip_compress.c.o -c <DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/gzip_compress.c",
+          "file": "<DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/gzip_compress.c",
+          "output": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/gzip_compress.c.o"
+        },
+        {
+          "directory": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build",
+          "command": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/bld/bin/clang -I<DEV>/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/gzip_decompress.c.o -c <DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/gzip_decompress.c",
+          "file": "<DEV>/mojo-libdeflate/native/vendor/libdeflate/lib/gzip_decompress.c",
+          "output": "<DEV>/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/umXmSTltVmI/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/gzip_decompress.c.o"
+        }
+      ]
+    }
+  ],
+  "mac": {
+    "platform": "Darwin arm64",
+    "compiler": "Apple clang version 17.0.0 (clang-1700.4.4.1)\nTarget: arm64-apple-darwin25.3.0\nThread model: posix\nInstalledDir: /Applications/Xcode_26.1.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin\n",
+    "binary_sha256": "de21cbc3cec0e77539075ead45e3ec3c13034973263d6415c2ab99e1220d021e",
+    "native_compile_audit": [
+      {
+        "repository": "mojo-perbase",
+        "compile_commands": "/Users/runner/mojo-cleanup/mojo-perbase/native/.pixi/bld/mojo-perbase-native/2g5G91oZnNw/work/build/compile_commands.json",
+        "commands": [
+          {
+            "directory": "/Users/runner/mojo-cleanup/mojo-perbase/native/.pixi/bld/mojo-perbase-native/2g5G91oZnNw/work/build",
+            "command": "/usr/bin/clang -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=11.0 -fcolor-diagnostics -O3 -march=native -Wall -Wextra -Werror -o CMakeFiles/mojo_perbase_native.dir/perbase.c.o -c /Users/runner/mojo-cleanup/mojo-perbase/native/perbase.c",
+            "file": "/Users/runner/mojo-cleanup/mojo-perbase/native/perbase.c",
+            "output": "/Users/runner/mojo-cleanup/mojo-perbase/native/.pixi/bld/mojo-perbase-native/2g5G91oZnNw/work/build/CMakeFiles/mojo_perbase_native.dir/perbase.c.o"
+          }
+        ]
+      },
+      {
+        "repository": "mojo-threads",
+        "compile_commands": "/Users/runner/mojo-cleanup/mojo-threads/native/.pixi/bld/mojo-threads-native/VVbzkuVy1Xo/work/build/compile_commands.json",
+        "commands": [
+          {
+            "directory": "/Users/runner/mojo-cleanup/mojo-threads/native/.pixi/bld/mojo-threads-native/VVbzkuVy1Xo/work/build",
+            "command": "/usr/bin/clang -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=11.0 -fcolor-diagnostics -O3 -march=native -Wall -Wextra -Werror -o CMakeFiles/mojo_threads_native.dir/threads.c.o -c /Users/runner/mojo-cleanup/mojo-threads/native/threads.c",
+            "file": "/Users/runner/mojo-cleanup/mojo-threads/native/threads.c",
+            "output": "/Users/runner/mojo-cleanup/mojo-threads/native/.pixi/bld/mojo-threads-native/VVbzkuVy1Xo/work/build/CMakeFiles/mojo_threads_native.dir/threads.c.o"
+          }
+        ]
+      },
+      {
+        "repository": "mojo-libdeflate",
+        "compile_commands": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build/compile_commands.json",
+        "commands": [
+          {
+            "directory": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build",
+            "command": "/usr/bin/clang -I/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -arch arm64 -mmacosx-version-min=11.0 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/arm/cpu_features.c.o -c /Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/arm/cpu_features.c",
+            "file": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/arm/cpu_features.c",
+            "output": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/arm/cpu_features.c.o"
+          },
+          {
+            "directory": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build",
+            "command": "/usr/bin/clang -I/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -arch arm64 -mmacosx-version-min=11.0 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/utils.c.o -c /Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/utils.c",
+            "file": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/utils.c",
+            "output": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/utils.c.o"
+          },
+          {
+            "directory": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build",
+            "command": "/usr/bin/clang -I/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -arch arm64 -mmacosx-version-min=11.0 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/x86/cpu_features.c.o -c /Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/x86/cpu_features.c",
+            "file": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/x86/cpu_features.c",
+            "output": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/x86/cpu_features.c.o"
+          },
+          {
+            "directory": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build",
+            "command": "/usr/bin/clang -I/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -arch arm64 -mmacosx-version-min=11.0 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/deflate_compress.c.o -c /Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/deflate_compress.c",
+            "file": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/deflate_compress.c",
+            "output": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/deflate_compress.c.o"
+          },
+          {
+            "directory": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build",
+            "command": "/usr/bin/clang -I/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -arch arm64 -mmacosx-version-min=11.0 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/deflate_decompress.c.o -c /Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/deflate_decompress.c",
+            "file": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/deflate_decompress.c",
+            "output": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/deflate_decompress.c.o"
+          },
+          {
+            "directory": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build",
+            "command": "/usr/bin/clang -I/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -arch arm64 -mmacosx-version-min=11.0 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/adler32.c.o -c /Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/adler32.c",
+            "file": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/adler32.c",
+            "output": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/adler32.c.o"
+          },
+          {
+            "directory": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build",
+            "command": "/usr/bin/clang -I/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -arch arm64 -mmacosx-version-min=11.0 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/zlib_compress.c.o -c /Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/zlib_compress.c",
+            "file": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/zlib_compress.c",
+            "output": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/zlib_compress.c.o"
+          },
+          {
+            "directory": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build",
+            "command": "/usr/bin/clang -I/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -arch arm64 -mmacosx-version-min=11.0 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/zlib_decompress.c.o -c /Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/zlib_decompress.c",
+            "file": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/zlib_decompress.c",
+            "output": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/zlib_decompress.c.o"
+          },
+          {
+            "directory": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build",
+            "command": "/usr/bin/clang -I/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -arch arm64 -mmacosx-version-min=11.0 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/crc32.c.o -c /Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/crc32.c",
+            "file": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/crc32.c",
+            "output": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/crc32.c.o"
+          },
+          {
+            "directory": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build",
+            "command": "/usr/bin/clang -I/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -arch arm64 -mmacosx-version-min=11.0 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/gzip_compress.c.o -c /Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/gzip_compress.c",
+            "file": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/gzip_compress.c",
+            "output": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/gzip_compress.c.o"
+          },
+          {
+            "directory": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build",
+            "command": "/usr/bin/clang -I/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate -O3 -DNDEBUG -std=gnu11 -arch arm64 -mmacosx-version-min=11.0 -fcolor-diagnostics -O3 -march=native -Wall -Wdeclaration-after-statement -Wimplicit-fallthrough -Wmissing-field-initializers -Wmissing-prototypes -Wpedantic -Wshadow -Wstrict-prototypes -Wundef -Wvla -o vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/gzip_decompress.c.o -c /Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/gzip_decompress.c",
+            "file": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/vendor/libdeflate/lib/gzip_decompress.c",
+            "output": "/Users/runner/mojo-cleanup/mojo-libdeflate/native/.pixi/bld/mojo-libdeflate-native/gm-vHqlDuds/work/build/vendor/libdeflate/CMakeFiles/libdeflate_static.dir/lib/gzip_decompress.c.o"
+          }
+        ]
+      }
+    ],
+    "lock_sha256": {
+      "mojo-perbase": "a594758fe28ac780e96cf1f0caef6cc32c64199a4f322b7e6274af19f91e154d",
+      "mojo-seqair": "50d9d9f3e62b04daa9932f459943527ddfd0e45375309a985ee560d2244162ef",
+      "mojo-threads": "c9bca827124cd48e89eb28d5a4fd6060e19ec335a6d9b522b2b0610b5cf54229",
+      "mojo-libdeflate": "141113749e1e4544702458344028526c785797ee9022c587615c10b329c67fea"
+    }
+  },
+  "validation_logs": {
+    "pinned-smoke.log": {
+      "sha256": "a1f73d40eb9394c9bd43b8c6dfc36746072996ec24c730708cfcabd88b8680a8",
+      "tail": [
+        "\u2728 Pixi task (t): python3 tests/smoke.py --binary $CONDA_PREFIX/bin/mojo-perbase",
+        "PASS 48 CLI checks: independent counts, workers, BGZF ring, errors and hardlinks"
+      ]
+    },
+    "pinned-consumer.log": {
+      "sha256": "ef14c97a044d2dd111401aae0b3e56294947903db12b5f3fc186451bd4cb786e",
+      "tail": [
+        "Running 1 tests for <TMP>/perbase-consumer-jfpj3ro3/test_sequence.mojo ",
+        "    PASS [ 0.066 ] test_sequence_alphabet_and_vector_tails",
+        "--------",
+        "Summary [ 0.066 ] 1 tests run: 1 passed , 0 failed , 0 skipped ",
+        "",
+        "PASS 48 CLI checks: independent counts, workers, BGZF ring, errors and hardlinks",
+        "PASS installed application, reader, codec and workers without source include paths"
+      ]
+    },
+    "pinned-compare.log": {
+      "sha256": "521b91033c6839414a9471eb7ceda2fa6e908ed0697f8896dcc7429f23bec739",
+      "tail": [
+        "Reference suite SHA256: 406c4dee8d54d620cc1b52fbabdd80ab3b55230c5ec57b51f8d69d48fa9cf03b",
+        "Oracle: <BENCHMARK_ROOT>/rust-current-target/release/perbase",
+        "SKIP: CRAM is not implemented",
+        "PASS ordered multi-piece output, empty regions, slot reuse and BGZF",
+        "SKIP: reference benchmark driver",
+        "PASS: independent CIGAR/depth oracles; Rust Perbase base-depth and only-depth parity for options, workers, mates, intervals, missing SEQ, BGZF and I/O",
+        "PASS 930 subprocess invocations; oracle is the explicit binary above, not necessarily Rust"
+      ]
+    },
+    "pinned-edges.log": {
+      "sha256": "c67bb90b76c16b71912224eec9034daf777500a7f26849d4e3cbb8899dd62860",
+      "tail": [
+        "CHECK positioned-unmapped.bam only-depth -c 7 -x -F 4",
+        "CHECK paper-chr20-full.bam base-depth -b <TMP>/c-perbase-edges-76pju_ga/selection.bed -c 1000000",
+        "CHECK paper-chr20-full.bam base-depth -b <TMP>/c-perbase-edges-76pju_ga/selection.bed -c 1000000 -m",
+        "CHECK paper-chr20-full.bam only-depth -b <TMP>/c-perbase-edges-76pju_ga/selection.bed -c 1000000",
+        "CHECK paper-chr20-full.bam only-depth -b <TMP>/c-perbase-edges-76pju_ga/selection.bed -c 1000000 -m",
+        "CHECK paper-chr20-full.bam only-depth -b <TMP>/c-perbase-edges-76pju_ga/selection.bed -c 1000000 -x",
+        "PASS 20 edge/real-data checks; 64 subprocesses; no timings"
+      ]
+    },
+    "asan-smoke.log": {
+      "sha256": "eaad8d11444d710b3b08c499ef0e132d5c2fcfa676d0a426ff2dc8cb894f62ac",
+      "tail": [
+        "PASS 48 CLI checks: independent counts, workers, BGZF ring, errors and hardlinks"
+      ]
+    },
+    "asan-compare.log": {
+      "sha256": "521b91033c6839414a9471eb7ceda2fa6e908ed0697f8896dcc7429f23bec739",
+      "tail": [
+        "Reference suite SHA256: 406c4dee8d54d620cc1b52fbabdd80ab3b55230c5ec57b51f8d69d48fa9cf03b",
+        "Oracle: <BENCHMARK_ROOT>/rust-current-target/release/perbase",
+        "SKIP: CRAM is not implemented",
+        "PASS ordered multi-piece output, empty regions, slot reuse and BGZF",
+        "SKIP: reference benchmark driver",
+        "PASS: independent CIGAR/depth oracles; Rust Perbase base-depth and only-depth parity for options, workers, mates, intervals, missing SEQ, BGZF and I/O",
+        "PASS 930 subprocess invocations; oracle is the explicit binary above, not necessarily Rust"
+      ]
+    },
+    "asan-edges.log": {
+      "sha256": "f702985429445ea961319dcec088b6e60b2fdca987ec02648a1f2290dd89d9bf",
+      "tail": [
+        "CHECK positioned-unmapped.bam only-depth -c 7 -x -F 4",
+        "CHECK paper-chr20-full.bam base-depth -b <TMP>/c-perbase-edges-e0pj5hne/selection.bed -c 1000000",
+        "CHECK paper-chr20-full.bam base-depth -b <TMP>/c-perbase-edges-e0pj5hne/selection.bed -c 1000000 -m",
+        "CHECK paper-chr20-full.bam only-depth -b <TMP>/c-perbase-edges-e0pj5hne/selection.bed -c 1000000",
+        "CHECK paper-chr20-full.bam only-depth -b <TMP>/c-perbase-edges-e0pj5hne/selection.bed -c 1000000 -m",
+        "CHECK paper-chr20-full.bam only-depth -b <TMP>/c-perbase-edges-e0pj5hne/selection.bed -c 1000000 -x",
+        "PASS 20 edge/real-data checks; 64 subprocesses; no timings"
+      ]
+    }
+  },
+  "linux_validation": {
+    "release_and_asan_differential_invocations_each": 930,
+    "release_and_asan_edge_invocations_each": 64,
+    "release_and_asan_cli_checks_each": 48,
+    "native_asan_instrumentation": "Mojo, pthread/output C glue and libdeflate; Clang 18.1.3 for sanitizer native build, Clang 18.1.8 for packaged release."
+  },
+  "mac_validation": {
+    "cli_checks": 45,
+    "fresh_prefix_consumer": "Application plus sequence decoding, codec and allocating/restarting persistent workers. No source -I paths.",
+    "same_lockfiles_as_linux": true
+  },
+  "limits": [
+    "Linux AArch64 declared but not run on native hardware.",
+    "No CRAM/CRAI support.",
+    "No ThreadSanitizer rerun.",
+    "macOS validation uses synthetic CLI and library fixtures, not the Linux full real-data suite.",
+    "Host-native artifacts are not portable release binaries.",
+    "Small overlapping elapsed-time differences are not claimed speedups."
+  ],
+  "unchanged_mojo_files_vs_control": [
+    "mojo-perbase/count.mojo",
+    "mojo-perbase/fasta.mojo",
+    "mojo-perbase/text.mojo",
+    "mojo-perbase/merge.mojo",
+    "mojo-perbase/regions.mojo",
+    "mojo-perbase/names.mojo",
+    "mojo-perbase/main.mojo",
+    "mojo-seqair/mojo_seqair/buffer.mojo",
+    "mojo-seqair/mojo_seqair/__init__.mojo",
+    "mojo-seqair/mojo_seqair/bam.mojo",
+    "mojo-seqair/tests/test_sequence.mojo"
+  ],
+  "source_sha256": {
+    "mojo-perbase/pixi.toml": "a2c833e06405cafa2eb6688ab1bef657400b63c37163c3948bad633cd88442ee",
+    "mojo-perbase/pixi.lock": "a594758fe28ac780e96cf1f0caef6cc32c64199a4f322b7e6274af19f91e154d",
+    "mojo-perbase/output.mojo": "29e81a45bd4f4b290a83c8947022d4cef5860c3b2b43a57128ee3899ed9b6145",
+    "mojo-perbase/options.mojo": "733542fe0e5863d589853c5d06239e92ec2760a62c663857f2799496271a8443",
+    "mojo-perbase/count.mojo": "4119e2a3977462b3da1f1babfca32c59aac7d8ea73374aba8cfa08be5add12e0",
+    "mojo-perbase/compression.mojo": "c551fe4063aa3d3a5185d0192ea03ab6462ac166707c614eaae5cc688201b92b",
+    "mojo-perbase/fasta.mojo": "2355a7ff761ce6185ba0dd7e128e5a759a265d85fdd799499c18c1f3e83a1d15",
+    "mojo-perbase/text.mojo": "27ada5c4c44a025ab89110897ead3dd8e1b3a9a68a499cfc2ba995297d2737a3",
+    "mojo-perbase/merge.mojo": "5364754a2dfcf9bbdf45abc2d44bd88431bcd7d3f2307fc382bed751347aa8c1",
+    "mojo-perbase/regions.mojo": "7b1be7144018a593476677e885b63e09a4124df70f9398e31efcdace91ac5471",
+    "mojo-perbase/names.mojo": "8d6bea53c1ded75cd253a9379227c90331c8416e0435859d04f7db0bc918e9e7",
+    "mojo-perbase/main.mojo": "b71f3760fe86f89ac24a21b15cbaea603b4e3eaf9fab290e42b1ca4770c3036b",
+    "mojo-perbase/pipeline.mojo": "9c075bdb7d90b247596c18e828e071fc983a9afbd789313ed33f37421036b2c8",
+    "mojo-perbase/native/perbase.c": "157ee8649528880b4bb0430d9d70c588eb4e2a8a36b76033f0e336d70af8ca38",
+    "mojo-perbase/native/CMakeLists.txt": "575b10f9d9c65bfc90ed696fea4cab3a8ca6f3ad87ee838051782287c1c78c20",
+    "mojo-perbase/native/pixi.toml": "0acaca33ac2ddc5086a4ee549fbe2c7782bbe794e53df457e0c1bc00d66ab3b0",
+    "mojo-perbase/tests/smoke.py": "60817e5c5dd70203a8e3f579a6b6a0f4c91d30d62e37b92f3f0589ff42c7445d",
+    "mojo-perbase/tests/compare.py": "add302a51ff091b77ca575f40134064650ec62badc7836d34ca848caafa9ab42",
+    "mojo-perbase/scripts/consumer.py": "2697c40e3bd3c5c9ba5094ca24c911c0607e923e7716e181003d00ea7199fb13",
+    "mojo-seqair/pixi.toml": "f9fe715b4ad0798d0dc121ee2ec9d1baeed6acc95b3beee4c86d6e3bc4aa5d2d",
+    "mojo-seqair/pixi.lock": "50d9d9f3e62b04daa9932f459943527ddfd0e45375309a985ee560d2244162ef",
+    "mojo-seqair/mojo_seqair/bgzf.mojo": "fb157fb24618b775143f0e9090a545b11357a4869ebb812a56a6aaff1137a340",
+    "mojo-seqair/mojo_seqair/buffer.mojo": "77edecfc489ec08f119db9ac7bc6286464a9d64ac3c1e89bf7d9d8f531f79fda",
+    "mojo-seqair/mojo_seqair/__init__.mojo": "e2567d6910089c1a715966ca07b19d08f0ad546fd2050ac4673512f6379e9104",
+    "mojo-seqair/mojo_seqair/bam.mojo": "4bc1585a6148bb35d0852da78daede8d64913639ee9dbe1856729c32ba7f64ff",
+    "mojo-seqair/tests/test_sequence.mojo": "53d86e5268a86bc60e6886f27b6f8baff9d9acb3afc2aabca259bc400e43846c",
+    "mojo-threads/pixi.toml": "3b7fad7a0b7b1bf3495cb405762482ed4aa048ffa318e3da6e26cafd2ba3ce41",
+    "mojo-threads/pixi.lock": "c9bca827124cd48e89eb28d5a4fd6060e19ec335a6d9b522b2b0610b5cf54229",
+    "mojo-threads/mojo_threads/worker.mojo": "8d1f24c09946006e60f37d76f06c90089276cc97e74abc8ce070eb001e17aa3a",
+    "mojo-threads/mojo_threads/__init__.mojo": "cc82fce7d7b98fd07ef72b5b8dd31e569c61838ead37b6818d49e4f62c8c0495",
+    "mojo-threads/native/threads.c": "2e609343c4c694257d315fad04e87af54aa9a2c379b591d9663bf06ed20e1ac9",
+    "mojo-threads/native/CMakeLists.txt": "295788b24928767e53a26c4677332ef43c16422b170c4981d69a5a22aa9fabfd",
+    "mojo-threads/native/pixi.toml": "538cbf91957d9e153976e4145a4b63748577efef691243d848932a1ba874e2ff",
+    "mojo-threads/tests/test_worker.mojo": "3ccbadb3352ff39eddc11a21948838c5822ed0d0b1159ea0e388c67a8da2015b",
+    "mojo-libdeflate/pixi.toml": "4c714ab649349b811f4ec03b04b9f031d5118f28cd4b2631ddb2667f45c9c90f",
+    "mojo-libdeflate/pixi.lock": "141113749e1e4544702458344028526c785797ee9022c587615c10b329c67fea",
+    "mojo-libdeflate/mojo_libdeflate/codec.mojo": "f950f93d6bae520fba57f7bd68eaefcab5e6ee5fc148f91e4a7bbb6d89c77689",
+    "mojo-libdeflate/mojo_libdeflate/__init__.mojo": "68f057e01d373c57e8d9d96ea058c467631965e25558931e38f0f9bc837afeb0",
+    "mojo-libdeflate/native/CMakeLists.txt": "f2312f40ad0717794a8fa2fe7221ca4bd08ce1ab8326de5dbaeacee257fd3f07",
+    "mojo-libdeflate/native/pixi.toml": "418e5f72e105a95b05030d9a3624cf8b5b8269e6957e3e8ad669b3073e626a95",
+    "mojo-libdeflate/tests/test_codec.mojo": "52fa50523978b25728ba6604ec35fdac5c236f76e1e6fcdd8a6bbc4eda46963d"
+  }
+}

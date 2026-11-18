@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 3.20)
+# Use the Xcode SDK toolchain on macOS, not Conda's incompatible LTO driver.
+if(CMAKE_HOST_APPLE)
+  set(CMAKE_C_COMPILER /usr/bin/clang CACHE FILEPATH "Apple Clang" FORCE)
+endif()
+project(mojo_perbase_native LANGUAGES C)
+if(NOT CMAKE_C_COMPILER_ID MATCHES "Clang")
+  message(FATAL_ERROR "Use Clang for native builds")
+endif()
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+add_library(mojo_perbase_native STATIC perbase.c)
+target_compile_options(mojo_perbase_native PRIVATE -O3 -march=native -Wall -Wextra -Werror)
+install(TARGETS mojo_perbase_native ARCHIVE DESTINATION lib)
