@@ -1,6 +1,7 @@
 from std.testing import assert_equal, TestSuite
 from lapper.cpu.bsearch import (
     lower_bound,
+    upper_bound,
     naive_bsearch,
     offset_bsearch,
     _lpow2,
@@ -221,6 +222,30 @@ def test_lower_bound_edge_cases() raises:
     # Single element - value larger than element
     result = lower_bound(single_span, 50)
     assert_equal(result, 1)
+
+
+def test_insertion_points_match_scan() raises:
+    """Check duplicates and every probe boundary, including partial search levels."""
+    for n in range(130):
+        var values = List[UInt32]()
+        for i in range(n):
+            values.append(UInt32(5 + (i // 3) * 2))
+        for key in range(0, 9 + n):
+            var lower = UInt(0)
+            var upper = UInt(0)
+            for value in values:
+                lower += UInt(value < UInt32(key))
+                upper += UInt(value <= UInt32(key))
+            assert_equal(lower_bound(Span(values), UInt32(key)), lower)
+            assert_equal(upper_bound(Span(values), UInt32(key)), upper)
+
+    var high: List[UInt32] = [0, 0, 1, UInt32.MAX, UInt32.MAX]
+    assert_equal(lower_bound(Span(high), UInt32.MAX), 3)
+    assert_equal(upper_bound(Span(high), UInt32.MAX), 5)
+    assert_equal(upper_bound(Span(high), UInt32.MAX - 1), 3)
+    var floats: List[Float32] = [-1.5, 0.5, 0.5, 3.5]
+    assert_equal(upper_bound(Span(floats), Float32(0.5)), 3)
+    assert_equal(upper_bound(Span(floats), Float32(0.25)), 1)
 
 
 def test_lpow2_simple() raises:

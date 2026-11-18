@@ -1,4 +1,5 @@
 from lapper.lapper import (
+    BITSLapper,
     Lapper,
     Interval,
     find_overlaps_kernel,
@@ -74,6 +75,7 @@ def benchmark_lapper_count() raises:
 
     print("Creating CPU Lapper...")
     var cpu_lapper = Lapper(intervals.copy())
+    var cpu_bits = BITSLapper(intervals.copy())
 
     print("Setting up GPU context...")
     var ctx = DeviceContext()
@@ -99,11 +101,20 @@ def benchmark_lapper_count() raises:
         host_starts,
         host_stops,
         host_vals,
-        host_stops_sorted,
         device_starts,
         device_stops,
         device_vals,
-        device_stops_sorted,
+    )
+
+    # BITS uses the same sorted starts but owns its independently sorted ends.
+    for i in range(num_intervals):
+        host_stops_sorted[i] = cpu_bits.stops_sorted[unsafe_offset=i]
+    host_stops_sorted.enqueue_copy_to(device_stops_sorted)
+    ctx.synchronize()
+    var gpu_bits = BITSLapper[owns_data=False](
+        gpu_lapper.starts,
+        device_stops_sorted.unsafe_ptr().unsafe_origin_cast[MutUntrackedOrigin](),
+        gpu_lapper.length,
     )
 
     # Test GPU kernel with a single query before benchmarking
@@ -125,7 +136,6 @@ def benchmark_lapper_count() raises:
             gpu_lapper.starts,
             gpu_lapper.stops,
             gpu_lapper.vals,
-            gpu_lapper.stops_sorted,
             UInt64(gpu_lapper.length),
             gpu_lapper.max_len,
             test_device_keys.unsafe_ptr(),
@@ -172,7 +182,7 @@ def benchmark_lapper_count() raises:
         def run() {imm}:
             var total_count: UInt = 0
             for query in queries:
-                var count = cpu_lapper.count(query.start, query.stop)
+                var count = cpu_bits.count(query.start, query.stop)
                 total_count += count
             keep(total_count)
 
@@ -216,7 +226,6 @@ def benchmark_lapper_count() raises:
                 gpu_lapper.starts,
                 gpu_lapper.stops,
                 gpu_lapper.vals,
-                gpu_lapper.stops_sorted,
                 UInt64(gpu_lapper.length),
                 gpu_lapper.max_len,
                 device_keys.unsafe_ptr(),
@@ -249,12 +258,9 @@ def benchmark_lapper_count() raises:
         @inline(.always)
         def kernel_launch(gpu_ctx: DeviceContext) raises {imm, mut device_keys, mut device_output}:
             gpu_ctx.enqueue_function[count_overlaps_kernel](
-                gpu_lapper.starts,
-                gpu_lapper.stops,
-                gpu_lapper.vals,
-                gpu_lapper.stops_sorted,
-                UInt64(gpu_lapper.length),
-                gpu_lapper.max_len,
+                gpu_bits.starts,
+                gpu_bits.stops_sorted,
+                UInt64(gpu_bits.length),
                 device_keys.unsafe_ptr(),
                 UInt64(num_queries * 2),
                 device_output.unsafe_ptr(),
@@ -334,12 +340,9 @@ def benchmark_lapper_count() raises:
 
     # Run GPU count kernel
     ctx.enqueue_function[count_overlaps_kernel](
-        gpu_lapper.starts,
-        gpu_lapper.stops,
-        gpu_lapper.vals,
-        gpu_lapper.stops_sorted,
-        UInt64(gpu_lapper.length),
-        gpu_lapper.max_len,
+        gpu_bits.starts,
+        gpu_bits.stops_sorted,
+        UInt64(gpu_bits.length),
         device_keys.unsafe_ptr(),
         UInt64(sample_queries * 2),
         device_count_output.unsafe_ptr(),
@@ -403,8 +406,8 @@ def benchmark_query_sorting_impact() raises:
     seed(42)  # Reset seed again
     var unsorted_queries = generate_queries(num_queries, max_coordinate, sorted=False)
 
-    print("Creating CPU Lapper...")
-    var cpu_lapper = Lapper(intervals^)
+    print("Creating CPU BITSLapper...")
+    var cpu_lapper = BITSLapper(intervals^)
 
     var b = Bench()
 

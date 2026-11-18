@@ -72,15 +72,17 @@ def lower_bound[dtype: DType](values: Span[Scalar[dtype], _], value: Scalar[dtyp
     # alias FETCH_OPTS = PrefetchOptions().for_read().high_locality().to_data_cache()
 
     # Handle edge cases
-    if len(values) == 0 or values[0] >= value:
+    if len(values) == 0 or values.unsafe_ptr()[unsafe_offset=0] >= value:
         return 0
-    elif values[len(values) - 1] < value:
+    elif values.unsafe_ptr()[unsafe_offset=len(values) - 1] < value:
         return UInt(len(values))
 
-    var cursor = UInt32(0)
-    var length = UInt32(len(values))
+    var cursor = 0
+    var length = len(values)
     while length > 1:
         var half = length >> 1
+        # 0 <= cursor, cursor + length <= len(values), 1 <= half < length.
+        # Thus cursor + half - 1 is in bounds before either update.
         length -= half
         # Prefetch does not seem to help on M3
         # prefetch[FETCH_OPTS](
@@ -92,7 +94,7 @@ def lower_bound[dtype: DType](values: Span[Scalar[dtype], _], value: Scalar[dtyp
 
         # Should be equivalent
         # cursor += UInt(half) if values[cursor + half - 1] < value else 0
-        cursor += UInt32(values[cursor + half - 1] < value) * half
+        cursor += Int(values.unsafe_ptr()[unsafe_offset=cursor + half - 1] < value) * half
 
     return UInt(cursor)
 
@@ -102,16 +104,17 @@ def upper_bound[dtype: DType](values: Span[Scalar[dtype], _], key: Scalar[dtype]
 
     The input must be sorted in ascending order. Empty input returns zero.
     """
-    var left = 0
-    var right = len(values)
+    var size = len(values)
+    if size == 0:
+        return 0
 
-    while left < right:
-        # 0 <= left <= mid < right <= len(values). Use the proven bound
-        # rather than rebuilding a checked Span access at every probe.
-        var mid = left + ((right - left) >> 1)
-        if values.unsafe_ptr()[unsafe_offset=mid] <= key:
-            left = mid + 1
-        else:
-            right = mid
+    var low = 0
+    while size > 1:
+        var half = size >> 1
+        # 0 <= low, low + size <= len(values), and 1 <= half < size.
+        # Only low depends on the comparison; size shrinks independently.
+        low += half if values.unsafe_ptr()[unsafe_offset=low + half - 1] <= key else 0
+        size -= half
 
-    return UInt(left)
+    # size == 1 and low < len(values), including when all elements match.
+    return UInt(low + Int(values.unsafe_ptr()[unsafe_offset=low] <= key))

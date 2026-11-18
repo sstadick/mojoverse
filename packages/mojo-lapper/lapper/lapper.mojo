@@ -6,7 +6,6 @@ from max.gpu.host import DeviceContext, HostBuffer, DeviceBuffer
 from max.gpu import thread_idx, block_idx, block_dim, barrier
 
 from std.bit import count_trailing_zeros
-from std.memory import unsafe_memcpy
 from std.memory.alloc import unsafe_alloc
 from std.sys import is_gpu
 
@@ -226,6 +225,15 @@ trait IntervalVisitor:
         ...
 
 
+@fieldwise_init
+struct _CountVisitor(IntervalVisitor):
+    var count: UInt
+
+    @always_inline
+    def visit(mut self, interval: Interval):
+        self.count += 1
+
+
 struct Lapper[*, owns_data: Bool = True](Sized):
     """An interval index for repeated overlap queries.
 
@@ -248,10 +256,6 @@ struct Lapper[*, owns_data: Bool = True](Sized):
     var vals: MutPointer[Int32, MutUntrackedOrigin]
     """Interval values/IDs in same order as starts."""
 
-    # For BITS algorithm optimization
-    var stops_sorted: MutPointer[UInt32, MutUntrackedOrigin]
-    """Stop positions sorted independently for BITS algorithm."""
-
     var length: UInt
     """Number of intervals stored in this Lapper."""
 
@@ -265,7 +269,6 @@ struct Lapper[*, owns_data: Bool = True](Sized):
         starts: MutPointer[UInt32, MutUntrackedOrigin],
         stops: MutPointer[UInt32, MutUntrackedOrigin],
         vals: MutPointer[Int32, MutUntrackedOrigin],
-        stops_sorted: MutPointer[UInt32, MutUntrackedOrigin],
         length: UInt,
         max_len: UInt32,
     ):
@@ -278,7 +281,6 @@ struct Lapper[*, owns_data: Bool = True](Sized):
         self.starts = starts
         self.stops = stops
         self.vals = vals
-        self.stops_sorted = stops_sorted
         self.length = length
         self.max_len = max_len
         self._blocks = BlockIndex()
@@ -322,7 +324,6 @@ struct Lapper[*, owns_data: Bool = True](Sized):
         self.starts = unsafe_alloc[UInt32](len(intervals))
         self.stops = unsafe_alloc[UInt32](len(intervals))
         self.vals = unsafe_alloc[Int32](len(intervals))
-        self.stops_sorted = unsafe_alloc[UInt32](len(intervals))
         self.max_len = UInt32(0)
         self._blocks = BlockIndex()
 
@@ -337,8 +338,6 @@ struct Lapper[*, owns_data: Bool = True](Sized):
             previous = key
         if disorder:
             radix_sort[key=_interval_key](Span(intervals))
-        var stops_disorder = 0
-        var previous_stop = UInt32(0)
         for i in range(0, len(intervals)):
             ref iv = intervals[i]
             self.starts[unsafe_offset=i] = iv.start
@@ -346,14 +345,7 @@ struct Lapper[*, owns_data: Bool = True](Sized):
             self.vals[unsafe_offset=i] = iv.val
             var length = iv.stop - iv.start
             self.max_len = length if length > self.max_len else self.max_len
-            stops_disorder += Int(iv.stop < previous_stop)
-            previous_stop = iv.stop
 
-        # N.B. Don't sort starts, we need them to be in the exact same order as intervals,
-        # which are sorted by starts first, then by stops.
-        unsafe_memcpy(dest=self.stops_sorted, src=self.stops, count=len(intervals))
-        if stops_disorder:
-            radix_sort(Span(unsafe_ptr=self.stops_sorted, length=len(intervals)))
         comptime if Self.owns_data:
             self._blocks.build(Span(unsafe_ptr=self.stops, length=len(intervals)))
 
@@ -366,11 +358,9 @@ struct Lapper[*, owns_data: Bool = True](Sized):
         host_starts: HostBuffer[DType.uint32],
         host_stops: HostBuffer[DType.uint32],
         host_vals: HostBuffer[DType.int32],
-        host_stops_sorted: HostBuffer[DType.uint32],
         mut device_starts: DeviceBuffer[DType.uint32],
         mut device_stops: DeviceBuffer[DType.uint32],
         mut device_vals: DeviceBuffer[DType.int32],
-        mut device_stops_sorted: DeviceBuffer[DType.uint32],
     ) raises -> Lapper[owns_data=False]:
         """Prepare a Lapper instance for GPU execution.
 
@@ -383,11 +373,9 @@ struct Lapper[*, owns_data: Bool = True](Sized):
             host_starts: Host buffer for interval start positions.
             host_stops: Host buffer for interval stop positions.
             host_vals: Host buffer for interval values.
-            host_stops_sorted: Host buffer for sorted stop positions.
             device_starts: Device buffer for interval start positions.
             device_stops: Device buffer for interval stop positions.
             device_vals: Device buffer for interval values.
-            device_stops_sorted: Device buffer for sorted stop positions.
 
         Returns:
             A GPU-ready Lapper instance with owns_data=False. The caller must
@@ -404,7 +392,6 @@ struct Lapper[*, owns_data: Bool = True](Sized):
             host_starts.unsafe_ptr(),
             host_stops.unsafe_ptr(),
             host_vals.unsafe_ptr(),
-            host_stops_sorted.unsafe_ptr(),
             length,
             max_len,
         )
@@ -412,14 +399,12 @@ struct Lapper[*, owns_data: Bool = True](Sized):
         host_starts.enqueue_copy_to(device_starts)
         host_stops.enqueue_copy_to(device_stops)
         host_vals.enqueue_copy_to(device_vals)
-        host_stops_sorted.enqueue_copy_to(device_stops_sorted)
         ctx.synchronize()
 
         return Lapper[owns_data=False](
             device_starts.unsafe_ptr().unsafe_origin_cast[MutUntrackedOrigin](),
             device_stops.unsafe_ptr().unsafe_origin_cast[MutUntrackedOrigin](),
             device_vals.unsafe_ptr().unsafe_origin_cast[MutUntrackedOrigin](),
-            device_stops_sorted.unsafe_ptr().unsafe_origin_cast[MutUntrackedOrigin](),
             lapper.length,
             lapper.max_len,
         )
@@ -443,7 +428,6 @@ struct Lapper[*, owns_data: Bool = True](Sized):
             self.starts.unsafe_free()
             self.stops.unsafe_free()
             self.vals.unsafe_free()
-            self.stops_sorted.unsafe_free()
 
     def find(
         self,
@@ -495,20 +479,24 @@ struct Lapper[*, owns_data: Bool = True](Sized):
                     break
         else:
             var block = Int(upper_bound(Span(self._blocks.prefix_max_ends), start))
-            var starts = Span(unsafe_ptr=self.starts, length=len(self))
-            var stops = Span(unsafe_ptr=self.stops, length=len(self))
             while block < len(self._blocks.min_ends):
+                # 0 <= block < ceil(length / BLOCK_SIZE) <= leaves, so
+                # begin < end <= length and leaves + block < len(max_tree).
                 var begin = block * BLOCK_SIZE
-                if starts[begin] >= stop:
+                if self.starts[unsafe_offset=begin] >= stop:
                     break
-                if self._blocks.max_tree[self._blocks.leaves + block] <= start:
+                if (
+                    self._blocks.max_tree.unsafe_ptr()[unsafe_offset=self._blocks.leaves + block]
+                    <= start
+                ):
                     block = self._blocks.next_above(block, start)
                     continue
                 var end = min(begin + BLOCK_SIZE, len(self))
-                if self._blocks.min_ends[block] > start:
+                var starts = Span(unsafe_ptr=self.starts.unsafe_offset(begin), length=end - begin)
+                if self._blocks.min_ends.unsafe_ptr()[unsafe_offset=block] > start:
                     var active_end = end
-                    if starts[end - 1] >= stop:
-                        active_end = begin + Int(lower_bound(starts[begin:end], stop))
+                    if self.starts[unsafe_offset=end - 1] >= stop:
+                        active_end = begin + Int(lower_bound(starts, stop))
                     for i in range(begin, active_end):
                         results.append(
                             Interval(
@@ -520,7 +508,8 @@ struct Lapper[*, owns_data: Bool = True](Sized):
                     if active_end != end:
                         break
                 else:
-                    var mask = overlap_mask(starts[begin:end], stops[begin:end], start, stop)
+                    var stops = Span(unsafe_ptr=self.stops.unsafe_offset(begin), length=end - begin)
+                    var mask = overlap_mask(starts, stops, start, stop)
                     while mask != 0:
                         var i = begin + Int(count_trailing_zeros(mask))
                         mask &= mask - 1
@@ -561,20 +550,24 @@ struct Lapper[*, owns_data: Bool = True](Sized):
                     break
         else:
             var block = Int(upper_bound(Span(self._blocks.prefix_max_ends), start))
-            var starts = Span(unsafe_ptr=self.starts, length=len(self))
-            var stops = Span(unsafe_ptr=self.stops, length=len(self))
             while block < len(self._blocks.min_ends):
+                # Same bounds as find: real blocks only, with the final block
+                # clamped to length. The two spans have equal length <= 32.
                 var begin = block * BLOCK_SIZE
-                if starts[begin] >= stop:
+                if self.starts[unsafe_offset=begin] >= stop:
                     break
-                if self._blocks.max_tree[self._blocks.leaves + block] <= start:
+                if (
+                    self._blocks.max_tree.unsafe_ptr()[unsafe_offset=self._blocks.leaves + block]
+                    <= start
+                ):
                     block = self._blocks.next_above(block, start)
                     continue
                 var end = min(begin + BLOCK_SIZE, len(self))
-                if self._blocks.min_ends[block] > start:
+                var starts = Span(unsafe_ptr=self.starts.unsafe_offset(begin), length=end - begin)
+                if self._blocks.min_ends.unsafe_ptr()[unsafe_offset=block] > start:
                     var active_end = end
-                    if starts[end - 1] >= stop:
-                        active_end = begin + Int(lower_bound(starts[begin:end], stop))
+                    if self.starts[unsafe_offset=end - 1] >= stop:
+                        active_end = begin + Int(lower_bound(starts, stop))
                     for i in range(begin, active_end):
                         visitor.visit(
                             Interval(
@@ -586,7 +579,8 @@ struct Lapper[*, owns_data: Bool = True](Sized):
                     if active_end != end:
                         break
                 else:
-                    var mask = overlap_mask(starts[begin:end], stops[begin:end], start, stop)
+                    var stops = Span(unsafe_ptr=self.stops.unsafe_offset(begin), length=end - begin)
+                    var mask = overlap_mask(starts, stops, start, stop)
                     while mask != 0:
                         var i = begin + Int(count_trailing_zeros(mask))
                         mask &= mask - 1
@@ -622,7 +616,11 @@ struct Lapper[*, owns_data: Bool = True](Sized):
         """Count the number of intervals that overlap with the query range [start, stop).
 
         Touching boundaries do not overlap. This method does not materialize
-        results or modify the index.
+        results or modify the index. It visits matches without building a
+        separate counting index.
+
+        If you only need counts, you probably want BITSLapper.count instead:
+        it uses two binary searches rather than visiting every matching interval.
 
         Args:
             start: Start position of query range (inclusive).
@@ -644,8 +642,97 @@ struct Lapper[*, owns_data: Bool = True](Sized):
             ```
 
         """
-        # The plus one is to account for the half-open intervals
-        var first = lower_bound(Span(unsafe_ptr=self.stops_sorted, length=len(self)), start + 1)
+        var visitor = _CountVisitor(0)
+        self.visit(start, stop, visitor)
+        return visitor.count
+
+
+struct BITSLapper[*, owns_data: Bool = True](Sized):
+    """A count-only index with independently sorted start and stop positions.
+
+    Stores no payloads or traversal metadata. Stored intervals must have
+    start < stop. Query start must be <= stop; empty queries count intervals
+    strictly spanning that position, just like Lapper's overlap predicate.
+
+    Parameters:
+        owns_data: Whether to free the endpoint arrays when the index is destroyed.
+            Borrowed arrays must stay alive and unchanged until all queries and
+            queued GPU work finish.
+    """
+
+    var starts: MutPointer[UInt32, MutUntrackedOrigin]
+    """Independently sorted start positions."""
+
+    var stops_sorted: MutPointer[UInt32, MutUntrackedOrigin]
+    """Independently sorted stop positions."""
+
+    var length: UInt
+    """Number of indexed intervals."""
+
+    def __init__(
+        out self,
+        starts: MutPointer[UInt32, MutUntrackedOrigin],
+        stops_sorted: MutPointer[UInt32, MutUntrackedOrigin],
+        length: UInt,
+    ):
+        """Wrap two pre-sorted endpoint arrays from nonempty intervals.
+
+        Takes ownership only when owns_data=True. Does not read the pointers
+        during construction, so borrowed device buffers are supported.
+        """
+        self.starts = starts
+        self.stops_sorted = stops_sorted
+        self.length = length
+
+    def __init__(out self, var intervals: List[Interval]) raises:
+        """Consume intervals, retaining only their independently sorted endpoints.
+
+        Raises:
+            Error: If the list is empty or an interval has start >= stop.
+        """
+        comptime assert Self.owns_data, "Use the pointer constructor for borrowed BITS arrays"
+        if len(intervals) == 0:
+            raise "Intervals length must be >= 1"
+        for iv in intervals:
+            if iv.start >= iv.stop:
+                raise "BITS intervals must have start < stop"
+        self.length = UInt(len(intervals))
+        self.starts = unsafe_alloc[UInt32](len(intervals))
+        self.stops_sorted = unsafe_alloc[UInt32](len(intervals))
+        var starts_disorder = 0
+        var stops_disorder = 0
+        var previous_start = UInt32(0)
+        var previous_stop = UInt32(0)
+        for i in range(len(intervals)):
+            ref iv = intervals[i]
+            self.starts[unsafe_offset=i] = iv.start
+            self.stops_sorted[unsafe_offset=i] = iv.stop
+            starts_disorder += Int(iv.start < previous_start)
+            stops_disorder += Int(iv.stop < previous_stop)
+            previous_start = iv.start
+            previous_stop = iv.stop
+        if starts_disorder:
+            radix_sort(Span(unsafe_ptr=self.starts, length=len(intervals)))
+        if stops_disorder:
+            radix_sort(Span(unsafe_ptr=self.stops_sorted, length=len(intervals)))
+
+    def __len__(self) -> Int:
+        """Return the number of indexed intervals."""
+        return Int(self.length)
+
+    def __deinit__(deinit self):
+        """Release owned endpoint arrays, leaving borrowed buffers untouched."""
+        comptime if Self.owns_data:
+            self.starts.unsafe_free()
+            self.stops_sorted.unsafe_free()
+
+    def count(self, start: UInt32, stop: UInt32) -> UInt:
+        """Count overlaps with two binary searches; requires start <= stop.
+
+        Touching boundaries do not overlap. No matches are materialized, and
+        neither query time nor index storage depends on payloads.
+        """
+        var first = upper_bound(Span(unsafe_ptr=self.stops_sorted, length=len(self)), start)
         var last = lower_bound(Span(unsafe_ptr=self.starts, length=len(self)), stop)
         return last - first
 
@@ -654,7 +741,6 @@ def find_overlaps_kernel(
     starts: MutPointer[UInt32, MutUntrackedOrigin],
     stops: MutPointer[UInt32, MutUntrackedOrigin],
     vals: MutPointer[Int32, MutUntrackedOrigin],  # Not actually needed?
-    stops_sorted: MutPointer[UInt32, MutUntrackedOrigin],
     length: UInt64,
     max_len: UInt32,
     keys: MutPointer[UInt32, MutUntrackedOrigin],  # start, stop packed adjacent
@@ -671,7 +757,6 @@ def find_overlaps_kernel(
         starts: Sorted array of interval start positions on device memory.
         stops: Array of interval stop positions (same order as starts) on device memory.
         vals: Array of interval values/IDs (same order as starts) on device memory.
-        stops_sorted: Independently sorted array of stop positions for BITS algorithm.
         length: Number of intervals in the data structure.
         max_len: Maximum interval length for optimization bounds.
         keys: Packed query data as `start₁, stop₁, start₂, stop₂, ...` on device memory.
@@ -683,7 +768,7 @@ def find_overlaps_kernel(
     # TODO: come back to the idea that this should be an array of structs where start and stop are co-located, but what about SIMT!?
     # TODO: this is just counting for now because we don't know how much space to allocate till
     # the coutns method is worked out
-    var lapper = Lapper[owns_data=False](starts, stops, vals, stops_sorted, UInt(length), max_len)
+    var lapper = Lapper[owns_data=False](starts, stops, vals, UInt(length), max_len)
 
     var thread_id = (block_idx.x * block_dim.x) + thread_idx.x
     if UInt64(thread_id) >= keys_length // 2:
@@ -702,11 +787,8 @@ def find_overlaps_kernel(
 
 def count_overlaps_kernel(
     starts: MutPointer[UInt32, MutUntrackedOrigin],
-    stops: MutPointer[UInt32, MutUntrackedOrigin],
-    vals: MutPointer[Int32, MutUntrackedOrigin],  # Not actually needed?
     stops_sorted: MutPointer[UInt32, MutUntrackedOrigin],
     length: UInt64,
-    max_len: UInt32,
     keys: MutPointer[UInt32, MutUntrackedOrigin],  # start, stop packed adjacent
     keys_length: UInt64,  # length is 2x the number of key
     output: MutPointer[UInt32, MutUntrackedOrigin],  # just the count of found intervals for now
@@ -718,12 +800,9 @@ def count_overlaps_kernel(
     queued work completes. Query endpoints are packed as start/stop pairs.
 
     Args:
-        starts: Device pointer to sorted interval start positions (primary sort key).
-        stops: Device pointer to interval stop positions (same order as starts).
-        vals: Device pointer to interval values/IDs (same order as starts, unused in counting).
+        starts: Device pointer to independently sorted interval start positions.
         stops_sorted: Device pointer to independently sorted stop positions (for BITS algorithm).
         length: Total number of intervals in the data structure.
-        max_len: Maximum interval length (used for search optimization bounds).
         keys: Device pointer to packed query data `start₁, stop₁, start₂, stop₂, ...`.
         keys_length: Total length of keys array (exactly 2x the number of queries).
         output: Device pointer to result array (one count per query).
@@ -731,7 +810,7 @@ def count_overlaps_kernel(
 
     """
     # TODO: come back to the idea that this should be an array of structs where start and stop are co-located, but what about SIMT!?
-    var lapper = Lapper[owns_data=False](starts, stops, vals, stops_sorted, UInt(length), max_len)
+    var lapper = BITSLapper[owns_data=False](starts, stops_sorted, UInt(length))
 
     var thread_id = (block_idx.x * block_dim.x) + thread_idx.x
     if UInt64(thread_id) >= keys_length // 2:

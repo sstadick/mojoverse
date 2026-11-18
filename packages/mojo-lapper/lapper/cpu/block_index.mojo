@@ -52,20 +52,25 @@ struct BlockIndex(Movable):
     def next_above(self, block: Int, start: UInt32) -> Int:
         """Find the next block with an end > start, or a past-end leaf.
 
+        Requires a built index and 0 <= block < len(min_ends).
         Climb to a live subtree on the right, then descend to its first live
         leaf. This skips dead runs even when their maximum ends increase.
         """
+        var tree = self.max_tree.unsafe_ptr()
         var node = self.leaves + block
         while True:
-            if node & 1 == 0 and self.max_tree[node + 1] > start:
+            # 1 <= node < 2 * leaves. An even node's right sibling is
+            # still in the tree, whose final index is odd (2 * leaves - 1).
+            if node & 1 == 0 and tree[unsafe_offset=node + 1] > start:
                 node += 1
                 break
             node >>= 1
             if node <= 1:
                 return self.leaves
         while node < self.leaves:
+            # An internal node has both children in [2, 2 * leaves).
             node *= 2
-            node += Int(self.max_tree[node] <= start)
+            node += Int(tree[unsafe_offset=node] <= start)
         return node - self.leaves
 
 
@@ -73,7 +78,10 @@ struct BlockIndex(Movable):
 def overlap_mask(
     starts: Span[UInt32, _], stops: Span[UInt32, _], start: UInt32, stop: UInt32
 ) -> UInt32:
-    """Return ascending-lane matches for at most 32 intervals, without overreads."""
+    """Return ascending-lane matches without overreads.
+
+    Requires equal-length start/stop spans with at most 32 intervals.
+    """
     var mask = UInt32(0)
     var i = 0
     while i + _WIDTH <= len(starts):
@@ -82,7 +90,11 @@ def overlap_mask(
         mask |= UInt32(pack_bits(s.lt(stop) & e.gt(start))) << UInt32(i)
         i += _WIDTH
     while i < len(starts):
-        if starts[i] < stop and stops[i] > start:
+        # Both spans have equal length; the scalar tail never loads past i.
+        if (
+            starts.unsafe_ptr()[unsafe_offset=i] < stop
+            and stops.unsafe_ptr()[unsafe_offset=i] > start
+        ):
             mask |= UInt32(1) << UInt32(i)
         i += 1
     return mask

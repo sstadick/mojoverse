@@ -1,4 +1,4 @@
-from lapper.lapper import Lapper, Interval, IntervalVisitor
+from lapper import BITSLapper, Lapper, Interval, IntervalVisitor
 from std.testing import assert_equal, assert_true, assert_false, assert_raises, TestSuite
 
 
@@ -176,19 +176,20 @@ def test_lapper_single_interval() raises:
     assert_equal(results[0].stop, 10)
     assert_equal(results[0].val, 100)
 
-    # The six-argument borrowed constructor must retain append semantics and
+    # The five-argument borrowed constructor must retain append semantics and
     # must not free its owner's arrays when the view goes out of scope.
     var borrowed = Lapper[owns_data=False](
         lapper.starts,
         lapper.stops,
         lapper.vals,
-        lapper.stops_sorted,
         lapper.length,
         lapper.max_len,
     )
     borrowed.find(7, 8, results)
     assert_equal(len(results), 2)
     assert_equal(results[1].val, 100)
+    assert_equal(borrowed.count(7, 8), 1)
+    assert_equal(borrowed.count(10, 15), 0)
     var visitor = RecordingVisitor(List[Interval]())
     lapper.visit(7, 8, visitor)
     borrowed.visit(0, 4, visitor)
@@ -245,6 +246,8 @@ def test_lapper_sorting() raises:
     assert_equal(lapper.vals[unsafe_offset=0], 1)
     assert_equal(lapper.vals[unsafe_offset=1], 2)
     assert_equal(lapper.vals[unsafe_offset=2], 3)
+    # Untracked pointer fields do not keep their owner alive during the load.
+    _ = lapper
 
 
 # TODO: Re-enable find tests when find method is fixed
@@ -297,6 +300,7 @@ def test_lapper_starts_order() raises:
     assert_equal(lapper.vals[unsafe_offset=0], 2)
     assert_equal(lapper.vals[unsafe_offset=1], 3)
     assert_equal(lapper.vals[unsafe_offset=2], 1)
+    _ = lapper  # Retain the owner through all untracked pointer loads.
 
     # Exercise both sides of the radix cutoff, equal starts with different
     # stops, and unsigned coordinates above Int32.MAX. Payloads must travel
@@ -307,6 +311,7 @@ def test_lapper_starts_order() raises:
             var id = (i * 73) % n
             var start = UInt32(id // 7) * 0x06000000
             shuffled.append(Interval(start, start + UInt32(id % 7 + 1), Int32(id * 13 - 900)))
+        var bits = BITSLapper(shuffled.copy())
         var index = Lapper(shuffled^)
         var results = List[Interval]()
         index.find(0, UInt32.MAX, results)
@@ -315,6 +320,7 @@ def test_lapper_starts_order() raises:
         assert_equal(len(results), n)
         assert_equal(len(visitor.intervals), n)
         assert_equal(index.count(0, UInt32.MAX), UInt(n))
+        assert_equal(bits.count(0, UInt32.MAX), UInt(n))
         for i in range(n):
             var start = UInt32(i // 7) * 0x06000000
             for iv in [results[i], visitor.intervals[i]]:
@@ -325,16 +331,17 @@ def test_lapper_starts_order() raises:
             var start = UInt32(group) * 0x06000000
             var expected = max(0, min(7, n - group * 7) - 2)
             assert_equal(index.count(start + 2, start + 4), UInt(expected))
+            assert_equal(bits.count(start + 2, start + 4), UInt(expected))
 
 
-def test_lapper_stops_sorted() raises:
+def test_bits_stops_sorted() raises:
     """Verify stops_sorted array is sorted."""
     var intervals = List[Interval]()
     intervals.append(Interval(1, 30, 0))
     intervals.append(Interval(5, 10, 0))
     intervals.append(Interval(15, 25, 0))
 
-    var lapper = Lapper(intervals.copy())
+    var lapper = BITSLapper(intervals.copy())
 
     # stops_sorted should be sorted: [10, 25, 30]
     assert_equal(lapper.stops_sorted[unsafe_offset=0], 10)
@@ -346,6 +353,15 @@ def test_lapper_stops_sorted() raises:
         assert_true(
             lapper.stops_sorted[unsafe_offset=i] <= lapper.stops_sorted[unsafe_offset=i + 1]
         )
+    _ = lapper  # Retain the owner through all untracked pointer loads.
+
+
+def test_bits_invalid_intervals() raises:
+    with assert_raises(contains="Intervals length must be >= 1"):
+        var bits = BITSLapper(List[Interval]())
+    for stop in [UInt32(4), UInt32(5)]:
+        with assert_raises(contains="BITS intervals must have start < stop"):
+            var bits = BITSLapper([Interval(0, 10, 0), Interval(5, stop, 1)])
 
 
 def test_count_no_overlaps() raises:
@@ -533,10 +549,14 @@ def test_find_and_count_match_scan() raises:
         Interval(8, 10, 4),
         Interval(5, 9, 6),
     ]
+    var bits = BITSLapper(intervals.copy())
+    var borrowed_bits = BITSLapper[owns_data=False](bits.starts, bits.stops_sorted, bits.length)
+    assert_equal(len(bits), len(intervals))
+    assert_equal(len(borrowed_bits), len(intervals))
     sort(intervals)
     var lapper = Lapper(intervals.copy())
     for start in range(20):
-        for stop in range(start + 1, 21):
+        for stop in range(start, 21):
             var results: List[Interval] = [Interval(100, 101, -1)]
             lapper.find(UInt32(start), UInt32(stop), results)
             var expected = 0
@@ -549,6 +569,9 @@ def test_find_and_count_match_scan() raises:
             assert_equal(len(results), expected + 1)
             assert_equal(results[0].val, -1)
             assert_equal(lapper.count(UInt32(start), UInt32(stop)), UInt(expected))
+            assert_equal(bits.count(UInt32(start), UInt32(stop)), UInt(expected))
+            assert_equal(borrowed_bits.count(UInt32(start), UInt32(stop)), UInt(expected))
+    _ = bits  # Retain the endpoint owner through queries on the borrowed index.
 
     var high = Lapper([Interval(UInt32.MAX - 10, UInt32.MAX, 7)])
     var results = List[Interval]()
@@ -556,6 +579,10 @@ def test_find_and_count_match_scan() raises:
     assert_equal(len(results), 1)
     assert_equal(results[0].val, 7)
     assert_equal(high.count(UInt32.MAX - 2, UInt32.MAX), 1)
+    assert_equal(high.count(UInt32.MAX, UInt32.MAX), 0)
+    var high_bits = BITSLapper([Interval(UInt32.MAX - 10, UInt32.MAX, 7)])
+    assert_equal(high_bits.count(UInt32.MAX - 2, UInt32.MAX), 1)
+    assert_equal(high_bits.count(UInt32.MAX, UInt32.MAX), 0)
 
 
 def test_find_block_boundaries_and_spanning_intervals() raises:
@@ -603,6 +630,7 @@ def test_find_block_boundaries_and_spanning_intervals() raises:
                         assert_equal(results[0].val, -99)
                         assert_equal(len(visitor.intervals), expected)
                         assert_equal(visitor.intervals[0].val, -99)
+                        assert_equal(lapper.count(start, stop), UInt(expected - 1))
 
 
 def main() raises:

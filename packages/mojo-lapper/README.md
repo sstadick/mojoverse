@@ -66,12 +66,41 @@ first candidate, and a max tree to skip runs of blocks ending before the query.
 Dense blocks emit a prefix of intervals; mixed blocks use native-width SIMD overlap masks, with a
 bounded scalar tail. Results remain ordered by start, then stop.
 
-`count` uses binary interval search (BITS). Construction uses `mojo-bio`'s
-integer radix sort, preserving start/stop ordering and payload associations;
-already-ordered intervals and ends skip sorting. Ordering among intervals
-with identical start and stop coordinates is unspecified. The six-argument
-pointer constructor borrows prebuilt index arrays. Do not mutate indexed
-arrays after construction.
+`Lapper` only builds the overlap traversal index: it does not allocate or sort
+an independent copy of the ends. Its `count` visits matches without collecting
+them, so use `BITSLapper` instead when only counts are needed.
+
+Construction uses `mojo-bio`'s integer radix sort, preserving start/stop ordering
+and payload associations; already-ordered intervals skip sorting. Ordering among
+intervals with identical start and stop coordinates is unspecified.
+`Lapper[owns_data=False](starts, stops, vals, length, max_len)` borrows prebuilt
+arrays. Keep their owners alive and do not mutate indexed arrays after construction.
+
+## Count-only BITS index
+
+`BITSLapper` stores just independently sorted starts and ends, with no payloads
+or traversal metadata. Each `count` uses two binary searches, independent of
+the number of matches. Both endpoint arrays use the same radix sorter and
+skip sorting when already ordered.
+
+```mojo {doctest="bits" global=true}
+from lapper import BITSLapper, Interval
+from std.testing import assert_equal
+
+def main() raises:
+    var intervals: List[Interval] = [Interval(18, 30, 2), Interval(10, 20, 1)]
+    var counts = BITSLapper(intervals^)
+    assert_equal(counts.count(19, 21), UInt(2))
+    assert_equal(counts.count(20, 30), UInt(1))
+    assert_equal(counts.count(30, 40), UInt(0))
+```
+
+The list must be nonempty and each stored interval must have `start < stop`;
+otherwise construction raises. Query endpoints must satisfy `start <= stop`.
+As with `Lapper`'s strict overlap predicate, an empty query counts intervals
+strictly spanning that position. `BITSLapper` has no `find` or `visit` method.
+`BITSLapper[owns_data=False](starts, stops_sorted, length)` borrows independently
+sorted endpoint arrays with the same interval requirements and lifetime rules.
 
 ## Install
 
@@ -97,8 +126,12 @@ with `subdirectory = "packages/mojo-lapper"`.
 ## GPU use
 
 `Lapper.prep_for_gpu` requires mutable device buffers. The returned Lapper
-borrows those buffers: keep them alive until all queued work finishes.
-Kernel lengths are `UInt64`, including query and output lengths.
+borrows starts, stops and values; no independently sorted ends are prepared.
+For BITS counting, upload `BITSLapper`'s sorted endpoint arrays and use
+`count_overlaps_kernel`, which takes only those two arrays, the interval count,
+packed queries, query length, output and output length. Retain all backing
+buffers until queued work finishes. Kernel lengths are `UInt64`, including
+query and output lengths.
 See [benchmarks/bench_lapper.mojo](benchmarks/bench_lapper.mojo) for a complete
 GPU example with explicit buffer ownership and synchronization.
 
