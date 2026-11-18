@@ -24,7 +24,8 @@ def capture(command, cwd=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--goose-io", type=Path, default=ROOT.parent / "goosio")
+    parser.add_argument("--goose-io", type=Path, required=True,
+                        help="Path to the Goose I/O checkout (locally goose-projects/goosio)")
     parser.add_argument("--goose", default="goose")
     parser.add_argument("--cc", default="clang")
     parser.add_argument("--mib", type=int, default=8)
