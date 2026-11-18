@@ -87,7 +87,9 @@ python scripts/toolchain.py update --channel nightly
 
 The updater queries Modular's published packages, selects a matching Mojo/MAX release available on every root platform, updates all development/build/host/runtime and example pins, and regenerates all locks. `--version` selects a particular published compiler; `--no-lock` allows inspecting the pin diff first. It does not migrate Mojo source automatically. Run the complete checks and repair incompatible APIs before considering an update supported.
 
-The nightly workflow brings `main` into `nightly`, updates that branch, and runs the same graph checks. Conflicts or compiler failures remain visible; no agent repairs or nightly-to-main merges happen automatically. Stable promotion is a deliberate source/compiler update on `main`, not a merge of nightly pins.
+For an agent-assisted update, ask: **Use `updating-mojoverse-nightly` to update the nightly branch.** The [repo-local skill](../.agents/skills/updating-mojoverse-nightly/SKILL.md) uses these tools, saves verbose logs, and focuses source work on compatibility failures.
+
+Nightly updates are manual for now; there is no scheduled job. The manually dispatched GitHub workflow brings `main` into `nightly`, updates and pushes that branch, and runs the same graph checks. Conflicts or compiler failures remain visible; it does not repair source or merge nightly into main. Stable promotion is a deliberate source/compiler update on `main`, not a merge of nightly pins.
 
 ## Documentation and editor setup
 
