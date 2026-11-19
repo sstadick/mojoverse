@@ -49,13 +49,22 @@ def _radix_sort_inner[
     T: Copyable & Deinitable,
     dtype: DType,
     key: def(T) thin -> SIMD[dtype, 1],
-](begin: Pointer[mut=True, T, _], length: Int, shift: Int):
+    shift: Int,
+](begin: Pointer[mut=True, T, _], length: Int):
+    # Specialize each key byte so composite keys need only the contributing
+    # field load, rather than rebuilding and dynamically shifting the full key.
     # Separate index tables keep bucket lookups one machine word wide. The
     # zero-filled counts become immutable end offsets after the prefix sum.
     var begins = Array[Int, _BUCKET_COUNT](uninitialized=True)
     var ends = Array[Int, _BUCKET_COUNT](fill=0)
     for i in range(length):
         ends.unsafe_get(_digit(key(begin[unsafe_offset=i]), shift)) += 1
+    # This helper receives more than _MIN_SIZE records. If they share this
+    # digit, no partition is needed, but lower digits still need sorting.
+    if ends.unsafe_get(_digit(key(begin[]), shift)) == length:
+        comptime if shift != 0:
+            _radix_sort_inner[T, dtype, key, shift - _RADIX_BITS](begin, length)
+        return
     var previous_end = 0
     for bucket in range(_BUCKET_COUNT):
         begins.unsafe_get(bucket) = previous_end
@@ -81,17 +90,16 @@ def _radix_sort_inner[
                 begin[unsafe_offset=cursor] = temporary^
             begins.unsafe_get(bucket) = cursor + 1
 
-    if shift != 0:
+    comptime if shift != 0:
         # A bucket begins at its predecessor's end; no restore pass is needed.
         var bucket_begin = 0
         for bucket in range(_BUCKET_COUNT):
             var bucket_end = ends.unsafe_get(bucket)
             var count = bucket_end - bucket_begin
             if count > _MIN_SIZE:
-                _radix_sort_inner[T, dtype, key](
+                _radix_sort_inner[T, dtype, key, shift - _RADIX_BITS](
                     begin.unsafe_offset(bucket_begin),
                     count,
-                    shift - _RADIX_BITS,
                 )
             elif count > 1:
                 _insert_sort[T, dtype, key](
@@ -187,9 +195,9 @@ def radix_sort[
         insert_sort[key=key](values)
     else:
         var begin = values.unsafe_ptr()
-        _radix_sort_inner[T, dtype, key](
-            begin, len(values), size_of[SIMD[dtype, 1]]() * 8 - _RADIX_BITS
-        )
+        _radix_sort_inner[
+            T, dtype, key, size_of[SIMD[dtype, 1]]() * 8 - _RADIX_BITS
+        ](begin, len(values))
 
 
 @always_inline

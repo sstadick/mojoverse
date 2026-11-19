@@ -32,22 +32,43 @@ struct BlockIndex(Movable):
         while self.leaves < blocks:
             self.leaves *= 2
         self.max_tree = List[UInt32](length=2 * self.leaves, fill=0)
-        self.min_ends = List[UInt32](capacity=blocks)
-        self.prefix_max_ends = List[UInt32](capacity=blocks)
+        self.min_ends = List[UInt32](unsafe_uninit_length=blocks)
+        self.prefix_max_ends = List[UInt32](unsafe_uninit_length=blocks)
+        var source = stops.unsafe_ptr()
+        var tree = self.max_tree.unsafe_ptr()
+        var mins = self.min_ends.unsafe_ptr()
+        var prefixes = self.prefix_max_ends.unsafe_ptr()
         var prefix = UInt32(0)
         for block in range(blocks):
             var begin = block * BLOCK_SIZE
-            var smallest = stops[begin]
-            var largest = smallest
-            for i in range(begin + 1, min(begin + BLOCK_SIZE, len(stops))):
-                smallest = min(smallest, stops[i])
-                largest = max(largest, stops[i])
-            self.max_tree[self.leaves + block] = largest
-            self.min_ends.append(smallest)
+            var smallest: UInt32
+            var largest: UInt32
+            if begin + BLOCK_SIZE <= len(stops):
+                # Only load complete blocks: pointer-backed Lappers need not
+                # have any initialized padding beyond their declared length.
+                var values = source.unsafe_load[width=BLOCK_SIZE, alignment=1](
+                    begin
+                )
+                smallest = values.reduce_min()
+                largest = values.reduce_max()
+            else:
+                # block < blocks proves begin < len(stops); the final block
+                # is nonempty, and every scalar load stays within the span.
+                smallest = source[unsafe_offset=begin]
+                largest = smallest
+                for i in range(begin + 1, len(stops)):
+                    smallest = min(smallest, source[unsafe_offset=i])
+                    largest = max(largest, source[unsafe_offset=i])
+            # blocks <= leaves, and each metadata slot is initialized once.
+            tree[unsafe_offset=self.leaves + block] = largest
+            mins.unsafe_offset(block).unsafe_write(smallest)
             prefix = max(prefix, largest)
-            self.prefix_max_ends.append(prefix)
+            prefixes.unsafe_offset(block).unsafe_write(prefix)
         for node in range(self.leaves - 1, 0, -1):
-            self.max_tree[node] = max(self.max_tree[2 * node], self.max_tree[2 * node + 1])
+            # 1 <= node < leaves puts both children within the initialized tree.
+            tree[unsafe_offset=node] = max(
+                tree[unsafe_offset=2 * node], tree[unsafe_offset=2 * node + 1]
+            )
 
     @no_inline
     def next_above(self, block: Int, start: UInt32) -> Int:
