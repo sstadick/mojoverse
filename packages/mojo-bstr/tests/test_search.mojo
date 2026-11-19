@@ -1,5 +1,24 @@
-from std.testing import assert_equal, assert_true, TestSuite
+from std.testing import assert_equal, assert_true, assert_false, TestSuite
 from bstr import *
+
+
+def test_byte_equality() raises:
+    for length in [0, 1, 2, 3, 4, 5, 7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]:
+        for padding in [0, 1, 7, 31]:
+            var left = List[UInt8](length=length + padding, fill=55)
+            var right = List[UInt8](length=length + padding + 1, fill=198)
+            for i in range(length):
+                left[padding + i] = UInt8(i * 73)
+                right[padding + 1 + i] = UInt8(i * 73)
+            assert_true(equal(Span(left)[padding:], Span(right)[padding + 1 :]))
+            if length:
+                # A matching prefix must not compare equal to a longer span.
+                assert_false(equal(Span(left)[padding : len(left) - 1], Span(right)[padding + 1 :]))
+                assert_false(equal(Span(right)[padding + 1 :], Span(left)[padding : len(left) - 1]))
+            for mismatch in range(length):
+                right[padding + 1 + mismatch] ^= 128
+                assert_false(equal(Span(left)[padding:], Span(right)[padding + 1 :]))
+                right[padding + 1 + mismatch] ^= 128
 
 
 def test_binary_search() raises:

@@ -9,9 +9,11 @@ Build and comparison instructions are in docs/development.md at the repo root.
 
 from std.sys import argv
 from std.sys.intrinsics import unlikely
+from std.hash import Hasher
 from std.memory import unsafe_memcpy
 from lapper.lapper import Interval, IntervalVisitor, Lapper
 from io import BufferedReader, BufferedWriter
+from bstr import equal
 
 
 struct ByteOutput:
@@ -171,22 +173,38 @@ def parse_bed(line: Span[UInt8, _]) -> Optional[Record]:
     return Record(first, start, stop)
 
 
+@fieldwise_init
+struct ByteKey(Copyable, Equatable, Hashable):
+    """Own binary dictionary keys with bulk hashing and byte equality."""
+
+    var data: List[UInt8]
+
+    def __hash__[H: Hasher](self, mut hasher: H):
+        hasher.update(Span(self.data))
+
+    def __eq__(self, other: Self) -> Bool:
+        return equal(Span(self.data), Span(other.data))
+
+
 struct Contigs:
     """Own contig keys and cache the last lookup, without retaining reader views."""
 
-    var ids: Dict[List[UInt8], Int]
-    var name: List[UInt8]
+    var ids: Dict[ByteKey, Int]
+    var name: ByteKey
     var id: Int
 
     def __init__(out self):
-        self.ids = Dict[List[UInt8], Int]()
-        self.name = List[UInt8]()
+        self.ids = Dict[ByteKey, Int]()
+        self.name = ByteKey(List[UInt8]())
         self.id = -2  # Distinguish an uninitialized cache from a missing key.
 
+    @always_inline
     def resolve(mut self, name: Span[UInt8, _], create: Bool = False) raises -> Int:
-        if self.id == -2 or name != Span(self.name):
-            self.name.clear()
-            self.name.extend(name)
+        if self.id == -2 or not equal(name, Span(self.name.data)):
+            # The input belongs to the reader, not the cache. Initialize every
+            # resized byte before hashing; stored keys own separate copies.
+            self.name.data.resize(unsafe_uninit_length=len(name))
+            unsafe_memcpy(dest=self.name.data.unsafe_ptr(), src=name.unsafe_ptr(), count=len(name))
             self.id = self.ids.get(self.name, -1)
         if create and self.id < 0:
             self.id = len(self.ids)
@@ -247,7 +265,9 @@ def main() raises:
         if id >= 0:
             lappers[id].visit(coordinate(record.start), coordinate(record.stop), accumulator)
         var coverage = accumulator.coverage + accumulator.covered_end - accumulator.covered_start
-        text.write_row(Span(contigs.name), record.start, record.stop, accumulator.count, coverage)
+        text.write_row(
+            Span(contigs.name.data), record.start, record.stop, accumulator.count, coverage
+        )
         if len(text.data) >= 65536:
             output.write_bytes(Span(text.data))
             text.data.clear()

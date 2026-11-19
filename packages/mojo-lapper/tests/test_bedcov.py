@@ -58,6 +58,23 @@ def main():
               [(b"a", 2, 7), (b"b", 0, 4), (b"a", -4, 2), (b"a", 1, 6)],
               b"a\t+0001\t0010\r\na\t5suffix\t20extra\nb\t\t12\nmissing-tab\na\t3",
               b"a\t  +02\t 0007\textra\r\nb\t\t+04\na\t-4\t2\na\t1suffix\t6tail")
+
+        # Binary keys around hash/vector boundaries; force cache resizing,
+        # dictionary reuse, and unequal names differing at either end or middle.
+        key_names = [b""]
+        alphabet = [value for value in range(256) if value not in (9, 10)]
+        for length in (1, 2, 3, 4, 7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 257):
+            name = bytes(rng.choices(alphabet, k=length))
+            key_names.append(name)
+            for offset in sorted({0, length // 2, length - 1}):
+                other = next(value for value in alphabet if value != name[offset])
+                key_names.append(name[:offset] + bytes([other]) + name[offset + 1:])
+        records = [(name, i % 19, i % 19 + 25) for i, name in enumerate(key_names)]
+        records += [(name, 4, 16) for name in key_names[::3]]
+        rng.shuffle(records)
+        requests = [(name, 2, 21) for name in reversed(key_names)] * 3
+        requests += [(b"missing" + name, 0, 50) for name in key_names]
+        check(records, requests)
     print("PASS BED CLI: byte names, buffer reuse, signed coordinates, decimal pairs and scan/union oracle")
 
 

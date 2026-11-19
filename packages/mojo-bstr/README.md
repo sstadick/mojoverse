@@ -100,6 +100,7 @@ The API covers searching, splitting, byte transforms, and UTF-8 decoding.
 
 | Area | Public API |
 | --- | --- |
+| Equality | `equal` |
 | Substrings | `find`, `rfind`, `Finder`, `FinderReverse`, `finder`, `finder_reverse`, `contains_str`, `starts_with_str`, `ends_with_str` |
 | Bytes | `find_byte`, `rfind_byte`, `find_byteset`, `rfind_byteset`, `find_not_byteset`, `rfind_not_byteset`, `find_char`, `rfind_char` |
 | Memchr additions | `memchr`, `memrchr`, `memchr2`, `memrchr2`, `memchr3`, `memrchr3` |
@@ -109,6 +110,8 @@ The API covers searching, splitting, byte transforms, and UTF-8 decoding.
 | UTF-8 | `decode_utf8`, `decode_last_utf8`, `decode_utf8_lossy`, `decode_last_utf8_lossy`, `validate_utf8`, `is_utf8`, `chars`, `char_indices`, `utf8_chunks`, `to_str_lossy`, `to_str_lossy_into` |
 | Byte transforms | `is_ascii`, `find_non_ascii_byte`, `to_ascii_lowercase`, `to_ascii_uppercase`, `make_ascii_lowercase`, `make_ascii_uppercase`, `reverse_bytes`, `reverse_chars`, `escape_bytes`, `unescape_bytes` |
 
+- `equal(a, b)` compares lengths and bytes without allocating or reading outside
+  either span. Two empty spans compare equal; a matching prefix alone does not.
 - Search returns a byte offset or **-1**. `memchr*` takes
   needle byte(s) before the haystack; other searches take haystack first.
   Prepared searchers expose `needle()` for inspection; construct a new searcher

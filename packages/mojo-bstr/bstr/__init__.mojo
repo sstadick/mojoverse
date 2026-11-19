@@ -1,6 +1,7 @@
 """Byte strings without a UTF-8 precondition. Views borrow their original owner."""
 
 from .search import (
+    equal,
     find,
     rfind,
     find_byte,

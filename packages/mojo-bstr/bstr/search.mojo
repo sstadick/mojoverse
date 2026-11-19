@@ -288,6 +288,7 @@ def _pair(needle: Span[mut=False, UInt8, _]) -> Tuple[Int, Int]:
 
 @always_inline
 def _equal(a: Span[mut=False, UInt8, _], b: Span[mut=False, UInt8, _]) -> Bool:
+    # Search callers may supply a longer haystack: len(a) must be >= len(b).
     if len(b) <= 32:
         comptime for shift in range(4):
             comptime width = 16 >> shift
@@ -312,6 +313,16 @@ def _equal(a: Span[mut=False, UInt8, _], b: Span[mut=False, UInt8, _]) -> Bool:
             return False
         i += 1
     return True
+
+
+@always_inline
+def equal(a: Span[mut=False, UInt8, _], b: Span[mut=False, UInt8, _]) -> Bool:
+    """Return whether the spans have identical lengths and bytes.
+
+    Empty spans compare equal. NUL and malformed UTF-8 are ordinary bytes;
+    no bytes outside either span are read, and no allocation is required.
+    """
+    return len(a) == len(b) and _equal(a, b)
 
 
 def find_byte(s: Span[mut=False, UInt8, _], byte: UInt8) -> Int:
