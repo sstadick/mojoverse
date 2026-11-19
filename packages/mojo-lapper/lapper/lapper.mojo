@@ -1,11 +1,11 @@
 from lapper.cpu.bsearch import lower_bound, upper_bound
-from lapper.cpu.block_index import BlockIndex, BLOCK_SIZE, overlap_mask
+from lapper.cpu.block_index import BlockIndex, BLOCK_SIZE, overlap_mask, stop_mask
 from radix_sort import radix_sort
 
 from max.gpu.host import DeviceContext, HostBuffer, DeviceBuffer
 from max.gpu import thread_idx, block_idx, block_dim, barrier
 
-from std.bit import count_trailing_zeros
+from std.bit import count_trailing_zeros, pop_count
 from std.memory.alloc import unsafe_alloc
 from std.sys import is_gpu
 
@@ -263,6 +263,7 @@ struct Lapper[*, owns_data: Bool = True](Sized):
     """Maximum interval length for bounds optimization."""
 
     var _blocks: BlockIndex
+    var _padded: Bool
 
     def __init__(
         out self,
@@ -284,6 +285,9 @@ struct Lapper[*, owns_data: Bool = True](Sized):
         self.length = length
         self.max_len = max_len
         self._blocks = BlockIndex()
+        # Public pointer constructors require only length initialized elements,
+        # even when ownership transfers. Never read past the supplied arrays.
+        self._padded = False
         comptime if Self.owns_data:
             self._blocks.build(Span(unsafe_ptr=self.stops, length=Int(length)))
 
@@ -321,11 +325,13 @@ struct Lapper[*, owns_data: Bool = True](Sized):
             raise "Intervals length must be >= 1"
 
         self.length = UInt(len(intervals))
-        self.starts = unsafe_alloc[UInt32](len(intervals))
-        self.stops = unsafe_alloc[UInt32](len(intervals))
+        var padded = ((len(intervals) + BLOCK_SIZE - 1) // BLOCK_SIZE) * BLOCK_SIZE
+        self.starts = unsafe_alloc[UInt32](padded)
+        self.stops = unsafe_alloc[UInt32](padded)
         self.vals = unsafe_alloc[Int32](len(intervals))
         self.max_len = UInt32(0)
         self._blocks = BlockIndex()
+        self._padded = True
 
         self._fill(intervals^)
 
@@ -345,6 +351,12 @@ struct Lapper[*, owns_data: Bool = True](Sized):
             self.vals[unsafe_offset=i] = iv.val
             var length = iv.stop - iv.start
             self.max_len = length if length > self.max_len else self.max_len
+
+        if self._padded:
+            var padded = ((len(intervals) + BLOCK_SIZE - 1) // BLOCK_SIZE) * BLOCK_SIZE
+            for i in range(len(intervals), padded):
+                self.starts[unsafe_offset=i] = 0
+                self.stops[unsafe_offset=i] = 0
 
         comptime if Self.owns_data:
             self._blocks.build(Span(unsafe_ptr=self.stops, length=len(intervals)))
@@ -479,23 +491,24 @@ struct Lapper[*, owns_data: Bool = True](Sized):
                     break
         else:
             var block = Int(upper_bound(Span(self._blocks.prefix_max_ends), start))
-            while block < len(self._blocks.min_ends):
-                # 0 <= block < ceil(length / BLOCK_SIZE) <= leaves, so
-                # begin < end <= length and leaves + block < len(max_tree).
+            var blocks = len(self._blocks.min_ends)
+            while block < blocks:
+                # The prefix search/tree jump guarantees a stop > start here.
                 var begin = block * BLOCK_SIZE
                 if self.starts[unsafe_offset=begin] >= stop:
                     break
-                if (
-                    self._blocks.max_tree.unsafe_ptr()[unsafe_offset=self._blocks.leaves + block]
-                    <= start
-                ):
-                    block = self._blocks.next_above(block, start)
-                    continue
                 var end = min(begin + BLOCK_SIZE, len(self))
-                var starts = Span(unsafe_ptr=self.starts.unsafe_offset(begin), length=end - begin)
+                # A later real block proves this is a full block. Sorted
+                # starts below its first start need no per-lane start test.
+                var interior = (
+                    block + 1 < blocks and self.starts[unsafe_offset=begin + BLOCK_SIZE] < stop
+                )
                 if self._blocks.min_ends.unsafe_ptr()[unsafe_offset=block] > start:
                     var active_end = end
-                    if self.starts[unsafe_offset=end - 1] >= stop:
+                    if not interior and self.starts[unsafe_offset=end - 1] >= stop:
+                        var starts = Span(
+                            unsafe_ptr=self.starts.unsafe_offset(begin), length=end - begin
+                        )
                         active_end = begin + Int(lower_bound(starts, stop))
                     for i in range(begin, active_end):
                         results.append(
@@ -505,22 +518,49 @@ struct Lapper[*, owns_data: Bool = True](Sized):
                                 self.vals[unsafe_offset=i],
                             )
                         )
-                    if active_end != end:
-                        break
                 else:
-                    var stops = Span(unsafe_ptr=self.stops.unsafe_offset(begin), length=end - begin)
-                    var mask = overlap_mask(starts, stops, start, stop)
-                    while mask != 0:
-                        var i = begin + Int(count_trailing_zeros(mask))
-                        mask &= mask - 1
-                        results.append(
-                            Interval(
-                                self.starts[unsafe_offset=i],
-                                self.stops[unsafe_offset=i],
-                                self.vals[unsafe_offset=i],
+                    var size = BLOCK_SIZE if self._padded else end - begin
+                    var stops = Span(unsafe_ptr=self.stops.unsafe_offset(begin), length=size)
+                    var mask: UInt32
+                    if interior:
+                        mask = stop_mask(stops, start)
+                    else:
+                        var starts = Span(unsafe_ptr=self.starts.unsafe_offset(begin), length=size)
+                        mask = overlap_mask(starts, stops, start, stop)
+                        # Only real lanes may load a payload, even with padding.
+                        mask &= UInt32.MAX >> UInt32(BLOCK_SIZE - (end - begin))
+                    if pop_count(mask) > BLOCK_SIZE // 2:
+                        for i in range(begin, end):
+                            if mask & 1:
+                                results.append(
+                                    Interval(
+                                        self.starts[unsafe_offset=i],
+                                        self.stops[unsafe_offset=i],
+                                        self.vals[unsafe_offset=i],
+                                    )
+                                )
+                            mask >>= 1
+                    else:
+                        while mask != 0:
+                            var i = begin + Int(count_trailing_zeros(mask))
+                            mask &= mask - 1
+                            results.append(
+                                Interval(
+                                    self.starts[unsafe_offset=i],
+                                    self.stops[unsafe_offset=i],
+                                    self.vals[unsafe_offset=i],
+                                )
                             )
-                        )
+                if not interior:
+                    break
                 block += 1
+                # block is real before accessing its leaf; next_above may
+                # return a past-end leaf, checked by the loop condition.
+                if block < blocks and (
+                    self._blocks.max_tree.unsafe_ptr()[unsafe_offset=self._blocks.leaves + block]
+                    <= start
+                ):
+                    block = self._blocks.next_above(block, start)
 
     # Keep find's collecting path separate: adapting it to this generic visitor
     # doubled the spanning fixture's construction time with Mojo 1.2.0, despite
@@ -550,25 +590,19 @@ struct Lapper[*, owns_data: Bool = True](Sized):
                     break
         else:
             var block = Int(upper_bound(Span(self._blocks.prefix_max_ends), start))
-            while block < len(self._blocks.min_ends):
-                # Same bounds as find: real blocks only, with the final block
-                # clamped to length. The two spans have equal length <= 32.
+            var blocks = len(self._blocks.min_ends)
+            while block < blocks:
+                # Same block and payload bounds as find; borrowed/raw-pointer
+                # storage never relies on the list constructor's padding.
                 var begin = block * BLOCK_SIZE
                 if self.starts[unsafe_offset=begin] >= stop:
                     break
-                if (
-                    self._blocks.max_tree.unsafe_ptr()[unsafe_offset=self._blocks.leaves + block]
-                    <= start
-                ):
-                    block = self._blocks.next_above(block, start)
-                    continue
                 var end = min(begin + BLOCK_SIZE, len(self))
-                var starts = Span(unsafe_ptr=self.starts.unsafe_offset(begin), length=end - begin)
-                if self._blocks.min_ends.unsafe_ptr()[unsafe_offset=block] > start:
-                    var active_end = end
-                    if self.starts[unsafe_offset=end - 1] >= stop:
-                        active_end = begin + Int(lower_bound(starts, stop))
-                    for i in range(begin, active_end):
+                var interior = (
+                    block + 1 < blocks and self.starts[unsafe_offset=begin + BLOCK_SIZE] < stop
+                )
+                if interior and self._blocks.min_ends.unsafe_ptr()[unsafe_offset=block] > start:
+                    for i in range(begin, end):
                         visitor.visit(
                             Interval(
                                 self.starts[unsafe_offset=i],
@@ -576,11 +610,18 @@ struct Lapper[*, owns_data: Bool = True](Sized):
                                 self.vals[unsafe_offset=i],
                             )
                         )
-                    if active_end != end:
-                        break
                 else:
-                    var stops = Span(unsafe_ptr=self.stops.unsafe_offset(begin), length=end - begin)
-                    var mask = overlap_mask(starts, stops, start, stop)
+                    var size = BLOCK_SIZE if self._padded else end - begin
+                    var stops = Span(unsafe_ptr=self.stops.unsafe_offset(begin), length=size)
+                    var mask: UInt32
+                    if interior:
+                        mask = stop_mask(stops, start)
+                    else:
+                        var starts = Span(unsafe_ptr=self.starts.unsafe_offset(begin), length=size)
+                        mask = overlap_mask(starts, stops, start, stop)
+                        mask &= UInt32.MAX >> UInt32(BLOCK_SIZE - (end - begin))
+                    # Bit iteration avoids a per-lane branch for cheap visitors;
+                    # find's density switch benefits collection, not callbacks.
                     while mask != 0:
                         var i = begin + Int(count_trailing_zeros(mask))
                         mask &= mask - 1
@@ -591,7 +632,14 @@ struct Lapper[*, owns_data: Bool = True](Sized):
                                 self.vals[unsafe_offset=i],
                             )
                         )
+                if not interior:
+                    break
                 block += 1
+                if block < blocks and (
+                    self._blocks.max_tree.unsafe_ptr()[unsafe_offset=self._blocks.leaves + block]
+                    <= start
+                ):
+                    block = self._blocks.next_above(block, start)
 
     @always_inline
     def _lower_bound(self, start: UInt32, stop: UInt32) -> UInt:

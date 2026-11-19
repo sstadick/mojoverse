@@ -53,6 +53,39 @@ pixi run --locked --manifest-path bins/mojo-perbase/pixi.toml consumer
 
 For performance work, keep compilation and fixture generation outside timing. Run benchmarks serially on an idle host, compare matching operations and complete output hashes, and retain raw samples. Perbase's [benchmark protocol and historical results](../bins/mojo-perbase/README.md#performance-and-verification) are not a language-wide ranking.
 
+### Lapper whole-program comparison
+
+The [BED coverage benchmark](../packages/mojo-lapper/benchmarks/bedcov.mojo) exercises
+binary input, contig lookup, index construction, streaming overlap callbacks,
+decimal formatting and buffered output. Build from the root source environment
+so an installed module cannot shadow the library being measured:
+
+```sh
+mkdir -p target
+pixi run --locked -e source mojo build -O3 --march native \
+  -I packages/mojo-lapper -I packages/mojo-radix-sort/src \
+  -I packages/mojo-io -I packages/mojo-bstr \
+  packages/mojo-lapper/benchmarks/bedcov.mojo -o target/lapper-bedcov
+target/lapper-bedcov loaded.bed queries.bed > coverage.tsv
+python3 packages/mojo-lapper/tests/test_bedcov.py target/lapper-bedcov
+```
+
+Output is the query's contig, start, stop, overlap count and union coverage,
+tab-separated. This follows Biofast's signed 32-bit coordinate parsing and
+zero-initialized coverage accumulator, not a validating BED parser. Contig names
+are arbitrary bytes. The root source and installed-package checks both run its
+independent scan/union CLI oracle.
+
+For Biofast comparisons, run both `ex-rna.bed ex-anno.bed` and the reverse order.
+Verify complete output hashes against the reference before timing. Match cache
+state, core affinity, output destination and compiler targeting; record whether
+the metric is wall time or user+system CPU time. Keep builds and profiling outside
+the timing window, warm up each executable, and rotate serial samples. Formatting
+is part of this comparison; [bench_find.mojo](../packages/mojo-lapper/benchmarks/bench_find.mojo)
+separately checks and times construction, collecting queries and callback queries
+without file I/O. Its dense and sparse fixtures are useful regression controls
+when a Biofast speedup changes traversal.
+
 ## Dependency changes
 
 Internal dependencies are relative `path` dependencies in the relevant development/build/host/runtime sections. Do not pin a package to an older Git copy of another package in this repository. Consumers that import a Mojo dependency while compiling need it in their host dependencies as well as their build dependencies.

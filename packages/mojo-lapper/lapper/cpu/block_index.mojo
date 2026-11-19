@@ -1,6 +1,7 @@
-"""The 32-interval forward-query index used by rust-lapper 2.0.1.
+"""The 32-interval forward-query index used by rust-lapper and Goose Lapper.
 
 Adapted from rust-lapper (MIT), Copyright (c) 2019 Seth M. Stadick.
+Traversal adapted from Goose Lapper (MIT), Copyright (c) 2026 Seth Stadick.
 """
 
 from std.memory import pack_bits
@@ -97,4 +98,18 @@ def overlap_mask(
         ):
             mask |= UInt32(1) << UInt32(i)
         i += 1
+    return mask
+
+
+@always_inline
+def stop_mask(stops: Span[UInt32, _], start: UInt32) -> UInt32:
+    """Mask a full interior block whose starts are all below the query stop.
+
+    Requires exactly 32 initialized stops. The caller proves the start condition
+    from the next block's first start, so no start loads/comparisons are needed.
+    """
+    var mask = UInt32(0)
+    comptime for i in range(0, BLOCK_SIZE, _WIDTH):
+        var ends = stops.unsafe_ptr().unsafe_load[width=_WIDTH, alignment=1](i)
+        mask |= UInt32(pack_bits(ends.gt(start))) << UInt32(i)
     return mask

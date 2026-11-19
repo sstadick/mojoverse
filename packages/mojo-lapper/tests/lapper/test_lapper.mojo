@@ -1,4 +1,5 @@
 from lapper import BITSLapper, Lapper, Interval, IntervalVisitor
+from std.memory.alloc import unsafe_alloc
 from std.testing import assert_equal, assert_true, assert_false, assert_raises, TestSuite
 
 
@@ -588,7 +589,7 @@ def test_find_and_count_match_scan() raises:
 def test_find_block_boundaries_and_spanning_intervals() raises:
     """Compare ordered payloads with a scan across sparse, dense and mixed blocks."""
     for n in [1, 7, 31, 32, 33, 63, 64, 65, 127, 128, 129, 511, 512, 513]:
-        for shape in range(4):
+        for shape in range(6):
             for base in [UInt32(0), UInt32.MAX - UInt32(n * 8 + 100)]:
                 var intervals = List[Interval]()
                 for i in range(n):
@@ -604,6 +605,10 @@ def test_find_block_boundaries_and_spanning_intervals() raises:
                         stop = start + UInt32((i * 17) % 23)
                         if i % 97 == 0:
                             stop = base + UInt32(n * 8 + 10)
+                    elif shape >= 4 and (i * 13) % 32 < 16 + (shape - 4):
+                        # Both sides of the dense-mask threshold; permuted lanes
+                        # catch bit-order errors in interior and partial blocks.
+                        stop = base + UInt32(n * 8 + 10)
                     intervals.append(Interval(start, stop, Int32(i * 3 - 7)))
                 var lapper = Lapper(intervals.copy())
                 for q in range(0, n * 8 + 20, 7):
@@ -631,6 +636,42 @@ def test_find_block_boundaries_and_spanning_intervals() raises:
                         assert_equal(len(visitor.intervals), expected)
                         assert_equal(visitor.intervals[0].val, -99)
                         assert_equal(lapper.count(start, stop), UInt(expected - 1))
+
+
+def test_owned_pointer_queries_without_padding() raises:
+    """The owning raw-pointer API accepts exact-size allocations, including tails."""
+    for n in [1, 17, 31, 32, 33, 63, 65]:
+        var starts = unsafe_alloc[UInt32](n)
+        var stops = unsafe_alloc[UInt32](n)
+        var values = unsafe_alloc[Int32](n)
+        var expected = List[Interval]()
+        for i in range(n):
+            var start = UInt32(i * 3)
+            var stop = start + 1
+            if (i * 13) % 32 < 17:
+                stop = UInt32(n * 3 + 7)
+            starts[unsafe_offset=i] = start
+            stops[unsafe_offset=i] = stop
+            values[unsafe_offset=i] = Int32(11 - i * 7)
+            expected.append(Interval(start, stop, Int32(11 - i * 7)))
+        var index = Lapper(starts, stops, values, UInt(n), UInt32(n * 3 + 7))
+        for start in range(0, n * 3 + 9, 5):
+            for width in [0, 1, 15, n * 3 + 10]:
+                var found = List[Interval]()
+                var visited = RecordingVisitor(List[Interval]())
+                index.find(UInt32(start), UInt32(start + width), found)
+                index.visit(UInt32(start), UInt32(start + width), visited)
+                var count = 0
+                for iv in expected:
+                    if Int(iv.start) < start + width and Int(iv.stop) > start:
+                        for actual in [found[count], visited.intervals[count]]:
+                            assert_equal(actual.start, iv.start)
+                            assert_equal(actual.stop, iv.stop)
+                            assert_equal(actual.val, iv.val)
+                        count += 1
+                assert_equal(len(found), count)
+                assert_equal(len(visited.intervals), count)
+                assert_equal(index.count(UInt32(start), UInt32(start + width)), UInt(count))
 
 
 def main() raises:

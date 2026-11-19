@@ -74,6 +74,13 @@ def main():
             run([*command, str(test), "-o", str(binary)], package)
             run([str(binary)], package)
             count += 1
+        if name == "mojo-lapper":
+            # Exercise the maintained whole-program benchmark with the same
+            # source/installed import mode as the library's Mojo test programs.
+            binary = output / "lapper-bedcov"
+            run([*command, str(package / "benchmarks/bedcov.mojo"), "-o", str(binary)], package)
+            run([sys.executable, str(package / "tests/test_bedcov.py"), str(binary)], package)
+            count += 1
     if args.bins:
         run(["hat", "--help"], root)
         run([sys.executable, "tests/smoke.py", "--binary",
