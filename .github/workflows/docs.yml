@@ -1,7 +1,7 @@
 name: Documentation
 on:
   push:
-    branches: [main, nightly]
+    branches: [main, nightly, 'stable/**']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -60,6 +60,6 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/configure-pages@v5
-      - name: Publish stable documentation
+      - name: Publish main documentation
         id: deployment
         uses: actions/deploy-pages@v4

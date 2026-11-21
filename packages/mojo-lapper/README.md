@@ -158,7 +158,7 @@ pixi run docs              # This monorepo's root documentation tools
 pixi build --path . --output-dir dist  # Local archive only
 ```
 
-`main` targets stable Mojo; `nightly` tracks nightly compiler compatibility.
+`main` tracks nightly Mojo; `stable/1.2` supports Mojo 1.2.0.
 CPU targets are Linux x86-64, Linux ARM64, and Apple-silicon macOS.
 
 The documentation task executes the marked example and builds `target/docs`.

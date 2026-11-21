@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: nightly
+          ref: main
           fetch-depth: 0
           submodules: recursive
       - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e
@@ -25,13 +25,13 @@ jobs:
           pixi-version: v0.80.0
           run-install: false
           cache: false
-      - name: Update only the nightly branch
+      - name: Update the nightly compiler on main
         id: update
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git fetch origin main nightly
-          git merge --no-edit origin/main
+          git fetch origin main
+          git merge --ff-only origin/main
           git submodule update --init --recursive
           python3 scripts/toolchain.py update --channel nightly
           python3 scripts/toolchain.py check --lane nightly
@@ -39,7 +39,7 @@ jobs:
           if ! git diff --cached --quiet; then
             git commit -m 'Update the workspace to the latest published Mojo nightly'
           fi
-          git push origin HEAD:refs/heads/nightly
+          git push origin HEAD:refs/heads/main
           echo "revision=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
   verify:
     needs: update

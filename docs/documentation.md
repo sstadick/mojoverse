@@ -121,10 +121,12 @@ The builder uses its MkDocs-compatible YAML configuration and strict validation.
 ## Publish with GitHub Pages
 
 The `Documentation` workflow builds and archives the complete site on pull
-requests and pushes to `main` or `nightly`. Only successful builds of `main`
+requests and pushes to `main`, `stable/*`, or the legacy `nightly` branch.
+Only successful builds of `main`
 can deploy, and only when Pages is configured to use GitHub Actions. Until
 then, the workflow saves the documentation artifact and skips deployment.
-Pull requests and nightly builds never replace the stable site. A manual
+The published site follows nightly development on `main`. Pull requests and
+stable branches produce artifacts without replacing that site. A manual
 workflow run on `main` can rebuild it too.
 
 For initial setup, a repository administrator must enable **Settings → Pages →

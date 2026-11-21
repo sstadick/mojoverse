@@ -104,9 +104,9 @@ This uses the commit, not uncommitted edits. To test the published source, omit 
 
 The root manifest pins the compiler for every library and bin. Mojo builds use `-O3` and the compiler's default host CPU/features where explicitly configured. `--target-cpu=native` is not a valid Mojo 1.2 option. Native codec/glue builds use **Clang `-O3 -march=native`**, including dependencies. These artifacts are host-tuned, not universal binary releases; rebuild them on the destination CPU.
 
-The stable workspace targets Linux x86-64, Linux AArch64 and Apple-silicon macOS. CI runs native jobs on those platforms. The separate documentation environment supports Linux x86-64 and macOS only: Modo's bundled executable does not support Linux AArch64, and its macOS executable requires Rosetta. CI checks documentation on both supported hosts, separately from the native package suite. A resolved lockfile alone is not evidence of native execution or performance. GPU checks additionally require suitable hardware.
+The workspace targets Linux x86-64, Linux AArch64 and Apple-silicon macOS. CI runs native jobs on those platforms. The separate documentation environment supports Linux x86-64 and macOS only: Modo's bundled executable does not support Linux AArch64, and its macOS executable requires Rosetta. CI checks documentation on both supported hosts, separately from the native package suite. A resolved lockfile alone is not evidence of native execution or performance. GPU checks additionally require suitable hardware.
 
-Raylib uses the same stable compiler as the rest of `main`; its graphics environment currently targets Linux x86-64 and Apple-silicon macOS. To work on it:
+Raylib uses the same compiler lane as the rest of its branch; its graphics environment currently targets Linux x86-64 and Apple-silicon macOS. To work on it:
 
 ```sh
 pixi run --locked -e graphics test-graphics
@@ -116,16 +116,19 @@ pixi run --locked --manifest-path packages/mojo-raylib/pixi.toml -e codegen rege
 ## Compiler updates
 
 ```sh
-python scripts/toolchain.py update --channel stable
-# On the nightly branch:
+# On main:
 python scripts/toolchain.py update --channel nightly
+# On the matching stable/<major>.<minor> release branch:
+python scripts/toolchain.py update --channel stable --version <published-stable-version>
 ```
 
 The updater queries Modular's published packages, selects a matching Mojo/MAX release available on every root platform, updates all development/build/host/runtime and example pins, and regenerates all locks. `--version` selects a particular published compiler; `--no-lock` allows inspecting the pin diff first. It does not migrate Mojo source automatically. Run the complete checks and repair incompatible APIs before considering an update supported.
 
-For an agent-assisted update, ask: **Use `updating-mojoverse-nightly` to update the nightly branch.** The [repo-local skill](../.agents/skills/updating-mojoverse-nightly/SKILL.md) uses these tools, saves verbose logs, and focuses source work on compatibility failures.
+For an agent-assisted update, ask: **Use `updating-mojoverse-nightly` to update the nightly compiler on main.** The [repo-local skill](../.agents/skills/updating-mojoverse-nightly/SKILL.md) uses these tools, saves verbose logs, and focuses source work on compatibility failures.
 
-Nightly updates are manual for now; there is no scheduled job. The manually dispatched GitHub workflow brings `main` into `nightly`, updates and pushes that branch, and runs the same graph checks. Conflicts or compiler failures remain visible; it does not repair source or merge nightly into main. Stable promotion is a deliberate source/compiler update on `main`, not a merge of nightly pins.
+`main` tracks published nightly Mojo. Stable releases use versioned branches such as `stable/1.2`, which retains Mojo 1.2.0 and its matching MAX version. Create a new stable branch deliberately for each supported compiler series, validate its full graph, and backport fixes without importing nightly compiler pins. External consumers should pin a tested commit from the appropriate branch.
+
+Nightly compiler updates are manual; there is no scheduled job. The manually dispatched GitHub workflow updates and pushes `main`, then runs the same graph checks. Compiler failures remain visible; the workflow does not repair source. The legacy `nightly` branch is retained for existing references but is no longer maintained; use `main` for ongoing nightly development.
 
 ## Documentation and editor setup
 

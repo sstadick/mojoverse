@@ -1,7 +1,7 @@
 name: Workspace checks
 on:
   push:
-    branches: [main, nightly]
+    branches: [main, nightly, 'stable/**']
   pull_request:
   workflow_call:
     inputs:
@@ -38,7 +38,7 @@ jobs:
           cache: false
       - name: Enforce the branch compiler lane
         env:
-          LANE: ${{ inputs.lane || ((github.base_ref == 'nightly' || github.ref_name == 'nightly') && 'nightly' || 'stable') }}
+          LANE: ${{ inputs.lane || (startsWith(github.base_ref || github.ref_name, 'stable/') && 'stable' || 'nightly') }}
         run: python3 scripts/toolchain.py check --lane "$LANE"
       - run: pixi run --locked test
       - name: Test documentation tools on Modo's supported hosts
