@@ -10,7 +10,7 @@ Replace `<full-commit>` with a Mojoverse commit:
 ```sh
 pixi global install --git https://github.com/sstadick/mojoverse.git \
   --rev '<full-commit>' --subdirectory bins/hat \
-  -c https://conda.modular.com/max -c conda-forge
+  -c https://conda.modular.com/max-nightly -c conda-forge
 hat --help
 ```
 
@@ -40,7 +40,7 @@ hat build --debug
 hat test
 ```
 
-This checkout and generated projects use stable Mojo 1.2.0 by default, require Pixi 0.76 or newer, and rely on the [`pixi-build-mojo`](https://prefix-dev.github.io/pixi-build-backends/backends/pixi-build-mojo) backend. Library names such as `amazing-lib` are mapped to importable Mojo package names such as `amazing_lib`.
+This checkout uses the workspace's pinned nightly compiler. Generated projects use stable Mojo 1.2.0 by default, require Pixi 0.76 or newer, and rely on the [`pixi-build-mojo`](https://prefix-dev.github.io/pixi-build-backends/backends/pixi-build-mojo) backend. Library names such as `amazing-lib` are mapped to importable Mojo package names such as `amazing_lib`.
 
 Libraries and packages created this way can be used through Git paths and do not need to be published on Conda. To publish on [modular-community](https://github.com/modular/modular-community), create a `recipe.yaml` and follow that repository's publishing process.
 

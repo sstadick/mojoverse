@@ -1,6 +1,6 @@
 # Mojo Threads
 
-Native threads for Mojo 1.2.0 on Linux and macOS. Move an input into a thread,
+Native threads for Mojo 1.3.0.dev2026111705 on Linux and macOS. Move an input into a thread,
 then join to get its result or error. No C callbacks or pointer casts are
 needed for ordinary owned jobs.
 

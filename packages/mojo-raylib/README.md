@@ -33,13 +33,13 @@ every Mojoverse dependency:
 
 ```toml
 [workspace]
-channels = ["https://conda.modular.com/max", "conda-forge"]
+channels = ["https://conda.modular.com/max-nightly", "conda-forge"]
 platforms = ["osx-arm64", "linux-64"]
 preview = ["pixi-build"]
 requires-pixi = ">=0.80"
 
 [dependencies]
-mojo = "=1.2.0"
+mojo = "=1.3.0.dev2026111705"
 mojo_raylib = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojo-raylib" }
 
 [tasks.run]

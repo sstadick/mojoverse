@@ -1,6 +1,6 @@
 # Mojo libdeflate
 
-Mojo 1.2.0 bindings to libdeflate **1.26**, linked statically to the native
+Mojo 1.3.0.dev2026111705 bindings to libdeflate **1.26**, linked statically to the native
 codec. Compression and decompression write directly into caller-owned buffers.
 
 [API reference](https://sstadick.github.io/mojoverse/mojo-libdeflate/libdeflate/_index.html)

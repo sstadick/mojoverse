@@ -1,7 +1,7 @@
 # mojo-radix-sort
 
 Generic in-place integer radix sorting, built with
-**Mojo 1.2.0**. Package name: `mojo-radix-sort`; import: `radix_sort`.
+**Mojo 1.3.0.dev2026111705**. Package name: `mojo-radix-sort`; import: `radix_sort`.
 Interval data structures belong to the separate **mojo-lapper** package.
 
 [API reference](https://sstadick.github.io/mojoverse/mojo-radix-sort/radix_sort/_index.html)
@@ -15,13 +15,13 @@ every Mojoverse dependency:
 ```toml
 [workspace]
 name = "radix-sort-example"
-channels = ["https://conda.modular.com/max", "conda-forge"]
+channels = ["https://conda.modular.com/max-nightly", "conda-forge"]
 platforms = ["linux-64", "linux-aarch64", "osx-arm64"]
 preview = ["pixi-build"]
 requires-pixi = ">=0.80"
 
 [dependencies]
-mojo = "=1.2.0"
+mojo = "=1.3.0.dev2026111705"
 mojo-radix-sort = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojo-radix-sort" }
 ```
 
@@ -96,7 +96,7 @@ pixi publish --path . --target-dir build
 ```
 
 `pixi-build-mojo` puts `radix_sort.mojoc` in `lib/mojo` and includes LICENSE.
-The artifact pins `mojo-compiler ==1.2.0`; compiled Mojo modules are tied to
+The artifact pins `mojo-compiler ==1.3.0.dev2026111705`; compiled Mojo modules are tied to
 their compiler version. Supported platforms are Linux x86-64, Linux ARM64,
 and macOS ARM64. The command above writes a local archive, not a remote publication.
 

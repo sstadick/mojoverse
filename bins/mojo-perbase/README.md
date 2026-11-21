@@ -21,7 +21,7 @@ Replace `<full-commit>` with a Mojoverse commit:
 ```sh
 pixi global install --git https://github.com/sstadick/mojoverse.git \
   --rev '<full-commit>' --subdirectory bins/mojo-perbase \
-  -c https://conda.modular.com/max -c conda-forge
+  -c https://conda.modular.com/max-nightly -c conda-forge
 mojo-perbase --help
 ```
 
@@ -46,7 +46,7 @@ pixi run t
 pixi run consumer
 ```
 
-Stable Mojo 1.2.0 is pinned across development, host, build and runtime.
+Mojo 1.3.0.dev2026111705 is pinned across development, host, build and runtime.
 Local Mojo/CMake build backends are pinned too, avoiding different dependency
 metadata from an old backend cache versus a fresh machine. The same lockfiles
 install with `--locked` on both tested platforms.

@@ -1,6 +1,6 @@
 # mojo-bstr
 
-Arbitrary byte strings for Mojo 1.2.0. The distribution is `mojo-bstr`; import
+Arbitrary byte strings for Mojo 1.3.0.dev2026111705. The distribution is `mojo-bstr`; import
 `bstr`. NUL and malformed UTF-8 are ordinary input bytes.
 
 [API reference](https://sstadick.github.io/mojoverse/mojo-bstr/bstr/_index.html)
@@ -13,13 +13,13 @@ every Mojoverse dependency:
 
 ```toml
 [workspace]
-channels = ["https://conda.modular.com/max", "conda-forge"]
+channels = ["https://conda.modular.com/max-nightly", "conda-forge"]
 platforms = ["linux-64", "linux-aarch64", "osx-arm64"]
 preview = ["pixi-build"]
 requires-pixi = ">=0.80"
 
 [dependencies]
-mojo = "=1.2.0"
+mojo = "=1.3.0.dev2026111705"
 mojo-bstr = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojo-bstr" }
 ```
 

@@ -1,6 +1,6 @@
 # Nightly compatibility
 
-This branch follows published Mojo nightlies; `main` remains on stable. Updates are manual: use the [nightly maintenance skill](../.agents/skills/updating-mojoverse-nightly/SKILL.md) to update compiler pins and lockfiles together and check compatibility. An update does not imply that CI passed. Pin a tested commit rather than depending on a moving branch.
+`main` follows published Mojo nightlies; versioned branches such as `stable/1.2` retain stable compiler support. The legacy `nightly` branch is retained as a snapshot; use `main` for ongoing development. Updates are manual: use the [nightly maintenance skill](../.agents/skills/updating-mojoverse-nightly/SKILL.md) to update compiler pins and lockfiles together and check compatibility. An update does not imply that CI passed. Pin a tested commit rather than depending on a moving branch.
 
 ## November 21, 2026: synchronize current package APIs
 

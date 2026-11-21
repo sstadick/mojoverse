@@ -7,20 +7,20 @@ Distribution: `mojo-lapper`; import: `lapper`.
 
 ## Install
 
-The stable toolchain is **Mojo 1.2.0** and **MAX core 26.7.0**.
+This revision pins **Mojo 1.3.0.dev2026111705** and **MAX core 26.8.0.dev2026111705**.
 With Pixi 0.80 or newer, add to your `pixi.toml`. Replace `<full-commit>` with
 a Mojoverse commit and use the same revision for every Mojoverse dependency:
 
 ```toml
 [workspace]
 name = "interval-example"
-channels = ["https://conda.modular.com/max", "conda-forge"]
+channels = ["https://conda.modular.com/max-nightly", "conda-forge"]
 platforms = ["linux-64", "linux-aarch64", "osx-arm64"]
 preview = ["pixi-build"]
 requires-pixi = ">=0.80"
 
 [dependencies]
-mojo = "=1.2.0"
+mojo = "=1.3.0.dev2026111705"
 mojo-lapper = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojo-lapper" }
 ```
 
