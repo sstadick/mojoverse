@@ -21,7 +21,7 @@ ExtraMojo comes from the stable maintenance checkout, not the separate experimen
 
 Internal dependencies now use relative paths within this repository. External consumers use one Git revision and package subdirectories; see the [landing page](../README.md). The root [build documentation](development.md) owns workspace/compiler maintenance. Workflows below package directories are historical standalone configurations; GitHub runs only the root `.github/workflows`.
 
-`main` uses one stable compiler throughout. Raylib's generated bindings were migrated from Mojo 1.0 to that compiler by changing their generator. Its native recipe now uses the same Clang/native-optimization policy and Pixi's cache, instead of a separate cache that did not include compiler flags.
+At the initial migration, `main` used one stable compiler throughout. Current branch policy is documented in [development](development.md#compiler-updates). Raylib's generated bindings were migrated from Mojo 1.0 to that compiler by changing their generator. Its native recipe now uses the same Clang/native-optimization policy and Pixi's cache, instead of a separate cache that did not include compiler flags.
 
 The migration itself does not archive or delete the old GitHub repositories, publish conda releases, replace existing ExtraMojo APIs, or claim new performance measurements. Original local checkouts remain under `mojo-projects` as recovery copies. New coordinated development belongs here.
 

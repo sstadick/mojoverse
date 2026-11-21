@@ -1,6 +1,6 @@
 # Mojoverse
 
-Mojo libraries, bins, and development tools in one repository. This checkout uses **Mojo 1.2.0** and **Pixi 0.80+**. `main` follows stable; `nightly` tracks the published nightly compiler across the whole workspace.
+Mojo libraries, bins, and development tools in one repository. This checkout uses **Mojo 1.2.0** and **Pixi 0.80+**. `main` tracks the published nightly compiler; versioned branches such as [`stable/1.2`](https://github.com/sstadick/mojoverse/tree/stable/1.2) support stable Mojo releases across the whole workspace.
 
 [Library documentation and API references](https://sstadick.github.io/mojoverse/)
 

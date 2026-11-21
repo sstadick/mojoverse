@@ -16,7 +16,7 @@ pixi run --manifest-path ../mojo-example/pixi.toml docs
 Hat generates projects using its supported stable compiler. Check the generated
 pins before starting; a compiler upgrade must align development, build, host,
 runtime dependencies, and the lockfile. Use `hat new --nightly` only for the
-nightly lane. Do not repin stable main to nightly to make a test pass.
+nightly lane. Do not repin a stable project to nightly to make a test pass.
 
 The example asserts Hat's `pull_rabbit()` result; replace it with the package's
 real public API. Add tests before adding features. `pixi build` must produce an
@@ -29,6 +29,6 @@ package's locked compiler, and saves `target/docs` as an artifact. The template
 requires the Mojoverse repository to be published before remote CI can use it.
 Pin a reviewed tools revision when releasing a package.
 
-The workflow deliberately does not deploy. After Pages is configured, the
-reviewed stable-main artifact can be published through GitHub Pages; nightly
-validation must not overwrite stable documentation.
+The workflow deliberately does not deploy. After Pages is configured, publish
+a reviewed artifact through GitHub Pages according to the consumer project's
+branch and compiler policy.
