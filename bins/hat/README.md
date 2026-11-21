@@ -4,14 +4,17 @@ A thin wrapper over Pixi that makes common Mojo project tasks easier.
 
 ## Install
 
+With [Pixi](https://pixi.prefix.dev/) 0.80 or newer, install directly from Git.
+Replace `<full-commit>` with a Mojoverse commit:
+
 ```sh
-git clone https://github.com/sstadick/mojoverse.git
-cd mojoverse
-pixi run --locked hat --help
+pixi global install --git https://github.com/sstadick/mojoverse.git \
+  --rev '<full-commit>' --subdirectory bins/hat \
+  -c https://conda.modular.com/max -c conda-forge
+hat --help
 ```
 
-To install globally from this checkout, use `pixi global install --path bins/hat`
-with the channels in the root manifest. Mojopt comes from the same monorepo.
+Mojopt comes from the same Git revision; no local checkout is required.
 For a project dependency, use [Mojoverse dependency setup](../../README.md#use-a-dependency)
 with `subdirectory = "bins/hat"`.
 

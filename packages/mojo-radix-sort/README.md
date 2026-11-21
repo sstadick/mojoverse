@@ -6,6 +6,28 @@ Interval data structures belong to the separate **mojo-lapper** package.
 
 [API reference](https://sstadick.github.io/mojoverse/mojo-radix-sort/radix_sort/_index.html)
 
+## Install
+
+With [Pixi](https://pixi.prefix.dev/) 0.80 or newer, add to your `pixi.toml`.
+Replace `<full-commit>` with a Mojoverse commit and use the same revision for
+every Mojoverse dependency:
+
+```toml
+[workspace]
+name = "radix-sort-example"
+channels = ["https://conda.modular.com/max", "conda-forge"]
+platforms = ["linux-64", "linux-aarch64", "osx-arm64"]
+preview = ["pixi-build"]
+requires-pixi = ">=0.80"
+
+[dependencies]
+mojo = "=1.2.0"
+mojo-radix-sort = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojo-radix-sort" }
+```
+
+Run `pixi install`, then `pixi run mojo run main.mojo`. No source `-I` path is
+needed.
+
 ## Sort integers
 
 ```mojo {doctest="integers" global=true}
@@ -78,23 +100,7 @@ The artifact pins `mojo-compiler ==1.2.0`; compiled Mojo modules are tied to
 their compiler version. Supported platforms are Linux x86-64, Linux ARM64,
 and macOS ARM64. The command above writes a local archive, not a remote publication.
 
-For a sibling source checkout, a consumer can use:
-
-```toml
-[workspace]
-name = "radix-sort-example"
-channels = ["https://conda.modular.com/max", "conda-forge", "https://repo.prefix.dev/modular-community"]
-platforms = ["linux-64"]
-preview = ["pixi-build"]
-
-[dependencies]
-mojo-radix-sort = { path = "../mojoverse/packages/mojo-radix-sort" }
-```
-
-Then run `pixi run mojo run main.mojo`. No `-I` source path is needed.
-
 See [NOTICE.md](NOTICE.md) for source attribution and licensing.
-Documentation uses this monorepo's root tools. For pinned Git dependencies,
-see [Mojoverse dependency setup](https://github.com/sstadick/mojoverse#use-a-dependency).
+Documentation uses this monorepo's root tools.
 It checks examples with this package's locked compiler before building
 `target/docs`.

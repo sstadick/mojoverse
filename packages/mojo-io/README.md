@@ -5,8 +5,19 @@ Package: `mojo-io`; import: `io`. Requires **mojo-bstr**.
 
 [API reference](https://sstadick.github.io/mojoverse/mojo-io/io/_index.html)
 
-Install using the [Mojoverse Git/subdirectory dependency](https://github.com/sstadick/mojoverse#use-a-dependency).
-Its bstr dependency resolves from the same checkout and commit.
+## Install
+
+Follow the [Mojoverse dependency setup](https://github.com/sstadick/mojoverse#use-a-dependency)
+and add this Git dependency to your `pixi.toml`. Replace `<full-commit>` with a
+Mojoverse commit and use the same revision for every Mojoverse dependency:
+
+```toml
+[dependencies]
+mojo-io = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojo-io" }
+```
+
+Run `pixi install`, then `pixi run mojo run main.mojo`; no source `-I` path is
+needed. Its bstr dependency resolves from the same Git revision.
 
 ## Read and write arbitrary bytes
 

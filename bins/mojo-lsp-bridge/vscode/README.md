@@ -4,6 +4,17 @@ Runs [Mojo LSP Bridge](https://github.com/sstadick/mojoverse/tree/main/bins/mojo
 
 ## Install
 
+Build the VSIX from Git with Node.js 22+. Replace `<full-commit>` with the
+Mojoverse commit you want to install:
+
+```sh
+git clone https://github.com/sstadick/mojoverse.git
+git -C mojoverse checkout '<full-commit>'
+cd mojoverse/bins/mojo-lsp-bridge/vscode
+npm ci
+npm run package
+```
+
 1. Have Mojo, Python 3.10+, and Git installed on the development machine. Run `pixi install` for an existing Pixi project.
 2. **Disable the official Mojo (and Mojo Nightly, if installed) extension for this workspace**, then reload VS Code. The bridge extension refuses to start alongside those extensions to avoid duplicate servers. It does not provide their debugger, SDK management, or run commands. The official extension already provides formatting; that is not a new VS Code feature here.
 3. Run **Extensions: Install from VSIX…** and select `mojo-lsp-bridge-0.1.0.vsix`.

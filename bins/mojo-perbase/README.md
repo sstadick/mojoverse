@@ -13,14 +13,35 @@ small C library under `native/` now contains only application-specific
 stat/write/SIGPIPE glue. CLI parsing uses mojopt from the same monorepo;
 strict numeric ranges and command restrictions are validated before opening output.
 
-## Build and run
+## Install
 
-Clone Mojoverse and run from `bins/mojo-perbase` (Pixi 0.80 or newer):
+With [Pixi](https://pixi.prefix.dev/) 0.80 or newer, install directly from Git.
+Replace `<full-commit>` with a Mojoverse commit:
+
+```sh
+pixi global install --git https://github.com/sstadick/mojoverse.git \
+  --rev '<full-commit>' --subdirectory bins/mojo-perbase \
+  -c https://conda.modular.com/max -c conda-forge
+mojo-perbase --help
+```
+
+Dependencies resolve from the same Git revision; no local checkout is required.
+For a project dependency, use [Mojoverse dependency setup](../../README.md#use-a-dependency)
+with `subdirectory = "bins/mojo-perbase"`.
+
+## Usage
+
+```sh
+mojo-perbase base-depth reads.bam -t 32 -c 1000000 -o counts.tsv
+mojo-perbase only-depth reads.bam -m -o depth.tsv
+```
+
+## Build and test
+
+For local development, clone Mojoverse and run from `bins/mojo-perbase`:
 
 ```sh
 pixi install --locked
-pixi run r base-depth reads.bam -t 32 -c 1000000 -o counts.tsv
-pixi run r only-depth reads.bam -m -o depth.tsv
 pixi run t
 pixi run consumer
 ```
@@ -37,9 +58,6 @@ are **host-specific**, not portable release binaries. Linux x86-64 and Apple
 Silicon macOS have native build and installed-consumer checks. Linux AArch64
 is declared as a source target but has not been run on an AArch64 Linux host.
 macOS requires Xcode command-line tools; Intel Macs and Windows are not targets.
-Internal path dependencies resolve within this monorepo. External consumers
-can pin [one Git revision](../../README.md#use-a-dependency) with
-`subdirectory = "bins/mojo-perbase"`; no separately cloned packages are needed.
 
 `consumer` builds local conda artifacts, installs exact archive URLs/SHA-256s in
 an isolated Pixi cache/prefix, and exercises the application and library APIs

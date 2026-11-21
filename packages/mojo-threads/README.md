@@ -6,6 +6,24 @@ needed for ordinary owned jobs.
 
 [API reference](https://sstadick.github.io/mojoverse/mojo-threads/threads/_index.html)
 
+## Install
+
+Follow the [Mojoverse dependency setup](https://github.com/sstadick/mojoverse#use-a-dependency)
+and add this Git dependency to your `pixi.toml`. Replace `<full-commit>` with a
+Mojoverse commit and use the same revision for every Mojoverse dependency:
+
+```toml
+[dependencies]
+mojo-threads = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojo-threads" }
+```
+
+Run `pixi install`. Consumers import `spawn`, `Thread`, `Worker` and
+`available_parallelism` from `threads` and link
+`-Xlinker -L$CONDA_PREFIX/lib -Xlinker -lmojo_threads_native -Xlinker -lpthread`.
+The `mojo-threads-native` dependency installs the static archive from the same
+Git revision; no source `-I` path is needed. Use `mojo build`, not JIT execution,
+for static native dependencies.
+
 ## Run a job
 
 ```mojo {doctest="owned-job" global=true}
@@ -109,19 +127,11 @@ pixi run t
 pixi run docs
 ```
 
-For Git consumers use [Mojoverse dependency setup](https://github.com/sstadick/mojoverse#use-a-dependency)
-with `subdirectory = "packages/mojo-threads"`.
-
 The source targets Linux x86-64/AArch64 and Apple Silicon macOS 15+. macOS
 requires Xcode command-line tools. Native code uses Clang 18.1.8 on Linux and
 Apple Clang on macOS, with `-O3 -march=native`. Built archives are host-tuned;
 do not distribute them as universal CPU-compatible binaries. Intel macOS and
 Windows are not Mojo 1.2 targets.
-
-Consumers import `spawn`, `Thread`, `Worker` and `available_parallelism` from `threads` and
-link `-Xlinker -L$CONDA_PREFIX/lib -Xlinker -lmojo_threads_native -Xlinker -lpthread`.
-The `mojo-threads-native` runtime dependency installs the static archive.
-Use `mojo build`, not JIT execution, for static native dependencies.
 
 ## Low-level Worker contract
 

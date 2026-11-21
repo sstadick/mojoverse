@@ -25,10 +25,34 @@
 
 Code generation is fully automated and provides 100% coverage, although not everything has been manually tested yet.
 
-## Requirements
+## Install
 
-- [Pixi](https://prefix.dev/) — installs the monorepo's pinned Mojo compiler, raylib, and the build toolchain.
-- Initialize the pinned native source from the Mojoverse root with `git submodule update --init`.
+With [Pixi](https://pixi.prefix.dev/) 0.80 or newer, add to your `pixi.toml`.
+Replace `<full-commit>` with a Mojoverse commit and use the same revision for
+every Mojoverse dependency:
+
+```toml
+[workspace]
+channels = ["https://conda.modular.com/max", "conda-forge"]
+platforms = ["osx-arm64", "linux-64"]
+preview = ["pixi-build"]
+requires-pixi = ">=0.80"
+
+[dependencies]
+mojo = "=1.2.0"
+mojo_raylib = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojo-raylib" }
+
+[tasks.run]
+cmd = "mojo build main.mojo -Xlinker -L$CONDA_PREFIX/lib -Xlinker -lmojo_raylib_shim -Xlinker -lraylib -o .pixi/main && .pixi/main"
+```
+
+Run `pixi install`, save the [example below](#use-it-in-your-own-project) as
+`main.mojo`, then run `pixi run run`.
+
+The Git dependency invokes `pixi-build-mojo` and installs the compiled
+`raylib.mojoc` package plus its native runtime dependencies from the same
+revision. Keep `preview = ["pixi-build"]` enabled; no source `-I` path, copied
+build scripts or manual `MODULAR_HOME` setup are needed.
 
 ## Editor and LSP setup
 
@@ -88,22 +112,7 @@ The `mojo_raylib` distribution supplies the `raylib` import using Pixi's [`pixi-
 
 ## Use it in your own project
 
-Each example is a self-contained `pixi.toml`:
-
-```toml
-[workspace]
-channels = ["https://conda.modular.com/max", "https://prefix.dev/conda-forge"]
-platforms = ["osx-arm64", "linux-64"]
-preview = ["pixi-build"]
-
-[dependencies]
-mojo_raylib = { path = "../mojoverse/packages/mojo-raylib" }
-
-[tasks.run]
-cmd = "mojo build main.mojo -Xlinker -L$CONDA_PREFIX/lib -Xlinker -lmojo_raylib_shim -Xlinker -lraylib -o .pixi/main && .pixi/main"
-```
-
-The source dependency reads this repository's package metadata, invokes `pixi-build-mojo`, and installs the compiled `raylib.mojoc` package plus its native runtime dependencies into the consuming environment. Keep `preview = ["pixi-build"]` enabled in the consuming workspace; no copied build scripts or manual `MODULAR_HOME` setup are needed.
+Save this as `main.mojo` alongside the `pixi.toml` from [Install](#install):
 
 ```mojo
 from raylib import Color, init_window, close_window, window_should_close
@@ -123,6 +132,8 @@ def main():
 ## Regenerating bindings
 
 The Mojo bindings + C shim are emitted by a patched `rlparser` (`patch/rlparser.c`) reading raylib's headers.
+For local development, initialize the pinned native source from the Mojoverse
+root with `git submodule update --init`.
 
 ```sh
 pixi run -e codegen generate      # regenerate raylib/ + native/mojo_raylib_shim.c

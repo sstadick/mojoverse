@@ -21,6 +21,19 @@ Previously named `sstadick/zed_mojo`. Existing `initializationOptions.zed_mojo` 
 - Default runnable task binding in `languages/mojo/tasks.json`
 - Tree-sitter grammar pinned to [`vadim-su/tree-sitter-mojo`](https://github.com/vadim-su/tree-sitter-mojo)
 
+## Install from Git
+
+Clone Mojoverse before following the editor-specific instructions below.
+Replace `<full-commit>` with the Mojoverse commit you want to install:
+
+```sh
+git clone https://github.com/sstadick/mojoverse.git
+git -C mojoverse checkout '<full-commit>'
+```
+
+The editor integrations are not Pixi packages: Zed loads the cloned extension
+directory, and VS Code installs a VSIX built from it.
+
 ## Install locally in Zed
 
 Have a working Mojo installation, Python 3.10 or newer (`python3`), and Git available on the development machine (the server for SSH projects). The extension automatically discovers the nearest project's `.pixi/envs/default` Mojo installation, falling back to `PATH`. No `.zed/settings.json` is required for this setup. Python runs the bundled language-server bridge; it has no third-party dependencies. Git is used for the first stdlib source download.

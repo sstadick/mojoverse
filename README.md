@@ -20,7 +20,7 @@ mojo = "=1.2.0"
 mojo-io = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojo-io" }
 ```
 
-Run `pixi install`, then import `io` normally—no source `-I` paths. Its `mojo-bstr` dependency comes from **the same commit**, through an internal relative path. For local development, use `{ path = "../mojoverse/packages/mojo-io" }` instead. Native packages document their linker flags and platform requirements.
+Run `pixi install`, then import `io` normally—no source `-I` paths. Its `mojo-bstr` dependency comes from **the same commit**, through an internal relative path. Native packages document their linker flags and platform requirements.
 
 ## Libraries
 

@@ -6,6 +6,24 @@ separately in [mojo-radix-sort](../mojo-radix-sort).
 
 [API reference](https://sstadick.github.io/mojoverse/mojo-bio/bio/_index.html)
 
+## Install
+
+Follow the [Mojoverse dependency setup](https://github.com/sstadick/mojoverse#use-a-dependency)
+and add this Git dependency to your `pixi.toml`. Replace `<full-commit>` with a
+Mojoverse commit and use the same revision for every Mojoverse dependency:
+
+```toml
+[dependencies]
+mojo-bio = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojo-bio" }
+```
+
+Run `pixi install`. Compile BAM/BGZF consumers with `-Xlinker -ldeflate`, and
+FASTX `GZFile` consumers with `-Xlinker -lz`. Put the installed prefix's library
+directory on the linker search path (`-Xlinker -L$CONDA_PREFIX/lib`). Package
+installation supplies zlib, `mojo-bstr`, and `mojo-libdeflate` with its native
+archive; no source `-I` path is needed. Internal dependencies resolve from the
+same Git revision. A custom FASTX source does not use zlib.
+
 ## Read FASTA or FASTQ
 
 `GZFile` detects plain or gzip input by content, including concatenated gzip
@@ -125,14 +143,6 @@ non-overlapping buffers of at least ceil(n/2) source and n destination bytes.
 The caller must validate these ranges before decoding.
 
 ## Build and documentation
-
-Compile BAM/BGZF consumers with `-Xlinker -ldeflate`, and FASTX `GZFile` consumers
-with `-Xlinker -lz`. Put the installed prefix's library directory on the linker
-search path (`-Xlinker -L$CONDA_PREFIX/lib`). Package installation supplies zlib,
-`mojo-bstr`, and `mojo-libdeflate` with its native archive; no source `-I` path
-is needed. Use [Mojoverse dependency setup](https://github.com/sstadick/mojoverse#use-a-dependency)
-with `subdirectory = "packages/mojo-bio"`; internal dependencies stay at the
-same Git revision through relative paths. A custom FASTX source does not use zlib.
 
 Stable Mojo 1.2.0 is pinned. `pixi run t` runs the tests. `pixi run docs` builds
 the API reference and executes marked README examples. The BAM example needs

@@ -10,6 +10,22 @@ automatically, buffers are caller-owned, and codec instances can be reused.
 The API covers raw DEFLATE/gzip compression, gzip member decompression and
 incremental CRC32. It does not implement BGZF framing or every libdeflate API.
 
+## Install
+
+Follow the [Mojoverse dependency setup](https://github.com/sstadick/mojoverse#use-a-dependency)
+and add this Git dependency to your `pixi.toml`. Replace `<full-commit>` with a
+Mojoverse commit and use the same revision for every Mojoverse dependency:
+
+```toml
+[dependencies]
+mojo-libdeflate = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojo-libdeflate" }
+```
+
+Run `pixi install` and import from `libdeflate`. Link consumers with
+`-Xlinker -L$CONDA_PREFIX/lib -Xlinker -ldeflate` using `mojo build`.
+The `mojo-libdeflate-native` dependency installs the static archive, C header,
+and upstream license from the same Git revision. No source `-I` path is needed.
+
 ## Compress and decompress
 
 ```mojo {doctest="gzip" global=true}
@@ -96,13 +112,6 @@ pixi install --locked
 pixi run t
 pixi run docs
 ```
-
-Import from `libdeflate`. Link consumers with
-`-Xlinker -L$CONDA_PREFIX/lib -Xlinker -ldeflate` using `mojo build`.
-For Git consumers use [Mojoverse dependency setup](https://github.com/sstadick/mojoverse#use-a-dependency)
-with `subdirectory = "packages/mojo-libdeflate"`.
-The `mojo-libdeflate-native` dependency installs the static archive, C header,
-and upstream license.
 
 Linux x86-64/AArch64 and Apple Silicon macOS 15+ are source targets. macOS
 requires Xcode command-line tools. Native code uses Clang 18.1.8 on Linux and

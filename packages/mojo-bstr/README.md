@@ -5,6 +5,28 @@ Arbitrary byte strings for Mojo 1.2.0. The distribution is `mojo-bstr`; import
 
 [API reference](https://sstadick.github.io/mojoverse/mojo-bstr/bstr/_index.html)
 
+## Install with Pixi
+
+With [Pixi](https://pixi.prefix.dev/) 0.80 or newer, add to your `pixi.toml`.
+Replace `<full-commit>` with a Mojoverse commit and use the same revision for
+every Mojoverse dependency:
+
+```toml
+[workspace]
+channels = ["https://conda.modular.com/max", "conda-forge"]
+platforms = ["linux-64", "linux-aarch64", "osx-arm64"]
+preview = ["pixi-build"]
+requires-pixi = ">=0.80"
+
+[dependencies]
+mojo = "=1.2.0"
+mojo-bstr = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojo-bstr" }
+```
+
+Run `pixi install`, then `pixi run mojo run main.mojo`.
+`pixi-build-mojo` installs the compiled module into the environment's `lib/mojo`
+directory; no source `-I` path is needed.
+
 ## Use
 
 ```mojo {doctest="bytes" global=true}
@@ -71,28 +93,6 @@ def main() raises:
     assert_equal(fields[1], [255])
     assert_equal(fields[2], [90])
 ```
-
-## Install with Pixi
-
-For a checkout beside the consumer, add to its `pixi.toml`:
-
-```toml
-[workspace]
-channels = ["https://conda.modular.com/max", "conda-forge"]
-platforms = ["linux-64"]
-preview = ["pixi-build"]
-
-[dependencies]
-mojo = "=1.2.0"
-mojo-bstr = { path = "../mojoverse/packages/mojo-bstr" }
-```
-
-`pixi-build-mojo` builds the module into the consumer's `lib/mojo` directory.
-No `-I` is needed in the consumer. For a pinned Git dependency, use
-[Mojoverse dependency setup](https://github.com/sstadick/mojoverse#use-a-dependency) with
-`subdirectory = "packages/mojo-bstr"`. The toolchain is pinned in `pixi.toml`
-and `pixi.lock`. `main` targets stable; nightly updates belong on a separate
-rolling branch, with explicit promotion back to stable.
 
 ## API contracts
 

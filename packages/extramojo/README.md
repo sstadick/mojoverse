@@ -2,16 +2,11 @@
 
 Extra functionality to extend the Mojo std lib.
 
-## Documentation and Examples
-
-[ExtraMojo Docs](https://extramojo.github.io/ExtraMojo/)
-
-Also see any of the tests in the `test_*.mojo` files.
-
 ## Install / Usage
 
 Follow the [Mojoverse dependency setup](../../README.md#use-a-dependency) and
-use the compiler pinned by the same revision:
+use the compiler pinned by the same revision. Replace `<full-commit>` with a
+Mojoverse commit and use the same revision for every Mojoverse dependency:
 
 ```toml
 [dependencies]
@@ -20,10 +15,14 @@ extramojo = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-co
 
 Run `pixi install`, then `pixi run mojo run my_example_file.mojo`. No source
 include path is needed: `pixi-build-mojo` installs the compiled library into
-the environment's `lib/mojo` directory. For a local checkout use
-`{ path = "../mojoverse/packages/extramojo" }`. ExtraMojo remains self-contained;
+the environment's `lib/mojo` directory. ExtraMojo remains self-contained;
 its buffered I/O and byte-string APIs do not require `mojo-io` or `mojo-bstr`.
 
+## Documentation and Examples
+
+[ExtraMojo Docs](https://extramojo.github.io/ExtraMojo/)
+
+Also see any of the tests in the `test_*.mojo` files.
 
 ## Notable Functionality
 

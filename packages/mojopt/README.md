@@ -6,12 +6,15 @@ structs. MojOpt parses typed values and generates help from your field descripti
 ## Install
 
 Follow the [Mojoverse dependency setup](../../README.md#use-a-dependency),
-using its pinned compiler and the same revision for all Mojoverse packages:
+using its pinned compiler. Replace `<full-commit>` with a Mojoverse commit
+and use the same revision for every Mojoverse dependency:
 
 ```toml
 [dependencies]
 mojopt = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojopt" }
 ```
+
+Run `pixi install`, then use `pixi run mojo` to run the examples below.
 
 ## Get started
 
