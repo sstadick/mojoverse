@@ -221,7 +221,7 @@ def benchmark_lapper_count() raises:
         ctx.synchronize()
 
         @inline(.always)
-        def kernel_launch(gpu_ctx: DeviceContext) raises {imm, mut device_keys, mut device_output}:
+        def kernel_launch(gpu_ctx: type_of(ctx)) raises {imm, mut device_keys, mut device_output}:
             gpu_ctx.enqueue_function[find_overlaps_kernel](
                 gpu_lapper.starts,
                 gpu_lapper.stops,
@@ -256,7 +256,7 @@ def benchmark_lapper_count() raises:
         ctx.synchronize()
 
         @inline(.always)
-        def kernel_launch(gpu_ctx: DeviceContext) raises {imm, mut device_keys, mut device_output}:
+        def kernel_launch(gpu_ctx: type_of(ctx)) raises {imm, mut device_keys, mut device_output}:
             gpu_ctx.enqueue_function[count_overlaps_kernel](
                 gpu_bits.starts,
                 gpu_bits.stops_sorted,

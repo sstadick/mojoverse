@@ -70,7 +70,7 @@ def benchmark_binary_search() raises:
     @inline(.always)
     def ez_bench_gpu[grid_dim: Int, block_dim: Int](mut b: Bencher) raises {mut}:
         @inline(.always)
-        def kernel_launch(gpu_ctx: DeviceContext) raises {mut}:
+        def kernel_launch(gpu_ctx: type_of(ctx)) raises {mut}:
             gpu_ctx.enqueue_function[ez_lower_bound[DType.int32]](
                 device_keys.unsafe_ptr(),
                 UInt64(len(keys)),
@@ -87,7 +87,7 @@ def benchmark_binary_search() raises:
     @inline(.always)
     def bsearch_bench_gpu[grid_dim: Int, block_dim: Int](mut b: Bencher) raises {mut}:
         @inline(.always)
-        def kernel_launch(gpu_ctx: DeviceContext) raises {mut}:
+        def kernel_launch(gpu_ctx: type_of(ctx)) raises {mut}:
             gpu_ctx.enqueue_function[bsearch_lower_bound[DType.int32]](
                 device_keys.unsafe_ptr(),
                 UInt64(len(keys)),

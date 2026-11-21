@@ -1,6 +1,14 @@
 # Nightly compatibility
 
-This branch follows published Mojo nightlies; `main` remains on stable. The daily updater merges `main`, updates every compiler pin and lockfile together, and runs the same CI graph. An update does not imply that CI passed. Pin a tested commit rather than depending on a moving branch.
+This branch follows published Mojo nightlies; `main` remains on stable. Updates are manual: use the [nightly maintenance skill](../.agents/skills/updating-mojoverse-nightly/SKILL.md) to update compiler pins and lockfiles together and check compatibility. An update does not imply that CI passed. Pin a tested commit rather than depending on a moving branch.
+
+## November 21, 2026: synchronize current package APIs
+
+Rebased onto `main` at `5e0b4bd`, retaining Mojo `1.3.0.dev2026111705` and MAX `26.8.0.dev2026111705`. Packages now expose the current unprefixed modules, including `bstr`, `io`, `bio`, and `radix_sort`.
+
+On Linux x86-64, the source and installed suites still reproduce the ExtraMojo iterator crash documented below, and ASAN still reports the same buffer error. The other 15 library test programs pass in both modes, along with bin, documentation-tool, graphics, LSP, and lockfile checks. A fresh Git consumer, 31 executable documentation examples, bstr ownership/differential/benchmark-correctness checks, Raylib regeneration/documentation, native LSP integration, and both Zed WebAssembly builds pass. The full suite remains failing; the iterator test is enabled and optimization settings are unchanged.
+
+Lapper's GPU benchmark callbacks now use the concrete context type required by nightly MAX. CPU and NVIDIA `sm_80` benchmark compilation passes; GPU execution and performance were not tested.
 
 ## November 18, 2026: optimized iterator failure
 
