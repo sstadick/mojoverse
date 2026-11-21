@@ -2,6 +2,7 @@
 
 from html import unescape
 from html.parser import HTMLParser
+import json
 import os
 from pathlib import Path
 import re
@@ -11,8 +12,73 @@ import tempfile
 import tomllib
 import unittest
 from urllib.parse import urljoin
+import xml.etree.ElementTree as ET
 
 from mojoverse.site import build_site
+from mojoverse.versions import assemble_sites, VERSIONS
+
+
+class VersionedDocumentationTests(unittest.TestCase):
+    def test_render_versions_and_preserve_existing_links(self):
+        with tempfile.TemporaryDirectory() as directory:
+            work = Path(directory)
+            sites = []
+            for version in ("nightly", "stable-1.2"):
+                branch = work / version
+                source = branch / "source"
+                (source / "bstr").mkdir(parents=True)
+                (source / "index.md").write_text(f"# {version}\n")
+                (source / "bstr/lines.md").write_text(f"# Lines in {version}\n")
+                site = branch / "site"
+                build_site(source, site, "Fixture", version=version)
+                (site / ".mojoverse-generated").touch()
+                (site / "bstr.json").write_text(json.dumps({"version": version}))
+                html = (site / "bstr/lines.html").read_text()
+                self.assertIn(f'https://sstadick.github.io/mojoverse/{version}/bstr/lines.html', html)
+                config = re.search(r'<script[^>]*id="__config"[^>]*>(.*?)</script>', html, re.S)
+                self.assertIsNotNone(config)
+                self.assertEqual(json.loads(config[1])["version"]["provider"], "mike")
+                locations = {node.text for node in ET.parse(site / "sitemap.xml").iter(
+                    "{http://www.sitemaps.org/schemas/sitemap/0.9}loc")}
+                self.assertIn(f"https://sstadick.github.io/mojoverse/{version}/", locations)
+                self.assertIn(f"https://sstadick.github.io/mojoverse/{version}/bstr/lines.html", locations)
+                sites.append(site)
+            output = work / "published"
+            assemble_sites(*sites, output)
+            self.assertEqual(json.loads((output / "versions.json").read_text()), VERSIONS)
+            self.assertIn("Lines in nightly", (output / "nightly/bstr/lines.html").read_text())
+            self.assertIn("Lines in stable-1.2", (output / "stable-1.2/bstr/lines.html").read_text())
+            redirect = (output / "bstr/lines.html").read_text()
+            destination = re.search(r'<a href="([^"]+)"', redirect)[1]
+            self.assertEqual(urljoin("https://docs.test/mojoverse/bstr/lines.html", destination),
+                             "https://docs.test/mojoverse/nightly/bstr/lines.html")
+            self.assertIn("location.search + location.hash", redirect)
+            self.assertEqual(json.loads((output / "bstr.json").read_text()), {"version": "nightly"})
+
+    def test_missing_version_preserves_published_site(self):
+        with tempfile.TemporaryDirectory() as directory:
+            work = Path(directory)
+            nightly = work / "nightly"
+            nightly.mkdir()
+            (nightly / ".mojoverse-generated").touch()
+            (nightly / "index.html").write_text("nightly")
+            output = work / "published"
+            output.mkdir()
+            (output / ".mojoverse-generated").touch()
+            (output / "index.html").write_text("previous publication")
+            with self.assertRaisesRegex(ValueError, "Missing generated documentation"):
+                assemble_sites(nightly, work / "missing-stable", output)
+            self.assertEqual((output / "index.html").read_text(), "previous publication")
+
+    def test_overlapping_output_cannot_destroy_input(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "site"
+            source.mkdir()
+            (source / ".mojoverse-generated").touch()
+            (source / "index.html").write_text("input")
+            with self.assertRaisesRegex(ValueError, "must not overlap"):
+                assemble_sites(source, source, source / "output")
+            self.assertEqual((source / "index.html").read_text(), "input")
 
 
 class DocumentationTests(unittest.TestCase):

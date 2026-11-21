@@ -108,7 +108,7 @@ pixi run mojo doc --diagnose-missing-doc-strings --validate-doc-strings ./lapper
 ## Development Workflow
 
 1. **Branch from `main`**: Always work off the main branch (for nightly builds)
-2. **Install Mojo**: Use the latest stable build for development
+2. **Install Mojo**: Use the workspace's locked compiler: nightly on `main`, stable Mojo 1.2 on `stable/1.2`.
 3. **Use VS Code extension**: Install the Mojo extension
 4. **Small PRs**: Keep pull requests under 100 lines when possible
 5. **Test your changes**: Run relevant tests before submitting

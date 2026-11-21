@@ -6,6 +6,11 @@ functions, ownership rules, and errors.
 
 Install packages with the [Git dependency setup](https://github.com/sstadick/mojoverse#use-a-dependency).
 Pin the same Mojoverse revision for each dependency and use that revision's Mojo compiler.
+Choose `main` with the `max-nightly` channel for nightly development, or
+`stable/1.2` with the `max` channel for Mojo 1.2.0. Existing consumers of the
+legacy `nightly` branch should move to a tested `main` commit and refresh their lockfile.
+The published site's version selector switches between **Nightly (main)** and
+**Stable (Mojo 1.2)**. Follow the installation instructions for the selected version.
 
 ## Libraries
 

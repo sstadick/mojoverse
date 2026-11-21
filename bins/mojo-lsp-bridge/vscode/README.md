@@ -7,6 +7,10 @@ Runs [Mojo LSP Bridge](https://github.com/sstadick/mojoverse/tree/main/bins/mojo
 Build the VSIX from Git with Node.js 22+. Replace `<full-commit>` with the
 Mojoverse commit you want to install:
 
+`main` is the nightly development branch; `stable/1.2` retains stable Mojo
+support. Choose the desired revision when cloning. The editor bridge
+continues to use each project's installed compiler.
+
 ```sh
 git clone https://github.com/sstadick/mojoverse.git
 git -C mojoverse checkout '<full-commit>'
