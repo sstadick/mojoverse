@@ -2,6 +2,16 @@
 
 `main` follows published Mojo nightlies; versioned branches such as `stable/1.2` retain stable compiler support. The legacy `nightly` branch is retained as a snapshot; use `main` for ongoing development. Updates are manual: use the [nightly maintenance skill](../.agents/skills/updating-mojoverse-nightly/SKILL.md) to update compiler pins and lockfiles together and check compatibility. An update does not imply that CI passed. Pin a tested commit rather than depending on a moving branch.
 
+## November 21, 2026: avoid the iterator cleanup defect
+
+`DelimReader` now gives consuming loops a `StopIteration`-raising adapter.
+This avoids the uninitialized `Error` cleanup observed after successful iterator
+calls. The original file tests now pass at `-O3` and under AddressSanitizer with
+line-table debug information; no compiler pin or optimization flag changed.
+Direct `__next__()` calls still propagate parsing and I/O errors. Consuming loops
+retain their existing stop-on-error behavior; use explicit iteration when errors
+must reach the caller. The historical failure and compiler reproducer follow.
+
 ## November 21, 2026: synchronize current package APIs
 
 Rebased onto `main` at `5e0b4bd`, retaining Mojo `1.3.0.dev2026111705` and MAX `26.8.0.dev2026111705`. Packages now expose the current unprefixed modules, including `bstr`, `io`, `bio`, and `radix_sort`.

@@ -230,10 +230,10 @@ struct DelimReader[RowType: FromDelimited](Movable):
     """Read delimited data that is delimited by a single bytes.
 
     The `RowType` must implement `FromBytes` which is passed an iterator over the split up line.
-    """
 
-    # TODO: there's something a bit odd about how this all works as an iterator.
-    # I can't add a context manager, and the iterator has to use `^` which I'm not sure about.
+    A consuming `for` loop stops on EOF or a read/parse error. To propagate
+    errors instead, call `__next__()` while `__has_next__()` is true.
+    """
 
     var delim: UInt8
     var reader: BufferedReader
@@ -283,8 +283,8 @@ struct DelimReader[RowType: FromDelimited](Movable):
         self._get_next()
         return ret^
 
-    def __iter__(var self) -> Self:
-        return self^
+    def __iter__(var self) -> _DelimIterator[Self.RowType]:
+        return _DelimIterator(self^)
 
     def _skip_header(mut self) raises:
         self.buffer.clear()
@@ -311,6 +311,27 @@ struct DelimReader[RowType: FromDelimited](Movable):
         self.next_elem = Self.RowType.from_delimited(
             iterator, self.header_values
         )
+
+
+@fieldwise_init
+struct _DelimIterator[RowType: FromDelimited](Iterator):
+    var reader: DelimReader[Self.RowType]
+
+    comptime Element = Self.RowType
+
+    def __iter__(var self) -> Self:
+        return self^
+
+    def __next__(mut self) raises StopIteration -> Self.Element:
+        # Keep Error destruction inside an ordinary try/except: nightly Mojo
+        # miscompiles Error-raising for loops. Preserve their existing behavior
+        # of ending on any error, without changing direct __next__ calls.
+        if not self.reader.__has_next__():
+            raise StopIteration()
+        try:
+            return self.reader.__next__()
+        except:
+            raise StopIteration()
 
 
 trait ToDelimited:

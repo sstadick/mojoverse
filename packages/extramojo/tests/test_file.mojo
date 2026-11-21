@@ -181,6 +181,48 @@ def test_delim_reader_writer(file: Path) raises:
     print("Successful delim_writer")
 
 
+def test_delim_iteration_boundaries(file: Path) raises:
+    for has_header in [False, True]:
+        with open(file, "w") as fh:
+            if has_header:
+                fh.write("index\tname\n")
+        var reader = DelimReader[SerDerStruct](
+            BufferedReader(open(file, "r"), buffer_capacity=3),
+            delim=9,
+            has_header=has_header,
+        )
+        var count = 0
+        for _ in reader^:
+            count += 1
+        assert_equal(count, 0)
+
+    with open(file, "w") as fh:
+        fh.write("7\tseven\n9\tnine\n11\televen\n")
+    var reader = DelimReader[SerDerStruct](
+        BufferedReader(open(file, "r"), buffer_capacity=3),
+        delim=9,
+        has_header=False,
+    )
+    var count = 0
+    for row in reader^:
+        assert_equal(row.index, 7)
+        assert_equal(row.name, "seven")
+        count += 1
+        break
+    assert_equal(count, 1)
+
+    # Explicit iteration must still propagate parsing errors from read-ahead.
+    with open(file, "w") as fh:
+        fh.write("7\tseven\nnot-an-int\tnine\n")
+    var failing_reader = DelimReader[SerDerStruct](
+        BufferedReader(open(file, "r"), buffer_capacity=3),
+        delim=9,
+        has_header=False,
+    )
+    with assert_raises():
+        _ = failing_reader.__next__()
+
+
 @fieldwise_init
 struct ThinWrapper(Copyable, FromDelimited, ToDelimited):
     var stuff: Dict[String, Int]
@@ -296,6 +338,7 @@ def main() raises:
         test_buffered_writer(String(buf_writer_file), strings)
         var delim_file = Path(tempdir) / "delim.txt"
         test_delim_reader_writer(String(delim_file))
+        test_delim_iteration_boundaries(delim_file)
         var delim_dict_file = Path(tempdir) / "delim_dict.txt"
         test_delim_reader_writer_dicts(String(delim_dict_file))
         print("SUCCESS")
