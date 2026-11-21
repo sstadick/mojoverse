@@ -56,9 +56,9 @@ Mojo 1.3.0.dev2026111705 is pinned across development, host, build and runtime.
 Local Mojo/CMake build backends are pinned too, avoiding different dependency
 metadata from an old backend cache versus a fresh machine. The same lockfiles
 install with `--locked` on both tested platforms.
-`pixi-build-mojo` packages the application and libraries; nested CMake packages
-build the static codec and POSIX glue with Clang 18.1.8 on Linux or Apple Clang
-on macOS, with `-O3 -march=native`.
+`pixi-build-mojo` packages the application and libraries. The native packages
+build the static codec and POSIX glue with their pinned Clang versions on Linux
+or Apple Clang on macOS, using `-O3 -march=native`.
 Mojo uses `-O3` and its default host CPU/features. These experimental artifacts
 are **host-specific**, not portable release binaries. Linux x86-64 and Apple
 Silicon macOS have native build and installed-consumer checks. Linux AArch64

@@ -15,7 +15,7 @@ compilers = []
 extra-args = ["-DCMAKE_C_COMPILER=clang", "-DCMAKE_BUILD_TYPE=Release"]
 
 [package.target.linux-64.build-dependencies]
-clang = "=18.1.8"
+clang = "=22.1.8"
 
 [package.target.linux-aarch64.build-dependencies]
 clang = "=18.1.8"

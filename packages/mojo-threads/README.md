@@ -132,10 +132,10 @@ pixi run docs
 ```
 
 The source targets Linux x86-64/AArch64 and Apple Silicon macOS 15+. macOS
-requires Xcode command-line tools. Native code uses Clang 18.1.8 on Linux and
-Apple Clang on macOS, with `-O3 -march=native`. Built archives are host-tuned;
-do not distribute them as universal CPU-compatible binaries. Intel macOS and
-Windows are not Mojo 1.2 targets.
+requires Xcode command-line tools. The native build uses Clang 22.1.8 on Linux
+x86-64, Clang 18.1.8 on Linux AArch64, and Apple Clang on macOS. It compiles
+with `-O3 -march=native`, so build the archive on the destination CPU.
+Intel macOS and Windows are not Mojo 1.2 targets.
 
 ## Low-level Worker contract
 

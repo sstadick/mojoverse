@@ -2,6 +2,15 @@
 
 `main` follows published Mojo nightlies; versioned branches such as `stable/1.2` retain stable compiler support. The legacy `nightly` branch is retained as a snapshot; use `main` for ongoing development. Updates are manual: use the [nightly maintenance skill](../.agents/skills/updating-mojoverse-nightly/SKILL.md) to update compiler pins and lockfiles together and check compatibility. An update does not imply that CI passed. Pin a tested commit rather than depending on a moving branch.
 
+## November 21, 2026: native Clang on AVX10 runners
+
+The [nightly documentation build](https://github.com/sstadick/mojoverse/actions/runs/44941167420/job/136958485396)
+found pthread, then Clang 18.1.8 failed while compiling `threads.c` with
+`-march=native -Werror`. Passing `-march=sapphirerapids -mavx10.1` reproduces
+the same AVX10 feature diagnostic on both `threads.c` and Perbase's `perbase.c`.
+Both compile with those flags under Clang 22.1.8, now pinned for these two
+Linux x86-64 builds. Normal builds use `-O3 -march=native -Wall -Wextra -Werror`.
+
 ## November 21, 2026: avoid the iterator cleanup defect
 
 `DelimReader` now gives consuming loops a `StopIteration`-raising adapter.
