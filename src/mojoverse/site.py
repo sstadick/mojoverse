@@ -4,8 +4,11 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import xml.etree.ElementTree as ET
 
 import yaml
+
+from .versions import SITE_URL, VERSIONS
 
 
 def navigation(directory, root):
@@ -24,7 +27,7 @@ def navigation(directory, root):
     return entries
 
 
-def build_site(source, output, title, nav=None, *, catalog=False):
+def build_site(source, output, title, nav=None, *, catalog=False, version=None):
     shutil.copytree(Path(__file__).with_name("assets"), source / "assets", dirs_exist_ok=True)
     config = {
         "site_name": title,
@@ -54,9 +57,23 @@ def build_site(source, output, title, nav=None, *, catalog=False):
         "extra_css": ["assets/docs.css"],
         "extra_javascript": ["assets/docs.js"],
     }
+    if version is not None:
+        if version not in {item["version"] for item in VERSIONS}:
+            raise ValueError(f"Unknown documentation version: {version}")
+        config["site_url"] = f"{SITE_URL}{version}/"
+        config["extra"]["version"] = {"provider": "mike", "default": "nightly"}
     config_path = output.parent / "mkdocs.yml"
     config_path.write_text(yaml.safe_dump(config, sort_keys=False))
     subprocess.run([sys.executable, "-m", "zensical", "build", "--strict", "--config-file", str(config_path)], cwd=output.parent, check=True)
+    if version is not None:
+        # The version selector requires the version root in the sitemap to retain
+        # the current page. File-style URLs otherwise list only index.html.
+        namespace = "http://www.sitemaps.org/schemas/sitemap/0.9"
+        ET.register_namespace("", namespace)
+        sitemap = ET.parse(output / "sitemap.xml")
+        entry = ET.SubElement(sitemap.getroot(), f"{{{namespace}}}url")
+        ET.SubElement(entry, f"{{{namespace}}}loc").text = config["site_url"]
+        sitemap.write(output / "sitemap.xml", encoding="utf-8", xml_declaration=True)
     # GitHub Pages supplies the error page; standalone root-relative 404 links
     # don't work when these sites are served from a package subdirectory.
     (output / "404.html").unlink(missing_ok=True)

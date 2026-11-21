@@ -26,6 +26,10 @@ Previously named `sstadick/zed_mojo`. Existing `initializationOptions.zed_mojo` 
 Clone Mojoverse before following the editor-specific instructions below.
 Replace `<full-commit>` with the Mojoverse commit you want to install:
 
+`main` is the nightly development branch; `stable/1.2` retains stable Mojo
+support. Choose the desired revision when cloning. The editor bridge
+continues to use each project's installed compiler.
+
 ```sh
 git clone https://github.com/sstadick/mojoverse.git
 git -C mojoverse checkout '<full-commit>'

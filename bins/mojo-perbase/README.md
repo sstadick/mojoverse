@@ -15,6 +15,10 @@ strict numeric ranges and command restrictions are validated before opening outp
 
 ## Install
 
+Choose a commit from `main` for nightly Mojo or `stable/1.2` for Mojo 1.2.0.
+Match the compiler pin and channel to that revision: `max-nightly` for
+nightly, `max` for stable. Use one revision for all Mojoverse dependencies.
+
 With [Pixi](https://pixi.prefix.dev/) 0.80 or newer, install directly from Git.
 Replace `<full-commit>` with a Mojoverse commit:
 

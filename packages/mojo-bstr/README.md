@@ -7,6 +7,10 @@ Arbitrary byte strings for Mojo 1.3.0.dev2026111705. The distribution is `mojo-b
 
 ## Install with Pixi
 
+Choose a commit from `main` for nightly Mojo or `stable/1.2` for Mojo 1.2.0.
+Match the compiler pin and channel to that revision: `max-nightly` for
+nightly, `max` for stable. Use one revision for all Mojoverse dependencies.
+
 With [Pixi](https://pixi.prefix.dev/) 0.80 or newer, add to your `pixi.toml`.
 Replace `<full-commit>` with a Mojoverse commit and use the same revision for
 every Mojoverse dependency:

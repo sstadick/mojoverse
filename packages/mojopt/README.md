@@ -5,6 +5,10 @@ structs. MojOpt parses typed values and generates help from your field descripti
 
 ## Install
 
+Choose a commit from `main` for nightly Mojo or `stable/1.2` for Mojo 1.2.0.
+Match the compiler pin and channel to that revision: `max-nightly` for
+nightly, `max` for stable. Use one revision for all Mojoverse dependencies.
+
 Follow the [Mojoverse dependency setup](../../README.md#use-a-dependency),
 using its pinned compiler. Replace `<full-commit>` with a Mojoverse commit
 and use the same revision for every Mojoverse dependency:

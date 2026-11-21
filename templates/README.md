@@ -29,6 +29,10 @@ package's locked compiler, and saves `target/docs` as an artifact. The template
 requires the Mojoverse repository to be published before remote CI can use it.
 Pin a reviewed tools revision when releasing a package.
 
+Mojoverse's `main` follows nightly Mojo; `stable/1.2` retains Mojo 1.2.0.
+Choose the matching branch when adding Mojoverse libraries, use its compiler
+pin and `max-nightly` or `max` channel, and pin all libraries to one commit.
+
 The workflow deliberately does not deploy. After Pages is configured, publish
 a reviewed artifact through GitHub Pages according to the consumer project's
 branch and compiler policy.

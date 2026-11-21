@@ -8,6 +8,18 @@ Mojo libraries, bins, and development tools in one repository. This checkout use
 
 ## Use a dependency
 
+Choose the compiler lane before selecting a Git revision:
+
+| Use | Branch | Modular channel |
+| --- | --- | --- |
+| Nightly development | `main` | `https://conda.modular.com/max-nightly` |
+| Stable Mojo 1.2.0 | `stable/1.2` | `https://conda.modular.com/max` |
+
+Use the compiler pin and installation example from the selected revision.
+The legacy `nightly` branch is a snapshot; existing nightly consumers should
+move to a tested `main` commit and refresh their lockfile. Distribution names
+remain unchanged: for example, install `mojo-bstr` and import `bstr`.
+
 Add a Git dependency with its package subdirectory to your `pixi.toml`. Replace `<full-commit>` with a Mojoverse commit and use that same revision for every Mojoverse dependency:
 
 ```toml

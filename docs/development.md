@@ -2,6 +2,10 @@
 
 ## Install
 
+Cloning the default `main` branch selects nightly Mojo. For stable Mojo 1.2.0,
+run `git switch stable/1.2` after cloning and before `pixi install`.
+Use the selected branch's lockfiles and compiler pins throughout the workspace.
+
 Install [Pixi](https://pixi.prefix.dev/) 0.80 or newer and a native C linker. Use Clang; macOS needs Xcode command-line tools. Clone the whole repository so internal path dependencies remain together:
 
 ```sh

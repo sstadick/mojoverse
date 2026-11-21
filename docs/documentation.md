@@ -120,14 +120,33 @@ The builder uses its MkDocs-compatible YAML configuration and strict validation.
 
 ## Publish with GitHub Pages
 
-The `Documentation` workflow builds and archives the complete site on pull
-requests and pushes to `main`, `stable/*`, or the legacy `nightly` branch.
-Only successful builds of `main`
-can deploy, and only when Pages is configured to use GitHub Actions. Until
-then, the workflow saves the documentation artifact and skips deployment.
-The published site follows nightly development on `main`. Pull requests and
-stable branches produce artifacts without replacing that site. A manual
-workflow run on `main` can rebuild it too.
+The site offers **Nightly (main)** at `nightly/` and **Stable (Mojo 1.2)** at
+`stable-1.2/`. Zensical's [version selector](https://zensical.org/docs/compatibility/mkdocs/mike/)
+uses the assembled `versions.json` index. Each version has its own search index
+and source links. Existing unversioned page URLs redirect to the corresponding
+nightly page, preserving query strings and anchors; API JSON URLs remain available.
+
+The `Documentation` workflow builds both checkouts independently on pull requests
+and pushes to `main` or `stable/*`. Every package's examples run with its own
+checkout's locked compiler. Both builds must succeed before the combined artifact
+can deploy. Pull requests only produce artifacts; pushes and manual runs can
+deploy when Pages is configured to use GitHub Actions. Publishing either branch
+rebuilds both versions so it cannot discard the other compiler lane.
+
+To build the combined site locally from `main`:
+
+```sh
+git worktree add .amp/in/docs-stable stable/1.2
+pixi run --locked -e docs docs-site --version nightly --output target/docs-nightly
+pixi run --locked -e docs docs-site --source-root .amp/in/docs-stable --version stable-1.2 --output target/docs-stable-1.2
+pixi run --locked -e docs python scripts/assemble_docs.py --nightly target/docs-nightly --stable target/docs-stable-1.2
+```
+
+Serve `target/docs-versions` through a local HTTP server to exercise the selector.
+The ordinary `docs-site` task without these options still builds a standalone
+preview of the current checkout. When changing the supported stable series,
+update the branch/path in the workflow matrix, `src/mojoverse/versions.py`, and
+the build/assembly commands together.
 
 For initial setup, a repository administrator must enable **Settings → Pages →
 Build and deployment → Source: GitHub Actions**. The deployment job uses the
