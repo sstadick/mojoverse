@@ -41,6 +41,29 @@ Also see any of the tests in the `test_*.mojo` files.
 
 See [docs for details](https://extramojo.github.io/ExtraMojo/)
 
+## Embedding files at compile time
+
+```mojo
+from extramojo.utils import (
+    include_bytes_requires_cache_clear_on_edit,
+    include_string_requires_cache_clear_on_edit,
+)
+
+comptime message = include_string_requires_cache_clear_on_edit["message.txt"]()
+comptime logo = include_bytes_requires_cache_clear_on_edit["logo.png"]()
+```
+
+The string function validates UTF-8 at compile time and returns a `StaticString`.
+The bytes function returns the exact file contents as a read-only
+`Span[Byte, ImmStaticOrigin]`. Use an absolute path or a path relative to the
+compiler's working directory. The compiled program can run without the input files.
+
+**After editing an embedded file, run `mojo --clear-cache` and rebuild.**
+Mojo can reuse the previous contents when only the asset changes. Builds that
+share a compiler cache can also reuse the same relative path from a different
+working directory. Use distinct absolute paths for those files or clear the
+cache when switching directories.
+
 ## Number formatting
 
 `extramojo.format.write_int` writes signed and unsigned integers up to 64 bits
