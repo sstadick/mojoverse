@@ -27,6 +27,7 @@ extra-args = ["-O3", "-Xlinker", "-L$PREFIX/lib", "-Xlinker", "-lmojo_perbase_na
 
 [package.host-dependencies]
 mojo-compiler = "=1.3.0.dev2026111705"
+extramojo = { path = "../../packages/extramojo" }
 mojo-bio = { path = "../../packages/mojo-bio" }
 mojo-libdeflate = { path = "../../packages/mojo-libdeflate" }
 mojo-libdeflate-native = { path = "../../packages/mojo-libdeflate/native" }
@@ -37,6 +38,7 @@ mojo-perbase-native = { path = "native" }
 
 [package.build-dependencies]
 mojo-compiler = "=1.3.0.dev2026111705"
+extramojo = { path = "../../packages/extramojo" }
 mojo-bio = { path = "../../packages/mojo-bio" }
 mojo-libdeflate = { path = "../../packages/mojo-libdeflate" }
 mojo-threads = { path = "../../packages/mojo-threads" }

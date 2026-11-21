@@ -23,7 +23,8 @@ def main():
     for name in ("MOJO_PATH", "MOJO_INCLUDE_PATH", "MODULAR_MOJO_IMPORT_PATH",
                  "PIXI_PROJECT_MANIFEST", "PIXI_WORKSPACE_MANIFEST", "CONDA_PREFIX"):
         env.pop(name, None)
-    packages = [siblings / "mojo-bstr", siblings / "mojo-libdeflate/native", siblings / "mojo-threads/native",
+    packages = [siblings / "extramojo", siblings / "mojo-bstr",
+                siblings / "mojo-libdeflate/native", siblings / "mojo-threads/native",
                 siblings / "mojo-libdeflate", siblings / "mojo-threads",
                 siblings / "mojo-bio", siblings / "mojopt", root / "native", root]
     with tempfile.TemporaryDirectory(prefix="perbase-consumer-") as tmp:
@@ -60,7 +61,8 @@ def main():
                 "avx512f", "avx512bw", "avx512cd", "avx512dq", "avx512vl",
                 "avx512ifma", "avx512vbmi", "avx512vbmi2", "avx512vnni",
                 "avx512bitalg", "avx512vpopcntdq", "avx512fp16", "avx512bf16"))]
-        tests = [(siblings / "mojo-threads/tests/test_worker.mojo", ["-lmojo_threads_native", "-lpthread"]),
+        tests = [(siblings / "extramojo/tests/test_format.mojo", []),
+                 (siblings / "mojo-threads/tests/test_worker.mojo", ["-lmojo_threads_native", "-lpthread"]),
                  (siblings / "mojo-libdeflate/tests/test_codec.mojo", ["-ldeflate"]),
                  (siblings / "mojo-bio/tests/test_sequence.mojo", ["-ldeflate"]),
                  (siblings / "mojo-bio/tests/test_fastx.mojo", ["-lz"])]

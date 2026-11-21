@@ -48,7 +48,7 @@ def main():
     packages = root.parents[1] / "packages"
     sources = [*root.glob("*.mojo"), root / "native/perbase.c", root / "pixi.toml"]
     sources.extend((packages / "mojo-bio/src/bio").rglob("*.mojo"))
-    for name in ("mojo-libdeflate", "mojo-threads", "mojopt"):
+    for name in ("extramojo", "mojo-libdeflate", "mojo-threads", "mojopt"):
         sources.extend((packages / name / name.removeprefix("mojo-")).rglob("*.mojo"))
     report = {
         "method": "Serial rotating/reversed order; warm cache; regular TSV; close, not fsync; SHA256 outside timing.",

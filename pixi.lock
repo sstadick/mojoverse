@@ -85,7 +85,7 @@ environments:
       - conda_source: mojo-lapper[ae28cb82] @ packages/mojo-lapper
       - conda_source: mojo-libdeflate-native[c7043910] @ packages/mojo-libdeflate/native
       - conda_source: mojo-libdeflate[3626a409] @ packages/mojo-libdeflate
-      - conda_source: mojo-perbase[3cf71d0d] @ bins/mojo-perbase
+      - conda_source: mojo-perbase[0c4116aa] @ bins/mojo-perbase
       - conda_source: mojo-radix-sort[3b8d484a] @ packages/mojo-radix-sort
       - conda_source: mojo-threads-native[df91936f] @ packages/mojo-threads/native
       - conda_source: mojo-threads[0df3a09b] @ packages/mojo-threads
@@ -152,7 +152,7 @@ environments:
       - conda_source: mojo-lapper[567213cb] @ packages/mojo-lapper
       - conda_source: mojo-libdeflate-native[bd414212] @ packages/mojo-libdeflate/native
       - conda_source: mojo-libdeflate[28022384] @ packages/mojo-libdeflate
-      - conda_source: mojo-perbase[4404b8ee] @ bins/mojo-perbase
+      - conda_source: mojo-perbase[e662a7ab] @ bins/mojo-perbase
       - conda_source: mojo-radix-sort[7c6b6478] @ packages/mojo-radix-sort
       - conda_source: mojo-threads-native[28705654] @ packages/mojo-threads/native
       - conda_source: mojo-threads[08eb66db] @ packages/mojo-threads
@@ -210,7 +210,7 @@ environments:
       - conda_source: mojo-lapper[b244edb4] @ packages/mojo-lapper
       - conda_source: mojo-libdeflate-native[c495e68a] @ packages/mojo-libdeflate/native
       - conda_source: mojo-libdeflate[8a476d72] @ packages/mojo-libdeflate
-      - conda_source: mojo-perbase[40c6887d] @ bins/mojo-perbase
+      - conda_source: mojo-perbase[d3f272bb] @ bins/mojo-perbase
       - conda_source: mojo-radix-sort[c27ffed1] @ packages/mojo-radix-sort
       - conda_source: mojo-threads-native[da285c63] @ packages/mojo-threads/native
       - conda_source: mojo-threads[d34e7904] @ packages/mojo-threads
@@ -3890,7 +3890,7 @@ packages:
   depends:
   - mojo-compiler 1.3.0.dev2026111705.*
   - mojo-compiler ==1.3.0.dev2026111705 release
-  license: Unlicense OR MIT
+  license: (Unlicense OR MIT) AND Apache-2.0 WITH LLVM-exception
   build_packages:
   - conda: https://conda.anaconda.org/conda-forge/noarch/ca-certificates-2026.11.20-hbd8a1cb_0.conda
   - conda: https://conda.anaconda.org/conda-forge/noarch/python_abi-3.15-9_cp315.conda
@@ -3937,7 +3937,7 @@ packages:
   depends:
   - mojo-compiler 1.3.0.dev2026111705.*
   - mojo-compiler ==1.3.0.dev2026111705 release
-  license: Unlicense OR MIT
+  license: (Unlicense OR MIT) AND Apache-2.0 WITH LLVM-exception
   build_packages:
   - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/_openmp_mutex-4.5-20_gnu.conda
   - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/bzip2-1.0.8-h4777abc_10.conda
@@ -3994,7 +3994,7 @@ packages:
   depends:
   - mojo-compiler 1.3.0.dev2026111705.*
   - mojo-compiler ==1.3.0.dev2026111705 release
-  license: Unlicense OR MIT
+  license: (Unlicense OR MIT) AND Apache-2.0 WITH LLVM-exception
   build_packages:
   - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
   - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_10.conda
@@ -5357,7 +5357,7 @@ packages:
   - conda: https://conda.anaconda.org/conda-forge/noarch/libgcc-devel_linux-64-16.2.0-he3ce08f_107.conda
   - conda: https://conda.anaconda.org/conda-forge/noarch/sysroot_linux-64-2.28-h4ee821c_9.conda
   - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2026e-h5d301ff_0.conda
-- conda_source: mojo-perbase[3cf71d0d] @ bins/mojo-perbase
+- conda_source: mojo-perbase[0c4116aa] @ bins/mojo-perbase
   variants:
     target_platform: linux-64
   depends:
@@ -5390,6 +5390,7 @@ packages:
   - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2026e-h5d301ff_0.conda
   - conda: https://conda.modular.com/max-nightly/linux-64/mojo-compiler-1.3.0.dev2026111705-release.conda
   - conda: https://conda.modular.com/max-nightly/noarch/mojo-python-1.3.0.dev2026111705-libpython_release.conda
+  - conda_source: extramojo[e0dd5344] @ packages/extramojo
   - conda_source: mojo-bio[a621e417] @ packages/mojo-bio
   - conda_source: mojo-bstr[7c87bcee] @ packages/mojo-bstr
   - conda_source: mojo-libdeflate-native[c7043910] @ packages/mojo-libdeflate/native
@@ -5423,6 +5424,7 @@ packages:
   - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2026e-h5d301ff_0.conda
   - conda: https://conda.modular.com/max-nightly/linux-64/mojo-compiler-1.3.0.dev2026111705-release.conda
   - conda: https://conda.modular.com/max-nightly/noarch/mojo-python-1.3.0.dev2026111705-libpython_release.conda
+  - conda_source: extramojo[e0dd5344] @ packages/extramojo
   - conda_source: mojo-bio[a621e417] @ packages/mojo-bio
   - conda_source: mojo-bstr[7c87bcee] @ packages/mojo-bstr
   - conda_source: mojo-libdeflate-native[c7043910] @ packages/mojo-libdeflate/native
@@ -5431,7 +5433,7 @@ packages:
   - conda_source: mojo-threads-native[df91936f] @ packages/mojo-threads/native
   - conda_source: mojo-threads[0df3a09b] @ packages/mojo-threads
   - conda_source: mojopt[b70851ef] @ packages/mojopt
-- conda_source: mojo-perbase[40c6887d] @ bins/mojo-perbase
+- conda_source: mojo-perbase[d3f272bb] @ bins/mojo-perbase
   variants:
     target_platform: osx-arm64
   depends:
@@ -5459,6 +5461,7 @@ packages:
   - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zstd-1.5.7-hf451053_7.conda
   - conda: https://conda.modular.com/max-nightly/noarch/mojo-python-1.3.0.dev2026111705-libpython_release.conda
   - conda: https://conda.modular.com/max-nightly/osx-arm64/mojo-compiler-1.3.0.dev2026111705-release.conda
+  - conda_source: extramojo[1200b42f] @ packages/extramojo
   - conda_source: mojo-bio[d90ea75b] @ packages/mojo-bio
   - conda_source: mojo-bstr[e88494ff] @ packages/mojo-bstr
   - conda_source: mojo-libdeflate-native[c495e68a] @ packages/mojo-libdeflate/native
@@ -5487,6 +5490,7 @@ packages:
   - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zstd-1.5.7-hf451053_7.conda
   - conda: https://conda.modular.com/max-nightly/noarch/mojo-python-1.3.0.dev2026111705-libpython_release.conda
   - conda: https://conda.modular.com/max-nightly/osx-arm64/mojo-compiler-1.3.0.dev2026111705-release.conda
+  - conda_source: extramojo[1200b42f] @ packages/extramojo
   - conda_source: mojo-bio[d90ea75b] @ packages/mojo-bio
   - conda_source: mojo-bstr[e88494ff] @ packages/mojo-bstr
   - conda_source: mojo-libdeflate-native[c495e68a] @ packages/mojo-libdeflate/native
@@ -5495,7 +5499,7 @@ packages:
   - conda_source: mojo-threads-native[da285c63] @ packages/mojo-threads/native
   - conda_source: mojo-threads[d34e7904] @ packages/mojo-threads
   - conda_source: mojopt[629db665] @ packages/mojopt
-- conda_source: mojo-perbase[4404b8ee] @ bins/mojo-perbase
+- conda_source: mojo-perbase[e662a7ab] @ bins/mojo-perbase
   variants:
     target_platform: linux-aarch64
   depends:
@@ -5528,6 +5532,7 @@ packages:
   - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2026e-h5d301ff_0.conda
   - conda: https://conda.modular.com/max-nightly/linux-aarch64/mojo-compiler-1.3.0.dev2026111705-release.conda
   - conda: https://conda.modular.com/max-nightly/noarch/mojo-python-1.3.0.dev2026111705-libpython_release.conda
+  - conda_source: extramojo[37760107] @ packages/extramojo
   - conda_source: mojo-bio[9241bbf8] @ packages/mojo-bio
   - conda_source: mojo-bstr[fbdca9c4] @ packages/mojo-bstr
   - conda_source: mojo-libdeflate-native[bd414212] @ packages/mojo-libdeflate/native
@@ -5561,6 +5566,7 @@ packages:
   - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2026e-h5d301ff_0.conda
   - conda: https://conda.modular.com/max-nightly/linux-aarch64/mojo-compiler-1.3.0.dev2026111705-release.conda
   - conda: https://conda.modular.com/max-nightly/noarch/mojo-python-1.3.0.dev2026111705-libpython_release.conda
+  - conda_source: extramojo[37760107] @ packages/extramojo
   - conda_source: mojo-bio[9241bbf8] @ packages/mojo-bio
   - conda_source: mojo-bstr[fbdca9c4] @ packages/mojo-bstr
   - conda_source: mojo-libdeflate-native[bd414212] @ packages/mojo-libdeflate/native

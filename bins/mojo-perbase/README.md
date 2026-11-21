@@ -12,6 +12,8 @@ Perbase retains scheduling, byte-bounded mailboxes and ordered output. The
 small C library under `native/` now contains only application-specific
 stat/write/SIGPIPE glue. CLI parsing uses mojopt from the same monorepo;
 strict numeric ranges and command restrictions are validated before opening output.
+Integer columns use `extramojo.format.write_int` through a Writer over Perbase's
+already-reserved output buffer, preserving row batching without temporary strings.
 
 ## Install
 

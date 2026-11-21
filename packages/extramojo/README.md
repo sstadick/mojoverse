@@ -36,10 +36,35 @@ Also see any of the tests in the `test_*.mojo` files.
 - BBHash
 - BitVec
 - `saturating_add` and `saturating_sub` for integral types
+- Decimal integer and float formatting into existing Writers
 - reservoir sampling
 
 See [docs for details](https://extramojo.github.io/ExtraMojo/)
 
+## Number formatting
+
+`extramojo.format.write_int` writes signed and unsigned integers up to 64 bits
+in decimal. `write_float` writes Float32/64 with the pinned Mojo stdlib's
+shortest round-trip representation, including scientific notation and special
+values. Both append to any `Writer` on the CPU, using stack buffers without
+allocating an intermediate String.
+
+```mojo {doctest="format_numbers" global=true}
+from extramojo.format import write_float, write_int
+from std.testing import assert_equal
+
+def main() raises:
+    var text = String("count=")
+    write_int(text, Int64(-12345))
+    text += ", value="
+    write_float(text, Float64(1.25))
+    assert_equal(text, "count=-12345, value=1.25")
+```
+
+Integers use a two-digit lookup table; floats batch their ASCII output while
+retaining the stdlib's private `_to_decimal` conversion. Compiler upgrades need
+output-compatibility testing. These APIs do not support GPU targets, integer
+bases other than decimal, integers wider than 64 bits, or float precision options.
 
 ## Line callbacks
 
@@ -63,9 +88,13 @@ archive from `dist/`, and runs without `-I .` or a source import path. CI runs
 source and installed-package tests on Linux x86-64, Linux ARM64, and macOS ARM64,
 plus AddressSanitizer on Linux x86-64. Neither packaging task uploads a release.
 
-`pixi.toml` defines the package build. `LICENSE` includes both license texts;
+`pixi.toml` defines the package build. `LICENSE` includes the applicable license texts;
 see also `LICENSE-MIT`, `UNLICENSE`, and source attribution notices.
 
 ## Attribution
 
 - File and Tensor code includes work from [MojoFastTrim](https://github.com/MoSafi2/MojoFastTrim/tree/restructed), maintained as [BlazeSeq](https://github.com/MoSafi2/BlazeSeq).
+- Float formatting adapts Modular's text-layout code under Apache-2.0 with LLVM
+  exceptions. Integer digit-pair formatting adapts Mojoverse's MIT-licensed
+  BED coverage formatter. Source revisions and notices are in
+  `extramojo/format/numbers.mojo` and `LICENSE`.

@@ -9,6 +9,9 @@ vendored in mojo-libdeflate with its original COPYING file. No Goose-generated
 C or Rust code is linked. native/perbase.c is application-specific POSIX output
 glue; reusable pthread/CPU-count glue lives in mojo-threads.
 
+Integer formatting uses ExtraMojo, which retains its own license and attribution
+notices.
+
 CoffeeVampir3/Mojo-Linuxperiments revision
 0637c1082ffd43e9fb561f24163d1a4a5e0e09f0 was evaluated, not copied or linked.
 It uses obsolete Mojo APIs and raw clone/TLS setup not validated for this

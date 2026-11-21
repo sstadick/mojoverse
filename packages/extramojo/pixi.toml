@@ -6,15 +6,15 @@ channels = [
 ]
 description = "Useful things that aren't in the standard library."
 platforms = ["osx-arm64", "linux-64", "linux-aarch64"]
-license = "Unlicense OR MIT"
+license = "(Unlicense OR MIT) AND Apache-2.0 WITH LLVM-exception"
 preview = ["pixi-build"]
 requires-pixi = ">=0.80"
 
 [package]
 name = "extramojo"
 version = "0.24.0"
-license = "Unlicense OR MIT"
-# Pixi accepts one license file; LICENSE contains both original license texts.
+license = "(Unlicense OR MIT) AND Apache-2.0 WITH LLVM-exception"
+# LICENSE includes the original terms and third-party formatting notices.
 license-file = "LICENSE"
 homepage = "https://github.com/ExtraMojo/ExtraMojo"
 repository = "https://github.com/ExtraMojo/ExtraMojo"
