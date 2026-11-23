@@ -1,0 +1,72 @@
+name: Build documentation
+on:
+  workflow_call:
+    inputs:
+      branch:
+        type: string
+        required: true
+      revision:
+        type: string
+        required: true
+permissions:
+  contents: read
+env:
+  CC: clang
+  CXX: clang++
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - version: nightly
+            branch: main
+          - version: stable-1.2
+            branch: stable/1.2
+    env:
+      PIXI_CACHE_DIR: ${{ github.workspace }}/.pixi/cache
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.revision }}
+      - name: Check out the documented version
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.branch == inputs.branch && inputs.revision || matrix.branch }}
+          path: .amp/in/docs-version
+      - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e
+        with:
+          pixi-version: v0.80.0
+          run-install: false
+          cache: false
+      - name: Build with the documented checkout's locked compilers
+        run: pixi run --locked -e docs python scripts/build_docs.py --source-root .amp/in/docs-version --version '${{ matrix.version }}' --output target/docs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: docs-${{ matrix.version }}
+          path: target/docs
+          include-hidden-files: true
+  assemble:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.revision }}
+      - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e
+        with:
+          pixi-version: v0.80.0
+          run-install: false
+          cache: false
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: docs-*
+          path: target/documentation
+      - name: Assemble versions and preserve existing links
+        run: pixi run --locked -e docs python scripts/assemble_docs.py --nightly target/documentation/docs-nightly --stable target/documentation/docs-stable-1.2
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: target/docs-versions

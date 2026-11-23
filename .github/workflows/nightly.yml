@@ -50,3 +50,19 @@ jobs:
     with:
       ref: ${{ needs.update.outputs.revision }}
       lane: nightly
+  verify-docs:
+    needs: update
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build-docs.yml
+    with:
+      branch: main
+      revision: ${{ needs.update.outputs.revision }}
+  tag:
+    needs: [update, verify, verify-docs]
+    permissions:
+      actions: read
+      contents: write
+    uses: ./.github/workflows/tag-nightly.yml
+    with:
+      revision: ${{ needs.update.outputs.revision }}

@@ -94,7 +94,7 @@ when a Biofast speedup changes traversal.
 
 Internal dependencies are relative `path` dependencies in the relevant development/build/host/runtime sections. Do not pin a package to an older Git copy of another package in this repository. Consumers that import a Mojo dependency while compiling need it in their host dependencies as well as their build dependencies.
 
-External consumers use a Git URL, full commit and `subdirectory`, as shown in the [README](../README.md). Pixi resolves internal paths within that Git checkout, including native subpackages. Pin directly requested Mojoverse dependencies to the same revision and commit the consumer's lockfile. A change to both sides of an API can then land in one commit.
+External consumers use a Git URL, a tested tag or full commit, and `subdirectory`, as shown in the [README](../README.md). Pixi resolves internal paths within that Git checkout, including native subpackages. Pin directly requested Mojoverse dependencies to the same revision and commit the consumer's lockfile. A change to both sides of an API can then land in one commit.
 
 Check the committed graph from a clean external prefix:
 
@@ -133,6 +133,24 @@ For an agent-assisted update, ask: **Use `updating-mojoverse-nightly` to update 
 `main` tracks published nightly Mojo. Stable releases use versioned branches such as `stable/1.2`, which retains Mojo 1.2.0 and its matching MAX version. Create a new stable branch deliberately for each supported compiler series, validate its full graph, and backport fixes without importing nightly compiler pins. External consumers should pin a tested commit from the appropriate branch.
 
 Nightly compiler updates are manual; there is no scheduled job. The manually dispatched GitHub workflow updates and pushes `main`, then runs the same graph checks. Compiler failures remain visible; the workflow does not repair source. The legacy `nightly` branch is retained for existing references but is no longer maintained; use `main` for ongoing nightly development.
+
+## Release tags
+
+Each green push to `main` gets an annotated `nightly-YYYY-MM-DD-<short-sha>` tag. The date is the tested commit's UTC committer date, and the suffix is its first seven hex digits. The tagger checks the Workspace checks and Documentation push runs for that SHA. The manual nightly updater runs the same workspace checks and builds and assembles the documentation for the commit it pushed. Both paths leave existing tags in place. To recover a missing tag, rerun the relevant workflow on the original revision.
+
+When a commit changes a package's public API, bump that package's version with the change, update its changelog if it has one, and run `python3 scripts/toolchain.py lock`. Check the installed package version and exercise the changed API. The workspace tag pins all packages to one Git revision while each package retains its own version.
+
+For a stable release, select a commit from the supported branch whose workspace and documentation checks passed. Use the next release number for that Mojo series, starting at `mojo-1.2-r1` for `stable/1.2`. For example, with `sha` set to the full verified revision and `tag` to the chosen name:
+
+```sh
+git fetch origin stable/1.2 --tags
+git merge-base --is-ancestor "$sha" origin/stable/1.2 &&
+  git tag -a "$tag" "$sha" -m "Mojoverse release for Mojo 1.2" &&
+  git push origin "refs/tags/$tag" &&
+  gh release create "$tag" --verify-tag --title "$tag" --notes-file release-notes.md
+```
+
+Write the exact Mojo and MAX pins and user-facing changes in the release notes. Native archives use host-specific compiler flags, so distribute the tagged source for consumers to build on their own machines.
 
 ## Documentation and editor setup
 

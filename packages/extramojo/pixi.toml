@@ -12,7 +12,7 @@ requires-pixi = ">=0.80"
 
 [package]
 name = "extramojo"
-version = "0.24.0"
+version = "0.25.0"
 license = "(Unlicense OR MIT) AND Apache-2.0 WITH LLVM-exception"
 # LICENSE includes the original terms and third-party formatting notices.
 license-file = "LICENSE"

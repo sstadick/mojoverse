@@ -9,69 +9,22 @@ permissions:
 concurrency:
   group: docs-${{ github.event_name == 'pull_request' && github.ref || 'publish' }}
   cancel-in-progress: true
-env:
-  CC: clang
-  CXX: clang++
 jobs:
   build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - version: nightly
-            branch: main
-          - version: stable-1.2
-            branch: stable/1.2
-    env:
-      PIXI_CACHE_DIR: ${{ github.workspace }}/.pixi/cache
-    steps:
-      - uses: actions/checkout@v4
-      - name: Check out the documented version
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ matrix.branch == (github.base_ref || github.ref_name) && github.sha || matrix.branch }}
-          path: .amp/in/docs-version
-      - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e
-        with:
-          pixi-version: v0.80.0
-          run-install: false
-          cache: false
-      - name: Build with the documented checkout's locked compilers
-        run: pixi run --locked -e docs python scripts/build_docs.py --source-root .amp/in/docs-version --version '${{ matrix.version }}' --output target/docs
-      - uses: actions/upload-artifact@v4
-        with:
-          name: docs-${{ matrix.version }}
-          path: target/docs
-          include-hidden-files: true
-  assemble:
+    uses: ./.github/workflows/build-docs.yml
+    with:
+      branch: ${{ github.base_ref || github.ref_name }}
+      revision: ${{ github.sha }}
+  pages:
     needs: build
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/stable/'))
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     permissions:
-      contents: read
       pages: read
     outputs:
-      pages-enabled: ${{ steps.pages.outputs.enabled }}
+      enabled: ${{ steps.pages.outputs.enabled }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e
-        with:
-          pixi-version: v0.80.0
-          run-install: false
-          cache: false
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: docs-*
-          path: target/documentation
-      - name: Assemble versions and preserve existing links
-        run: pixi run --locked -e docs python scripts/assemble_docs.py --nightly target/documentation/docs-nightly --stable target/documentation/docs-stable-1.2
-      - uses: actions/upload-pages-artifact@v4
-        with:
-          path: target/docs-versions
       - name: Check whether Pages uses GitHub Actions
-        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/stable/'))
         id: pages
         env:
           GH_TOKEN: ${{ github.token }}
@@ -85,8 +38,8 @@ jobs:
             exit 1
           fi
   deploy:
-    if: github.event_name != 'pull_request' && needs.assemble.outputs.pages-enabled == 'true'
-    needs: assemble
+    if: needs.pages.outputs.enabled == 'true'
+    needs: pages
     runs-on: ubuntu-latest
     permissions:
       pages: write

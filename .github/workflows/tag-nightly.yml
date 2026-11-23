@@ -1,0 +1,55 @@
+name: Tag tested nightly
+on:
+  workflow_run:
+    workflows: [Workspace checks, Documentation]
+    branches: [main]
+    types: [completed]
+  workflow_call:
+    inputs:
+      revision:
+        description: Main commit verified by the nightly compiler updater
+        required: true
+        type: string
+permissions: {}
+jobs:
+  tag:
+    if: >-
+      inputs.revision ||
+      (github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    env:
+      REVISION: ${{ inputs.revision || github.event.workflow_run.head_sha }}
+    steps:
+      - name: Check both push workflows for this commit
+        if: ${{ !inputs.revision }}
+        id: checks
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for workflow in test.yml docs.yml; do
+            result=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow "$workflow" \
+              --branch main --event push --commit "$REVISION" --limit 1 \
+              --json conclusion --jq '.[0].conclusion // "pending"')
+            if [[ "$result" != success ]]; then
+              echo "$workflow is $result for $REVISION"
+              exit 0
+            fi
+          done
+          echo "passed=true" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        if: inputs.revision || steps.checks.outputs.passed == 'true'
+        with:
+          # Load the tagger from the workflow revision, including for older tested commits.
+          ref: ${{ github.workflow_sha }}
+          fetch-depth: 0
+      - name: Publish annotated tag
+        if: inputs.revision || steps.checks.outputs.passed == 'true'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          bash scripts/tag-nightly.sh "$REVISION"

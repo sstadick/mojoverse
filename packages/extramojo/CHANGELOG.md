@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## v0.25.0
+
+- Embed file contents at compile time with the byte and UTF-8 string helpers in `extramojo.utils`.
+- Write decimal integers and floating-point values directly to a writer with `extramojo.format`.
+
 ## v0.24.0
 
 - Migrate to Mojo 1.1.0 and use standalone Mojo compiler dependencies instead of MAX.

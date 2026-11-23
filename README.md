@@ -2,7 +2,7 @@
 
 Mojo libraries, bins, and development tools in one repository. This checkout uses **Mojo 1.3.0.dev2026111705** and **Pixi 0.80+**. `main` tracks the published nightly compiler; versioned branches such as [`stable/1.2`](https://github.com/sstadick/mojoverse/tree/stable/1.2) support stable Mojo releases across the whole workspace.
 
-**Nightly is experimental:** an optimized ExtraMojo iterator test currently crashes. See [the compatibility note and reproducer](docs/nightly.md); use `stable/1.2` for the stable compiler lane.
+See the [nightly compatibility notes](docs/nightly.md) for compiler-specific behavior.
 
 [Library documentation and API references](https://sstadick.github.io/mojoverse/)
 
@@ -20,7 +20,7 @@ The legacy `nightly` branch is a snapshot; existing nightly consumers should
 move to a tested `main` commit and refresh their lockfile. Distribution names
 remain unchanged: for example, install `mojo-bstr` and import `bstr`.
 
-Add a Git dependency with its package subdirectory to your `pixi.toml`. Replace `<full-commit>` with a Mojoverse commit and use that same revision for every Mojoverse dependency:
+Choose a [tested tag](https://github.com/sstadick/mojoverse/tags) for your compiler lane and use it for every Mojoverse Git dependency. Each dependency specifies its package subdirectory. You can also pin a full commit SHA with `rev`.
 
 ```toml
 [workspace]
@@ -31,7 +31,7 @@ requires-pixi = ">=0.80"
 
 [dependencies]
 mojo = "=1.3.0.dev2026111705"
-mojo-io = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojo-io" }
+mojo-io = { git = "https://github.com/sstadick/mojoverse.git", tag = "<tested-tag>", subdirectory = "packages/mojo-io" }
 ```
 
 Run `pixi install`, then import `io` normally—no source `-I` paths. Its `mojo-bstr` dependency comes from **the same commit**, through an internal relative path. Native packages document their linker flags and platform requirements.
