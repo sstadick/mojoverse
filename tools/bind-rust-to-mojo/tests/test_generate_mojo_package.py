@@ -705,14 +705,14 @@ RAW_FFI = textwrap.dedent(
     comptime OwnerHandle = Pointer[UInt8, MutUntrackedOrigin]
     comptime OwnerRef = Pointer[UInt8, ImmUntrackedOrigin]
     comptime OwnerMutRef = Pointer[UInt8, MutUntrackedOrigin]
-    comptime OwnerOptionalHandle = OptionalPointer[UInt8, MutUntrackedOrigin]
+    comptime OwnerOptionalHandle = Optional[Pointer[UInt8, MutUntrackedOrigin]]
     comptime Owner_destroy_abi = def(OwnerHandle) thin abi("C") -> None
     # symbol Owner_destroy_abi = "{PREFIX}owner_destroy"
 
     comptime RecordIteratorHandle = Pointer[UInt8, MutUntrackedOrigin]
     comptime RecordIteratorRef = Pointer[UInt8, ImmUntrackedOrigin]
     comptime RecordIteratorMutRef = Pointer[UInt8, MutUntrackedOrigin]
-    comptime RecordIteratorOptionalHandle = OptionalPointer[UInt8, MutUntrackedOrigin]
+    comptime RecordIteratorOptionalHandle = Optional[Pointer[UInt8, MutUntrackedOrigin]]
     comptime RecordIterator_destroy_abi = def(RecordIteratorHandle) thin abi("C") -> None
     # symbol RecordIterator_destroy_abi = "{PREFIX}record_iterator_destroy"
 
@@ -837,7 +837,7 @@ class SuccessfulGenerationTests(unittest.TestCase):
         self.assertIn('realpath("/proc/self/exe")', runtime)
         self.assertIn('external_call["_NSGetExecutablePath", Int32]', runtime)
         self.assertIn('for component in search_path.split(":"):', runtime)
-        self.assertIn('if invoked.rfind("/") >= 0:', runtime)
+        self.assertIn('if "/" in invoked:', runtime)
         self.assertIn("dirname(_executable_path())", runtime)
         self.assertNotIn("dirname(String(arguments[0]))", runtime)
         override = runtime.index('getenv("RUST_MOJO_DEMO_BIND_LIBRARY")')
@@ -2034,6 +2034,9 @@ class MojoCompilationTests(unittest.TestCase):
 
                     def main() raises:
                         var library = _runtime._open_library()
+                        var probe = library.get_function[Int32]("rust_mojo_runtime_path_probe")
+                        if probe() != 1:
+                            raise Error("unexpected value from runtime probe")
                         print("runtime lookup passed")
                     '''
                 ),

@@ -8,16 +8,6 @@ from bstr.search import memchr
 comptime BUF_SIZE = 128 * 1024
 
 
-# Stable closes by mutation; nightly consumes the handle. Select by the
-# method's ownership convention, without guessing from compiler versions.
-def _close_file[close: def(mut FileHandle) raises thin -> None](var file: FileHandle) raises:
-    close(file)
-
-
-def _close_file[close: def(var FileHandle) raises thin -> None](var file: FileHandle) raises:
-    close(file^)
-
-
 struct BufferedReader(Movable):
     """Own a file handle and reuse storage across reads.
 
@@ -81,7 +71,7 @@ struct BufferedReader(Movable):
         self._length = 0
         self._eof = True
         if self._file:
-            _close_file[FileHandle.close](self._file.take())
+            self._file.take().close()
 
     def read_bytes(mut self, mut buffer: List[UInt8]) raises -> Int:
         """Fill the list's existing length without resizing it; return bytes read."""
@@ -282,9 +272,9 @@ struct BufferedWriter(Movable):
         try:
             self.flush()
         except error:
-            _close_file[FileHandle.close](self._file.take())
+            self._file.take().close()
             raise error
-        _close_file[FileHandle.close](self._file.take())
+        self._file.take().close()
 
 
 def read_lines(path: String, buf_size: Int = BUF_SIZE) raises -> List[List[UInt8]]:

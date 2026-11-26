@@ -1,6 +1,6 @@
 # mojo-io
 
-Binary-safe buffered file I/O for Mojo 1.3.0.dev2026111705.
+Binary-safe buffered file I/O for Mojo 1.3.0.dev2026112605.
 Package: `mojo-io`; import: `io`. Requires **mojo-bstr**.
 
 [API reference](https://sstadick.github.io/mojoverse/mojo-io/io/_index.html)

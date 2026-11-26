@@ -104,6 +104,12 @@ jobs:
           run-install: false
           cache: false
       - run: pixi run --locked -e lsp test-lsp
+      - name: Test the Rust binding generator and compile its generated Mojo
+        env:
+          MOJO_BIN: ${{ github.workspace }}/.pixi/envs/lsp/bin/mojo
+        run: |
+          pixi run --locked -e lsp cargo test --locked --manifest-path tools/bind-rust-to-mojo/crates/diplomat-gen-mojo/Cargo.toml
+          pixi run --locked -e lsp python -m unittest discover -s tools/bind-rust-to-mojo/tests
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-wasip1,wasm32-wasip2

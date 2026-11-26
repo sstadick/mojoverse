@@ -9,7 +9,7 @@ version = "0.1.0"
 preview = ["pixi-build"]
 
 [dependencies]
-max = "=26.8.0.dev2026111705"
+max = "=26.8.0.dev2026112605"
 mojo_raylib = { path = "../.." }
 
 [tasks.run]

@@ -948,19 +948,19 @@ fn render(module: &AbiModule, unsupported: &[UnsupportedItem], abi_model_sha256:
         .unwrap();
         writeln!(
             out,
-            "comptime {}OptionalHandle = OptionalPointer[UInt8, MutUntrackedOrigin]",
+            "comptime {}OptionalHandle = Optional[Pointer[UInt8, MutUntrackedOrigin]]",
             mojo_ident(&opaque.name)
         )
         .unwrap();
         writeln!(
             out,
-            "comptime {}OptionalRef = OptionalPointer[UInt8, ImmUntrackedOrigin]",
+            "comptime {}OptionalRef = Optional[Pointer[UInt8, ImmUntrackedOrigin]]",
             mojo_ident(&opaque.name)
         )
         .unwrap();
         writeln!(
             out,
-            "comptime {}OptionalMutRef = OptionalPointer[UInt8, MutUntrackedOrigin]",
+            "comptime {}OptionalMutRef = Optional[Pointer[UInt8, MutUntrackedOrigin]]",
             mojo_ident(&opaque.name)
         )
         .unwrap();
@@ -1352,6 +1352,7 @@ fn is_reserved_mojo_identifier(identifier: &str) -> bool {
             | "Float32"
             | "Float64"
             | "Pointer"
+            | "Optional"
             | "OptionalPointer"
             | "MutUntrackedOrigin"
             | "ImmUntrackedOrigin"

@@ -25,18 +25,18 @@ name = "bio"
 path = "src/bio"
 
 [package.host-dependencies]
-mojo-compiler = "=1.3.0.dev2026111705"
+mojo-compiler = "=1.3.0.dev2026112605"
 mojo-libdeflate = { path = "../mojo-libdeflate" }
 mojo-bstr = { path = "../mojo-bstr" }
 zlib = ">=1.3.1,<2"
 
 [package.build-dependencies]
-mojo-compiler = "=1.3.0.dev2026111705"
+mojo-compiler = "=1.3.0.dev2026112605"
 mojo-libdeflate = { path = "../mojo-libdeflate" }
 mojo-bstr = { path = "../mojo-bstr" }
 
 [package.run-dependencies]
-mojo-compiler = "=1.3.0.dev2026111705"
+mojo-compiler = "=1.3.0.dev2026112605"
 mojo-libdeflate = { path = "../mojo-libdeflate" }
 mojo-bstr = { path = "../mojo-bstr" }
 zlib = ">=1.3.1,<2"
@@ -48,5 +48,5 @@ docs = "pixi run --locked -e docs --manifest-path ../../pixi.toml docs packages/
 format = "mojo format --line-length 100 ."
 
 [dependencies]
-mojo = "=1.3.0.dev2026111705"
+mojo = "=1.3.0.dev2026112605"
 mojo-bio = { path = "." }

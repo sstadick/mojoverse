@@ -11,7 +11,7 @@ Choose a commit from `main` for nightly Mojo or `stable/1.2` for Mojo 1.2.0.
 Match the compiler pin and channel to that revision: `max-nightly` for
 nightly, `max` for stable. Use one revision for all Mojoverse dependencies.
 
-This revision pins **Mojo 1.3.0.dev2026111705** and **MAX core 26.8.0.dev2026111705**.
+This revision pins **Mojo 1.3.0.dev2026112605** and **MAX core 26.8.0.dev2026112605**.
 With Pixi 0.80 or newer, add to your `pixi.toml`. Replace `<full-commit>` with
 a Mojoverse commit and use the same revision for every Mojoverse dependency:
 
@@ -24,7 +24,7 @@ preview = ["pixi-build"]
 requires-pixi = ">=0.80"
 
 [dependencies]
-mojo = "=1.3.0.dev2026111705"
+mojo = "=1.3.0.dev2026112605"
 mojo-lapper = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojo-lapper" }
 ```
 

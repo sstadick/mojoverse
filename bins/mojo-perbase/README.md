@@ -52,7 +52,7 @@ pixi run t
 pixi run consumer
 ```
 
-Mojo 1.3.0.dev2026111705 is pinned across development, host, build and runtime.
+Mojo 1.3.0.dev2026112605 is pinned across development, host, build and runtime.
 Local Mojo/CMake build backends are pinned too, avoiding different dependency
 metadata from an old backend cache versus a fresh machine. The same lockfiles
 install with `--locked` on both tested platforms.

@@ -137,8 +137,9 @@ def update(root, lane, version, max_version):
     # Keep the landing-page copy/paste example in the same lane, not historical results.
     readme = root / "README.md"
     if readme.exists():
-        text = readme.read_text().replace(old, version)
-        text = re.sub(r'https://conda\.modular\.com/max(?:-nightly)?', channel, text)
+        text = readme.read_text().replace(f"**Mojo {old}**", f"**Mojo {version}**")
+        text = text.replace(f'mojo = "={old}"', f'mojo = "={version}"')
+        text = re.sub(r'"https://conda\.modular\.com/max(?:-nightly)?"', f'"{channel}"', text)
         readme.write_text(text)
     check(root, lane)
 

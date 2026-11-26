@@ -1,6 +1,6 @@
 # Mojoverse
 
-Mojo libraries, bins, and development tools in one repository. This checkout uses **Mojo 1.3.0.dev2026111705** and **Pixi 0.80+**. `main` tracks the published nightly compiler; versioned branches such as [`stable/1.2`](https://github.com/sstadick/mojoverse/tree/stable/1.2) support stable Mojo releases across the whole workspace.
+Mojo libraries, bins, and development tools in one repository. This checkout uses **Mojo 1.3.0.dev2026112605** and **Pixi 0.80+**. `main` tracks the published nightly compiler; versioned branches such as [`stable/1.2`](https://github.com/sstadick/mojoverse/tree/stable/1.2) support stable Mojo releases across the whole workspace.
 
 See the [nightly compatibility notes](docs/nightly.md) for compiler-specific behavior.
 
@@ -30,7 +30,7 @@ preview = ["pixi-build"]
 requires-pixi = ">=0.80"
 
 [dependencies]
-mojo = "=1.3.0.dev2026111705"
+mojo = "=1.3.0.dev2026112605"
 mojo-io = { git = "https://github.com/sstadick/mojoverse.git", tag = "<tested-tag>", subdirectory = "packages/mojo-io" }
 ```
 

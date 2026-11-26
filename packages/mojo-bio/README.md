@@ -1,6 +1,6 @@
 # mojo-bio
 
-Byte-oriented bioinformatics readers for **Mojo 1.3.0.dev2026111705**: indexed BAM/BGZF and
+Byte-oriented bioinformatics readers for **Mojo 1.3.0.dev2026112605**: indexed BAM/BGZF and
 streaming FASTA/FASTQ. Import `bio`. Generic integer sorting is available
 separately in [mojo-radix-sort](../mojo-radix-sort).
 
@@ -148,7 +148,7 @@ The caller must validate these ranges before decoding.
 
 ## Build and documentation
 
-Mojo 1.3.0.dev2026111705 is pinned. `pixi run t` runs the tests. `pixi run docs` builds
+Mojo 1.3.0.dev2026112605 is pinned. `pixi run t` runs the tests. `pixi run docs` builds
 the API reference and executes marked README examples. The BAM example needs
 your own indexed file.
 `pixi build` creates the Mojo package with `pixi-build-mojo`.

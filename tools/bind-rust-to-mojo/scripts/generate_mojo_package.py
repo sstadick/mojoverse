@@ -860,6 +860,7 @@ def _mojo_abi_ident(value: str) -> str:
     # Keep this in lockstep with diplomat-gen-mojo's deterministic escaping.
     if rendered in _RESERVED or rendered in set(_PRIMITIVES.values()) | {
         "Pointer",
+        "Optional",
         "OptionalPointer",
         "MutUntrackedOrigin",
         "ImmUntrackedOrigin",
@@ -2193,7 +2194,7 @@ def _argv_executable_path() raises -> String:
     if len(arguments) == 0 or arguments[0] == "":
         raise Error("process executable path is unavailable")
     var invoked = String(arguments[0])
-    if invoked.rfind("/") >= 0:
+    if "/" in invoked:
         return realpath(invoked)
     var search_path = getenv("PATH")
     for component in search_path.split(":"):

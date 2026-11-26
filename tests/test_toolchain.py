@@ -6,10 +6,28 @@ import sys
 import tempfile
 import unittest
 
+from scripts.toolchain import update
+
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts/toolchain.py"
 
 
 class ToolchainTests(unittest.TestCase):
+    def test_update_preserves_readme_lane_table(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            stable = "https://conda.modular.com/max"
+            nightly = stable + "-nightly"
+            example = f'channels = ["{stable}"]\n[dependencies]\nmojo = "=1.2.0"\n'
+            (root / "pixi.toml").write_text('[workspace]\n' + example + 'max-core = "=26.7.0"\n')
+            table = f"| Nightly | `{nightly}` |\n| Stable Mojo 1.2.0 | `{stable}` |\n"
+            readme = root / "README.md"
+            readme.write_text("This checkout uses **Mojo 1.2.0**.\n" + table + example)
+
+            version = "1.3.0.dev2026112605"
+            update(root, "nightly", version, "26.8.0.dev2026112605")
+            expected = example.replace(stable, nightly).replace("1.2.0", version)
+            self.assertEqual(readme.read_text(), f"This checkout uses **Mojo {version}**.\n" + table + expected)
+
     def test_workspace_contract(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

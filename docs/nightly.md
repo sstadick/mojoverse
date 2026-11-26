@@ -2,6 +2,14 @@
 
 `main` follows published Mojo nightlies; versioned branches such as `stable/1.2` retain stable compiler support. The legacy `nightly` branch is retained as a snapshot; use `main` for ongoing development. Updates are manual: use the [nightly maintenance skill](../.agents/skills/updating-mojoverse-nightly/SKILL.md) to update compiler pins and lockfiles together and check compatibility. An update does not imply that CI passed. Pin a tested commit rather than depending on a moving branch.
 
+## November 26, 2026
+
+All 26 workspace manifests resolve against Mojo `1.3.0.dev2026112605` and MAX core `26.8.0.dev2026112605`. The standard library now declares that `FileHandle.close` raises `IOError`. Buffered readers and writers take the owned handle and call its close method directly. The repeated-close and failed-flush tests pass.
+
+The Rust binding generator emits `Optional[Pointer[...]]` for nullable C pointers and uses string containment to recognize executable paths. The generator's 106 Python tests pass on Linux x86-64, including compilation of generated Mojo and loading a shared library from an installed executable.
+
+On Linux x86-64, all 23 library test programs pass from source and against installed packages at `-O3`. Checks also passed for the executables, all 31 documentation examples, headless Raylib, native editor integration, and ExtraMojo under AddressSanitizer. Lapper's GPU benchmarks compiled for NVIDIA `sm_80`. GPU execution was outside the scope of these checks.
+
 ## November 21, 2026: native Clang on AVX10 runners
 
 The [nightly documentation build](https://github.com/sstadick/mojoverse/actions/runs/44941167420/job/136958485396)

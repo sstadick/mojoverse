@@ -43,7 +43,7 @@ preview = ["pixi-build"]
 requires-pixi = ">=0.80"
 
 [dependencies]
-mojo = "=1.3.0.dev2026111705"
+mojo = "=1.3.0.dev2026112605"
 mojo_raylib = { git = "https://github.com/sstadick/mojoverse.git", rev = "<full-commit>", subdirectory = "packages/mojo-raylib" }
 
 [tasks.run]
